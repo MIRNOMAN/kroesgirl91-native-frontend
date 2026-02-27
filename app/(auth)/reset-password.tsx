@@ -6,32 +6,41 @@ import AuthTitleBlock from "../../components/ui/auth/AuthTitleBlock";
 import { COLORS } from "../../constants/colors";
 import { APP_ROUTES } from "../../constants/routes";
 
-export default function ForgotPasswordScreen() {
+export default function ResetPasswordScreen() {
   const router = useRouter();
 
   return (
     <View style={styles.container}>
       <View style={styles.content}>
         <AuthTitleBlock
-          title="Forget Password"
-          subtitle="Enter your email here. Give valid email to reset your password"
+          title="Reset Password"
+          subtitle="Add your new password"
           titleSize={31}
           subtitleSize={11}
-          subtitleMaxWidth={230}
+          subtitleMaxWidth={180}
         />
 
-        <AuthLabeledInput
-          label="Email"
-          placeholder="Enter Email Here"
-          keyboardType="email-address"
-          autoCapitalize="none"
-          compact
-        />
+        <View style={styles.form}>
+          <AuthLabeledInput
+            label="New Password"
+            placeholder="Enter Email Here"
+            secureTextEntry
+            showPasswordToggle
+            compact
+          />
+          <AuthLabeledInput
+            label="Confirm Password"
+            placeholder="Enter Password Here"
+            secureTextEntry
+            showPasswordToggle
+            compact
+          />
+        </View>
       </View>
 
       <AuthButton
-        title="Send OTP"
-        onPress={() => router.push(APP_ROUTES.forgotOtp)}
+        title="Reset Password"
+        onPress={() => router.replace(APP_ROUTES.resetSuccess)}
       />
     </View>
   );
@@ -48,5 +57,8 @@ const styles = StyleSheet.create({
   },
   content: {
     gap: 16,
+  },
+  form: {
+    gap: 10,
   },
 });
