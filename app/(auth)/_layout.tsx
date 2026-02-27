@@ -12,13 +12,19 @@ export default function AuthLayout() {
         options={{ title: "Onboarding", headerShown: false }}
       />
       <Stack.Screen name="login" options={{ title: "Login" }} />
-      <Stack.Screen name="register" options={{ title: "Register" }} />
+      <Stack.Screen
+        name="register"
+        options={{ title: "Register", headerShown: false }}
+      />
       <Stack.Screen
         name="forgot-password"
         options={{ title: "Forgot Password" }}
       />
-      <Stack.Screen name="otp" options={{ title: "OTP" }} />
-      <Stack.Screen name="verify-otp" options={{ title: "Verify OTP" }} />
+      <Stack.Screen name="otp" options={{ title: "OTP", headerShown: false }} />
+      <Stack.Screen
+        name="verify-otp"
+        options={{ title: "Verify OTP", headerShown: false }}
+      />
     </Stack>
   );
 }

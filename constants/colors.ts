@@ -10,4 +10,10 @@ export const COLORS = {
   onboardingTint: "#ECFEFF",
   onboardingAccent: "#06B6D4",
   onboardingDot: "#CBD5E1",
+  authBg: "#F2F2F4",
+  authInput: "#F7F7F8",
+  authBorder: "#E5E7EB",
+  authMuted: "#E5E7EB",
+  authPlaceholder: "#A3A7AF",
+  authAccent: "#F59E0B",
 } as const;
