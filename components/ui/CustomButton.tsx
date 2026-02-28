@@ -1,16 +1,29 @@
-import { Pressable, StyleSheet, Text } from "react-native";
+import {
+  Pressable,
+  StyleProp,
+  StyleSheet,
+  Text,
+  TextStyle,
+  ViewStyle,
+} from "react-native";
 import { COLORS } from "../../constants/colors";
 
 type CustomButtonProps = {
   title: string;
   onPress: () => void;
   disabled?: boolean;
+  fullWidth?: boolean;
+  style?: StyleProp<ViewStyle>;
+  textStyle?: StyleProp<TextStyle>;
 };
 
 export default function CustomButton({
   title,
   onPress,
   disabled = false,
+  fullWidth = false,
+  style,
+  textStyle,
 }: CustomButtonProps) {
   return (
     <Pressable
@@ -18,11 +31,13 @@ export default function CustomButton({
       disabled={disabled}
       style={({ pressed }) => [
         styles.button,
+        fullWidth && styles.fullWidth,
         pressed && styles.pressed,
         disabled && styles.disabled,
+        style,
       ]}
     >
-      <Text style={styles.text}>{title}</Text>
+      <Text style={[styles.text, textStyle]}>{title}</Text>
     </Pressable>
   );
 }
@@ -30,16 +45,21 @@ export default function CustomButton({
 const styles = StyleSheet.create({
   button: {
     width: "100%",
-    maxWidth: 320,
-    backgroundColor: COLORS.primary,
-    paddingVertical: 14,
-    borderRadius: 10,
+    alignSelf: "center",
+    backgroundColor: COLORS.onboardingAccent,
+    paddingVertical: 18,
+    paddingHorizontal: 24,
+    borderRadius: 16,
     alignItems: "center",
+    justifyContent: "center",
+  },
+  fullWidth: {
+    width: "100%",
   },
   text: {
-    color: COLORS.white,
-    fontSize: 16,
-    fontWeight: "600",
+    color: COLORS.onboardingAccent,
+    fontSize: 17,
+    fontWeight: "700",
   },
   pressed: {
     opacity: 0.85,

@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
     color: COLORS.textPrimary,
   },
   labelCompact: {
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: "600",
   },
   inputWrap: {
@@ -87,9 +87,9 @@ const styles = StyleSheet.create({
     color: COLORS.textPrimary,
   },
   inputCompact: {
-    height: 42,
+    height: 52,
     borderRadius: 10,
-    fontSize: 12,
+    fontSize: 14,
     paddingHorizontal: 12,
   },
   eyeButton: {

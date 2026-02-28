@@ -1,3 +1,25 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+@layer components {
+  /* Main Container Background */
+  .auth-container {
+    @apply flex-1 bg-[#002B3B] px-5 pt-11 pb-11 justify-between;
+  }
+
+  /* Primary Button Style */
+  .btn-primary {
+    @apply bg-[#002B3B] h-[56px] rounded-2xl items-center justify-center active:opacity-80;
+  }
+
+  .btn-text {
+    @apply text-white text-[16px] font-bold uppercase tracking-wide;
+  }
+
+  /* Secondary/Link Text */
+  .link-orange {
+    @apply text-[#FF8A00] font-bold;
+  }
+}

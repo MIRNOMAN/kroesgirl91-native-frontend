@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   title: {
-    fontSize: 36,
+    fontSize: 40,
     fontWeight: "800",
     marginTop: 50,
     color: COLORS.textPrimary,
@@ -51,9 +51,9 @@ const styles = StyleSheet.create({
   subtitle: {
     color: COLORS.textSecondary,
     textAlign: "center",
-    maxWidth: 320,
+    fontSize: 40,
     fontWeight: "500",
     lineHeight: 22,
-    fontSize: 33,
+   
   },
 });
