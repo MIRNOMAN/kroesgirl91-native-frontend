@@ -44,11 +44,16 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 36,
     fontWeight: "800",
+    marginTop: 50,
     color: COLORS.textPrimary,
     textAlign: "center",
   },
   subtitle: {
     color: COLORS.textSecondary,
     textAlign: "center",
+    maxWidth: 320,
+    fontWeight: "500",
+    lineHeight: 22,
+    fontSize: 33,
   },
 });
