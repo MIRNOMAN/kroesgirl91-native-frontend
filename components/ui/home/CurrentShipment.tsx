@@ -1,4 +1,4 @@
-import { Ionicons } from "@expo/vector-icons";
+import { Feather, Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { COLORS } from "../../../constants/colors";
@@ -33,22 +33,22 @@ export default function CurrentShipment({
   endLocation,
 }: CurrentShipmentProps) {
   // TODO: Uncomment and use this function when you add static images
-  // const getStatusImage = (imageName: string) => {
-  //   switch(imageName) {
-  //     case 'accepted':
-  //       return require('../../../assets/tracking/accepted.png');
-  //     case 'picked':
-  //       return require('../../../assets/tracking/picked.png');
-  //     case 'transit':
-  //       return require('../../../assets/tracking/transit.png');
-  //     case 'outfordelivery':
-  //       return require('../../../assets/tracking/outfordelivery.png');
-  //     case 'delivered':
-  //       return require('../../../assets/tracking/delivered.png');
-  //     default:
-  //       return null;
-  //   }
-  // };
+  const getStatusImage = (imageName: string) => {
+    switch (imageName) {
+      case "accepted":
+        return require("../../../assets/traking_image/traking_1.png");
+      case "picked":
+        return require("../../../assets/traking_image/traking_2.png");
+      case "transit":
+        return require("../../../assets/traking_image/traking_3.png");
+      case "outfordelivery":
+        return require("../../../assets/traking_image/traking_4.png");
+      case "delivered":
+        return require("../../../assets/traking_image/traking_5.png");
+      default:
+        return null;
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -65,7 +65,7 @@ export default function CurrentShipment({
           {trackingId && <Text style={styles.trackingId}>{trackingId}</Text>}
         </View>
         <TouchableOpacity style={styles.arrowButton}>
-          <Ionicons name="arrow-forward" size={20} color="#FF9800" />
+          <Feather name="arrow-up-right" size={24} color="#FF9800" />
         </TouchableOpacity>
       </View>
 
@@ -80,12 +80,19 @@ export default function CurrentShipment({
                   statusItem.active && styles.statusIconActive,
                 ]}
               >
-                {/* Placeholder for user's static image */}
-                <View style={styles.imagePlaceholder}>
-                  <Text style={styles.imagePlaceholderText}>
-                    {statusItem.image.substring(0, 2).toUpperCase()}
-                  </Text>
-                </View>
+                {getStatusImage(statusItem.image) ? (
+                  <Image
+                    source={getStatusImage(statusItem.image)}
+                    style={styles.statusImage}
+                    resizeMode="contain"
+                  />
+                ) : (
+                  <View style={styles.imagePlaceholder}>
+                    <Text style={styles.imagePlaceholderText}>
+                      {statusItem.image.substring(0, 2).toUpperCase()}
+                    </Text>
+                  </View>
+                )}
               </View>
 
               {/* Dotted line connector */}
@@ -107,7 +114,7 @@ export default function CurrentShipment({
             {/* Checkmark below icon for active items */}
             {statusItem.active && (
               <View style={styles.checkmarkContainer}>
-                <Ionicons name="checkmark" size={16} color="#FF9800" />
+                <Ionicons name="checkmark" size={15} color="#FF9800" />
               </View>
             )}
           </View>
@@ -154,7 +161,7 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: "#FFFFFF",
     borderRadius: 16,
-    padding: 20,
+    padding: 16,
     marginHorizontal: 20,
     marginBottom: 16,
     elevation: 2,
@@ -175,9 +182,9 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 45,
+    height: 45,
+    borderRadius: 5,
   },
   avatarPlaceholder: {
     backgroundColor: COLORS.border,
@@ -187,8 +194,8 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   recipientName: {
-    fontSize: 16,
-    fontWeight: "600",
+    fontSize: 18,
+    fontWeight: "700",
     color: COLORS.textPrimary,
   },
   trackingId: {
@@ -197,9 +204,9 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   arrowButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 42,
+    height: 42,
+    borderRadius: 6,
     backgroundColor: "#FFF3E0",
     justifyContent: "center",
     alignItems: "center",
@@ -223,18 +230,20 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: "#F5F5F5",
+
     justifyContent: "center",
     alignItems: "center",
   },
-  statusIconActive: {
-    backgroundColor: "#FFF3E0",
-  },
+  statusIconActive: {},
   imagePlaceholder: {
     width: 40,
     height: 40,
     justifyContent: "center",
     alignItems: "center",
+  },
+  statusImage: {
+    width: 30,
+    height: 30,
   },
   imagePlaceholderText: {
     fontSize: 20,

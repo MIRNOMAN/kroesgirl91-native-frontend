@@ -1,5 +1,11 @@
 import React from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  ImageBackground,
+} from "react-native";
 import { COLORS } from "../../../constants/colors";
 
 interface DeliveryCardProps {
@@ -14,43 +20,52 @@ export default function DeliveryCard({
   onPress,
 }: DeliveryCardProps) {
   return (
-    <View style={styles.container}>
+    <ImageBackground
+      source={require("../../../assets/backround/backround_3.png")} 
+      style={styles.container}
+      imageStyle={styles.imageStyle}
+      resizeMode="cover"
+    >
       <View>
         <Text style={styles.title}>{title}</Text>
         <Text style={styles.subtitle}>{subtitle}</Text>
       </View>
+
       <TouchableOpacity style={styles.button} onPress={onPress}>
         <Text style={styles.buttonText}>+ Create New</Text>
       </TouchableOpacity>
-    </View>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "#D6E8F5",
     borderRadius: 16,
-    padding: 20,
+    padding: 30,
     marginHorizontal: 20,
     marginVertical: 12,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    overflow: "hidden", 
+  },
+  imageStyle: {
+    borderRadius: 16,
   },
   title: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "700",
     color: COLORS.textPrimary,
     marginBottom: 4,
   },
   subtitle: {
-    fontSize: 12,
+    fontSize: 14,
     color: COLORS.textSecondary,
   },
   button: {
     backgroundColor: "#FFFFFF",
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingHorizontal: 22,
+    paddingVertical: 12,
     borderRadius: 12,
     elevation: 2,
     shadowColor: "#000",
@@ -59,7 +74,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
   buttonText: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: "600",
     color: COLORS.textPrimary,
   },

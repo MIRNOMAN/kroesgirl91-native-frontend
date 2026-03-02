@@ -13,15 +13,15 @@
       "id": "1",
       "title": "Store Pickup",
       "subtitle": "Pickup from our store",
-      "icon": "📦",
-      "color": "#E3F2FD"
+      "image": "store-icon",
+      "background": "backround_1"
     },
     {
       "id": "2",
       "title": "Business/Bulk",
       "subtitle": "Up to 5-10 dispatch",
-      "icon": "📦",
-      "color": "#FCE4EC"
+      "image": "red-delivery",
+      "background": "backround_2"
     }
   ],
   "currentShipments": [

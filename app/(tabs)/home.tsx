@@ -9,6 +9,21 @@ import ServiceCard from "../../components/ui/home/ServiceCard";
 import ShipmentItem from "../../components/ui/home/ShipmentItem";
 import homeData from "../../constants/homeData.json";
 
+import redDeliveryIcon from "../../assets/Custom_icons/red-delivery.png";
+import storeIcon from "../../assets/Custom_icons/store-icon.png";
+import backround1 from "../../assets/backround/backround_1.png";
+import backround2 from "../../assets/backround/backround_2.png";
+
+const SERVICE_IMAGES = {
+  "store-icon": storeIcon,
+  "red-delivery": redDeliveryIcon,
+} as const;
+
+const BACKGROUND_IMAGES = {
+  backround_1: backround1,
+  backround_2: backround2,
+} as const;
+
 export default function HomeScreen() {
   const router = useRouter();
   const hasCurrentShipments =
@@ -38,8 +53,14 @@ export default function HomeScreen() {
               key={service.id}
               title={service.title}
               subtitle={service.subtitle}
-              icon={service.icon}
-              color={service.color}
+              image={
+                SERVICE_IMAGES[service.image as keyof typeof SERVICE_IMAGES]
+              }
+              background={
+                BACKGROUND_IMAGES[
+                  service.background as keyof typeof BACKGROUND_IMAGES
+                ]
+              }
               onPress={() => console.log(`Pressed ${service.title}`)}
             />
           ))}
