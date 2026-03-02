@@ -82,7 +82,7 @@ export default function LoginScreen() {
 
               <View style={styles.signupRow}>
                 <Text style={styles.signupText}>
-                  Don&apos;t have an account?
+                  Don&apos;t have an account? 
                 </Text>
 
                 <Pressable
@@ -97,7 +97,7 @@ export default function LoginScreen() {
                     },
                   ]}
                 >
-                  <Text style={styles.forgotText}>Sign Up</Text>
+                  <Text style={styles.forgotText}> Sign Up</Text>
                 </Pressable>
               </View>
             </View>
