@@ -55,8 +55,8 @@ const styles = StyleSheet.create({
     gap: 14,
   },
   box: {
-    width: 72,
-    height: 72,
+    width: 52,
+    height: 52,
     borderRadius: 16,
     borderWidth: 1,
     borderColor: COLORS.authBorder,

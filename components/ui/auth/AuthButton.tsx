@@ -1,5 +1,4 @@
-import { Pressable, StyleSheet, Text } from "react-native";
-import { COLORS } from "../../../constants/colors";
+import { Pressable, Text } from "react-native";
 
 type AuthButtonProps = {
   title: string;
@@ -17,49 +16,20 @@ export default function AuthButton({
   return (
     <Pressable
       onPress={onPress}
-      style={({ pressed }) => [
-        styles.button,
-        isPrimary ? styles.primary : styles.secondary,
-        pressed && styles.pressed,
-      ]}
+      className={`
+        h-[56px] w-full rounded-2xl items-center justify-center
+        ${isPrimary ? "btn-primary" : "bg-[#E5E7EB]"}
+        active:opacity-80
+      `}
     >
       <Text
-        style={[
-          styles.text,
-          isPrimary ? styles.primaryText : styles.secondaryText,
-        ]}
+        className={`
+          text-[16px] font-bold  tracking-wide
+          ${isPrimary ? "text-white" : "text-[#002B3B]"}
+        `}
       >
         {title}
       </Text>
     </Pressable>
   );
 }
-
-const styles = StyleSheet.create({
-  button: {
-    width: "100%",
-    height: 50,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  primary: {
-    backgroundColor: COLORS.onboardingPrimary,
-  },
-  secondary: {
-    backgroundColor: COLORS.authMuted,
-  },
-  text: {
-    fontSize: 17,
-    fontWeight: "700",
-  },
-  primaryText: {
-    color: COLORS.white,
-  },
-  secondaryText: {
-    color: COLORS.textPrimary,
-  },
-  pressed: {
-    opacity: 0.9,
-  },
-});

@@ -1,49 +1,65 @@
-import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useEffect } from "react";
 import {
   ActivityIndicator,
+  Image,
   Pressable,
   StyleSheet,
   Text,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { COLORS } from "../../constants/colors";
 import { APP_ROUTES } from "../../constants/routes";
 
 export default function ResetSuccessScreen() {
   const router = useRouter();
 
-  return (
-    <View style={styles.overlay}>
-      <Pressable
-        style={styles.backdrop}
-        onPress={() => router.replace(APP_ROUTES.login)}
-      />
+  // Auto redirect after 2 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      router.replace(APP_ROUTES.login);
+    }, 2000);
 
-      <View style={styles.popup}>
-        <View style={styles.iconWrap}>
-          <Ionicons
-            name="cube"
-            size={42}
-            color={COLORS.authAccent}
-            style={styles.boxIcon}
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.overlay}>
+        {/* Click outside to close */}
+        <Pressable
+          style={StyleSheet.absoluteFill}
+          onPress={() => router.replace(APP_ROUTES.login)}
+        />
+
+        <View style={styles.popup}>
+          <View style={styles.iconWrap}>
+            <Image
+              source={require("../../assets/successfull/successfull.png")}
+              style={styles.image}
+              resizeMode="contain"
+            />
+          </View>
+
+          <Text style={styles.title}>Congratulations!</Text>
+          <Text style={styles.subtitle}>Your location is set manually.</Text>
+
+          <ActivityIndicator
+            size="small"
+            color={COLORS.textSecondary}
+            style={styles.loader}
           />
         </View>
-
-        <Text style={styles.title}>Congratulations!</Text>
-        <Text style={styles.subtitle}>Your location is set manually.</Text>
-
-        <ActivityIndicator
-          size="small"
-          color={COLORS.textSecondary}
-          style={styles.loader}
-        />
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   overlay: {
     flex: 1,
     backgroundColor: "rgba(17, 24, 39, 0.35)",
@@ -51,43 +67,44 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingHorizontal: 24,
   },
-  backdrop: {
-    ...StyleSheet.absoluteFillObject,
-  },
   popup: {
     width: "100%",
-    maxWidth: 300,
+    maxWidth: 320,
     backgroundColor: COLORS.surface,
-    borderRadius: 12,
-    paddingVertical: 24,
-    paddingHorizontal: 16,
+    borderRadius: 16,
+    paddingVertical: 28,
+    paddingHorizontal: 20,
     alignItems: "center",
-    gap: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 10,
   },
   iconWrap: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: COLORS.authInput,
-    borderWidth: 1,
-    borderColor: COLORS.authBorder,
+    width: 202,
+    height: 202,
+
     alignItems: "center",
     justifyContent: "center",
   },
-  boxIcon: {
-    transform: [{ rotate: "-18deg" }],
+  image: {
+    width: 200,
+    height: 200,
   },
   title: {
-    fontSize: 18,
+    fontSize: 22,
     fontWeight: "700",
     color: COLORS.textPrimary,
-    marginTop: 4,
+    marginTop: 12,
   },
   subtitle: {
-    fontSize: 12,
+    fontSize: 16,
     color: COLORS.textSecondary,
+    marginTop: 4,
+    textAlign: "center",
   },
   loader: {
-    marginTop: 12,
+    marginTop: 16,
   },
 });

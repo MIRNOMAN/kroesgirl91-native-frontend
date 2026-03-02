@@ -12,8 +12,8 @@ type AuthTitleBlockProps = {
 export default function AuthTitleBlock({
   title,
   subtitle,
-  titleSize = 36,
-  subtitleSize = 16,
+  titleSize = 31,
+  subtitleSize = 18,
   subtitleMaxWidth = 320,
 }: AuthTitleBlockProps) {
   return (
@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   title: {
-    fontSize: 40,
+    fontSize: 31,
     fontWeight: "800",
     marginTop: 50,
     color: COLORS.textPrimary,

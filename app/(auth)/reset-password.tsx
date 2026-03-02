@@ -16,14 +16,14 @@ export default function ResetPasswordScreen() {
           title="Reset Password"
           subtitle="Add your new password"
           titleSize={31}
-          subtitleSize={11}
+          subtitleSize={16}
           subtitleMaxWidth={180}
         />
 
         <View style={styles.form}>
           <AuthLabeledInput
             label="New Password"
-            placeholder="Enter Email Here"
+            placeholder="Enter New Password Here"
             secureTextEntry
             showPasswordToggle
             compact
@@ -56,9 +56,9 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   content: {
-    gap: 16,
+    gap: 36,
   },
   form: {
-    gap: 10,
+    gap: 20,
   },
 });
