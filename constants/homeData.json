@@ -1,0 +1,79 @@
+{
+  "user": {
+    "name": "Kathryn Murphy",
+    "greeting": "Good Morning",
+    "avatar": "https://i.pravatar.cc/150?img=1"
+  },
+  "newDelivery": {
+    "title": "New Delivery",
+    "subtitle": "Create new shipment"
+  },
+  "services": [
+    {
+      "id": "1",
+      "title": "Store Pickup",
+      "subtitle": "Pickup from our store",
+      "icon": "📦",
+      "color": "#E3F2FD"
+    },
+    {
+      "id": "2",
+      "title": "Business/Bulk",
+      "subtitle": "Up to 5-10 dispatch",
+      "icon": "📦",
+      "color": "#FCE4EC"
+    }
+  ],
+  "currentShipments": [
+    {
+      "id": "1",
+      "recipientName": "Frank Johnson",
+      "recipientAvatar": "https://i.pravatar.cc/150?img=5",
+      "trackingId": "ID: H3H2676789",
+      "status": "In Progress",
+      "statuses": [
+        {
+          "image": "accepted",
+          "label": "Accepted",
+          "active": true
+        },
+        {
+          "image": "picked",
+          "label": "Picked",
+          "active": true
+        },
+        {
+          "image": "transit",
+          "label": "In Transit",
+          "active": true
+        },
+        {
+          "image": "outfordelivery",
+          "label": "Out for Delivery",
+          "active": false
+        },
+        {
+          "image": "delivered",
+          "label": "Delivered",
+          "active": false
+        }
+      ],
+      "startDate": "10 Oct 2025",
+      "startLocation": "Diriyan, Riyadh",
+      "endDate": "12 Oct 2025",
+      "endLocation": "Diriyan, Riyadh"
+    }
+  ],
+  "shipments": [
+    {
+      "id": "SH001",
+      "date": "10 Oct 2025",
+      "destination": "Diriyin, Riyadh"
+    },
+    {
+      "id": "SH002",
+      "date": "10 Oct 2025",
+      "destination": "Diriyin, Riyadh"
+    }
+  ]
+}
