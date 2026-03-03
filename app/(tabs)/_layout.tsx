@@ -61,7 +61,7 @@ export default function TabsLayout() {
           />
         ),
         sceneStyle: {
-          paddingBottom: Platform.OS === "ios" ? 110 : 90,
+          paddingBottom: Platform.OS === "ios" ? 110 : 0,
         },
       })}
     >
@@ -69,6 +69,13 @@ export default function TabsLayout() {
       <Tabs.Screen name="tracking" options={{ title: "Track" }} />
       <Tabs.Screen name="shipment" options={{ title: "Shipment" }} />
       <Tabs.Screen name="profile" options={{ title: "Profile" }} />
+      <Tabs.Screen
+        name="create-delivery"
+        options={{
+          href: null,
+          tabBarStyle: { display: "none" },
+        }}
+      />
     </Tabs>
   );
 }

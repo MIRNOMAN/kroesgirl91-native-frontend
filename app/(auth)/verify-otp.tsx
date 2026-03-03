@@ -1,4 +1,4 @@
-import { Ionicons } from "@expo/vector-icons";
+import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
 import AuthButton from "../../components/ui/auth/AuthButton";
@@ -12,21 +12,17 @@ export default function VerifyOtpScreen() {
     <View style={styles.container}>
       <View style={styles.content}>
         <View style={styles.iconWrap}>
-          <Ionicons
-            name="cube"
-            size={58}
-            color={COLORS.authAccent}
-            style={styles.boxIcon}
+          <Image
+            source={require("../../assets/register/register.png")}
+            style={styles.badgeImage}
+            contentFit="contain"
           />
-          <View style={styles.badge}>
-            <Ionicons name="checkmark" size={13} color={COLORS.white} />
-          </View>
         </View>
 
         <Text style={styles.title}>Successfully Registered</Text>
         <Text style={styles.subtitle}>
-          Your account has been registered successfully, now let's enjoy Car
-          features!
+          Your account has been registered successfully, now let&apos;s enjoy
+          Car features!
         </Text>
       </View>
 
@@ -54,32 +50,32 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   iconWrap: {
-    width: 110,
-    height: 110,
-    borderRadius: 55,
-    backgroundColor: COLORS.authInput,
-    borderWidth: 1,
-    borderColor: COLORS.authBorder,
+    width: 160,
+    height: 160,
     alignItems: "center",
     justifyContent: "center",
     position: "relative",
+    marginBottom: 20,
   },
-  boxIcon: {
-    transform: [{ rotate: "-18deg" }],
+  badgeImage: {
+    width: 220,
+    height: 220,
   },
   badge: {
     position: "absolute",
-    right: 20,
-    top: 20,
-    width: 22,
-    height: 22,
-    borderRadius: 11,
+    right: 10,
+    top: 10,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     backgroundColor: COLORS.onboardingPrimary,
     alignItems: "center",
     justifyContent: "center",
+    borderWidth: 2,
+    borderColor: "#FFFFFF",
   },
   title: {
-    fontSize: 36,
+    fontSize: 28,
     fontWeight: "800",
     color: COLORS.textPrimary,
     textAlign: "center",

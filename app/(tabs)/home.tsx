@@ -50,7 +50,7 @@ export default function HomeScreen() {
         <DeliveryCard
           title={homeData.newDelivery.title}
           subtitle={homeData.newDelivery.subtitle}
-          onPress={() => router.push("/(tabs)/shipment")}
+          onPress={() => router.push("/(tabs)/create-delivery")}
         />
 
         {/* Service Cards */}

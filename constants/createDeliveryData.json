@@ -1,0 +1,152 @@
+{
+  "steps": [
+    { "id": 1, "label": "Pickup" },
+    { "id": 2, "label": "Delivery" },
+    { "id": 3, "label": "Ride" },
+    { "id": 4, "label": "Package" }
+  ],
+  "pickupDetails": {
+    "title": "Pickup Details",
+    "subtitle": "Where should we pick up the package?",
+    "fields": {
+      "fullName": {
+        "label": "Full Name",
+        "placeholder": "Who should we contact?"
+      },
+      "phoneNumber": {
+        "label": "Phone Number",
+        "placeholder": "+597 xx xxxx"
+      },
+      "fullAddress": {
+        "label": "Full Address",
+        "placeholder": "Who should we contact?"
+      }
+    }
+  },
+  "deliveryDetails": {
+    "title": "Delivery Details",
+    "subtitle": "Where should we deliver the package?",
+    "fields": {
+      "name": {
+        "label": "Name",
+        "placeholder": "Enter receiver name"
+      },
+      "phoneNumber": {
+        "label": "Phone Number",
+        "placeholder": "+597 xx xxxx"
+      },
+      "fullAddress": {
+        "label": "Full Address",
+        "placeholder": "Who should we contact?"
+      }
+    }
+  },
+  "rideOptions": [
+    {
+      "id": "same-day",
+      "title": "Same-Day",
+      "subtitle": "Ride Time: 28 min",
+      "description": "Ultrafast, no-quality limits",
+      "price": 200,
+      "currency": "$",
+      "priceLabel": "Send",
+      "icon": "bicycle"
+    },
+    {
+      "id": "express",
+      "title": "Express Delivery",
+      "subtitle": "Ultrafast, no-quality limits",
+      "description": "",
+      "price": 200,
+      "currency": "$",
+      "priceLabel": "Send",
+      "icon": "car"
+    },
+    {
+      "id": "next-day",
+      "title": "Next Day",
+      "subtitle": "Ride Time: 24 hrs",
+      "description": "Ultrafast, no-quality limits",
+      "price": 200,
+      "currency": "$",
+      "priceLabel": "Send",
+      "icon": "time"
+    }
+  ],
+  "packageDetails": {
+    "title": "Package Details",
+    "subtitle": "Tell us about your package",
+    "fields": {
+      "description": {
+        "label": "Package Description",
+        "placeholder": "What are you sending?"
+      },
+      "instructions": {
+        "label": "Special Instructions (Optional)",
+        "placeholder": "Any special handling instructions?"
+      },
+      "weight": {
+        "label": "Weight (kg)",
+        "placeholder": "Set parcel Width"
+      }
+    },
+    "paymentMethods": [
+      {
+        "id": "cash",
+        "title": "Cash on Delivery",
+        "icon": "cash"
+      },
+      {
+        "id": "bank",
+        "title": "Bank transfer",
+        "icon": "card"
+      }
+    ]
+  },
+  "bankTransfer": {
+    "title": "Bank transfer",
+    "uploadTitle": "Upload Payment Screenshot",
+    "uploadSubtitle": "Upload a screenshot of your payment confirmation",
+    "uploadHint": "Click to upload\nPNG, JPG up to 10MB",
+    "bankDetails": {
+      "bankName": "Republic Bank",
+      "accountName": "KroesGirl Delivery",
+      "accountNumber": "1234567890",
+      "routingNumber": "098765432"
+    }
+  },
+  "cashOnDelivery": {
+    "title": "Cash on Delivery",
+    "subtitle": "Receiver will pay on delivery",
+    "amountLabel": "Amount to be collected"
+  },
+  "shipmentSummary": {
+    "pickupFrom": {
+      "label": "PICKUP FROM",
+      "address": "123 Main St, Paramaribo",
+      "details": "+597 xx-xxxx"
+    },
+    "deliverTo": {
+      "label": "DELIVER TO",
+      "name": "Jane Doe",
+      "address": "456 Delivery St, Nickerie",
+      "details": "+597 xx-xxxx"
+    },
+    "parcelDetails": {
+      "label": "PARCEL DETAILS",
+      "description": "Electronics & Documents",
+      "weight": "Weight: 2 kg"
+    }
+  },
+  "pricingDetails": {
+    "deliveryFee": 45.0,
+    "serviceFee": 5.0,
+    "currency": "$"
+  },
+  "bookingConfirmed": {
+    "title": "Booking Confirmed!",
+    "subtitle": "Your shipment has been successfully created",
+    "trackButton": "Track Shipment",
+    "homeButton": "Back to Home"
+  }
+}
