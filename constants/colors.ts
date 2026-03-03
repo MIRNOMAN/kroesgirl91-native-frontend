@@ -16,4 +16,5 @@ export const COLORS = {
   authMuted: "#E5E7EB",
   authPlaceholder: "#A3A7AF",
   authAccent: "#F59E0B",
+  borderRounded: "#F2B70033",
 } as const;
