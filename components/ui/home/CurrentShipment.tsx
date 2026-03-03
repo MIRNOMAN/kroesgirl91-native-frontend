@@ -1,7 +1,17 @@
 import { Feather, Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  Dimensions,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { COLORS } from "../../../constants/colors";
+
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const CIRCLE_SIZE = Math.min(Math.max(SCREEN_WIDTH * 0.055, 18), 24);
 
 interface ShipmentStatus {
   image: string;
@@ -32,7 +42,6 @@ export default function CurrentShipment({
   endDate,
   endLocation,
 }: CurrentShipmentProps) {
-  // TODO: Uncomment and use this function when you add static images
   const getStatusImage = (imageName: string) => {
     switch (imageName) {
       case "accepted":
@@ -52,7 +61,7 @@ export default function CurrentShipment({
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Current Shipment</Text>
+     
 
       <View style={styles.recipientInfo}>
         {recipientAvatar ? (
@@ -60,68 +69,93 @@ export default function CurrentShipment({
         ) : (
           <View style={[styles.avatar, styles.avatarPlaceholder]} />
         )}
+
         <View style={styles.recipientDetails}>
           <Text style={styles.recipientName}>{recipientName}</Text>
           {trackingId && <Text style={styles.trackingId}>{trackingId}</Text>}
         </View>
+
         <TouchableOpacity style={styles.arrowButton}>
           <Feather name="arrow-up-right" size={24} color="#FF9800" />
         </TouchableOpacity>
       </View>
 
-      <View style={styles.trackingContainer}>
+      {/* Status Images Row */}
+      <View style={styles.imagesContainer}>
         {statuses.map((statusItem, index) => (
-          <View key={index} style={styles.trackingItem}>
-            {/* Icon/Image Container */}
-            <View style={styles.iconRow}>
-              <View
+          <View key={index} >
+            {getStatusImage(statusItem.image) ? (
+              <Image
+                source={getStatusImage(statusItem.image)}
                 style={[
-                  styles.statusIconContainer,
-                  statusItem.active && styles.statusIconActive,
+                  styles.statusImage,
+                  !statusItem.active && styles.statusImageInactive,
                 ]}
-              >
-                {getStatusImage(statusItem.image) ? (
-                  <Image
-                    source={getStatusImage(statusItem.image)}
-                    style={styles.statusImage}
-                    resizeMode="contain"
-                  />
-                ) : (
-                  <View style={styles.imagePlaceholder}>
-                    <Text style={styles.imagePlaceholderText}>
-                      {statusItem.image.substring(0, 2).toUpperCase()}
-                    </Text>
-                  </View>
-                )}
-              </View>
-
-              {/* Dotted line connector */}
-              {index < statuses.length - 1 && (
-                <View style={styles.dottedLine}>
-                  {[...Array(8)].map((_, i) => (
-                    <View
-                      key={i}
-                      style={[
-                        styles.dot,
-                        statusItem.active && styles.dotActive,
-                      ]}
-                    />
-                  ))}
-                </View>
-              )}
-            </View>
-
-            {/* Checkmark below icon for active items */}
-            {statusItem.active && (
-              <View style={styles.checkmarkContainer}>
-                <Ionicons name="checkmark" size={15} color="#FF9800" />
+                resizeMode="contain"
+              />
+            ) : (
+              <View style={styles.imagePlaceholder}>
+                <Text style={styles.imagePlaceholderText}>
+                  {statusItem.image.substring(0, 2).toUpperCase()}
+                </Text>
               </View>
             )}
           </View>
         ))}
       </View>
 
-      {/* Status Labels */}
+      {/* Status Circles with Checkmarks */}
+      <View style={styles.trackingContainer}>
+        {statuses.map((statusItem, index) => (
+          <React.Fragment key={index}>
+            {/* Outer Circle Wrapper */}
+            <View
+              style={[
+                styles.outerCircle,
+                statusItem.active
+                  ? styles.outerCircleActive
+                  : styles.outerCircleInactive,
+              ]}
+            >
+              {/* Inner Circle */}
+              <View
+                style={[
+                  styles.statusCircle,
+                  statusItem.active
+                    ? styles.statusCircleActive
+                    : styles.statusCircleInactive,
+                ]}
+              >
+                {statusItem.active && (
+                  <Ionicons
+                    name="checkmark"
+                    size={CIRCLE_SIZE * 0.5}
+                    color="#1A1A1A"
+                  />
+                )}
+              </View>
+            </View>
+
+            {/* Connector dots - only between circles, not inside */}
+            {index < statuses.length - 1 && (
+              <View style={styles.connectorLine}>
+                {[...Array(4)].map((_, i) => (
+                  <View
+                    key={i}
+                    style={[
+                      styles.dottedSquare,
+                      statuses[index + 1].active
+                        ? styles.dottedSquareActive
+                        : styles.dottedSquareInactive,
+                    ]}
+                  />
+                ))}
+              </View>
+            )}
+          </React.Fragment>
+        ))}
+      </View>
+
       <View style={styles.labelsContainer}>
         {statuses.map((statusItem, index) => (
           <Text
@@ -136,17 +170,16 @@ export default function CurrentShipment({
         ))}
       </View>
 
-      {/* Date and Location Info */}
       {(startDate || endDate) && (
         <View style={styles.dateLocationContainer}>
           {startDate && (
-            <View style={styles.dateLocationItem}>
+            <View >
               <Text style={styles.dateText}>{startDate}</Text>
               <Text style={styles.locationText}>{startLocation}</Text>
             </View>
           )}
           {endDate && (
-            <View style={styles.dateLocationItem}>
+            <View >
               <Text style={styles.dateText}>{endDate}</Text>
               <Text style={styles.locationText}>{endLocation}</Text>
             </View>
@@ -161,7 +194,7 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: "#FFFFFF",
     borderRadius: 16,
-    padding: 16,
+    padding: 12,
     marginHorizontal: 20,
     marginBottom: 16,
     elevation: 2,
@@ -184,7 +217,7 @@ const styles = StyleSheet.create({
   avatar: {
     width: 45,
     height: 45,
-    borderRadius: 5,
+    borderRadius: 12,
   },
   avatarPlaceholder: {
     backgroundColor: COLORS.border,
@@ -213,73 +246,69 @@ const styles = StyleSheet.create({
   },
   trackingContainer: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 16,
+    paddingHorizontal: 0,
+  
+    paddingTop: 10,
   },
-  trackingItem: {
+  statusCircle: {
+    width: CIRCLE_SIZE,
+    height: CIRCLE_SIZE,
+    borderRadius: CIRCLE_SIZE / 2,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 2,
+  },
+  statusCircleActive: {
+    backgroundColor: "#F5A623",
+    borderColor: "#F5A623",
+  },
+  outerCircle: {
+    width: CIRCLE_SIZE + 8,
+    height: CIRCLE_SIZE + 8,
+    borderRadius: (CIRCLE_SIZE + 12) / 2,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 2,
+  },
+
+  outerCircleActive: {
+    borderColor: "#F5A623",
+  },
+
+  outerCircleInactive: {
+    borderColor: "#FFE0B2",
+  },
+  statusCircleInactive: {
+    backgroundColor: "transparent",
+    borderColor: "#F5A623",
+  },
+  connectorLine: {
+    flexDirection: "row",
     alignItems: "center",
     flex: 1,
-  },
-  iconRow: {
-    flexDirection: "row",
-    alignItems: "center",
     justifyContent: "center",
-    width: "100%",
+    marginHorizontal: 5,
+    gap: 3,
   },
-  statusIconContainer: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  statusIconActive: {},
-  imagePlaceholder: {
-    width: 40,
-    height: 40,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  statusImage: {
-    width: 30,
-    height: 30,
-  },
-  imagePlaceholderText: {
-    fontSize: 20,
-    fontWeight: "600",
-    color: "#FF9800",
-  },
-  dottedLine: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 2,
-    position: "absolute",
-    left: "50%",
-    width: 40,
-  },
-  dot: {
-    width: 3,
-    height: 3,
+  dottedSquare: {
+    width: 5,
+    height: 5,
     borderRadius: 1.5,
-    backgroundColor: "#DDDDDD",
   },
-  dotActive: {
-    backgroundColor: "#FF9800",
+  dottedSquareActive: {
+    backgroundColor: "#F5A623",
   },
-  checkmarkContainer: {
-    marginTop: 4,
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: "#FFF3E0",
-    justifyContent: "center",
-    alignItems: "center",
+  dottedSquareInactive: {
+    backgroundColor: "#E0E0E0",
   },
+
   labelsContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 8,
+    marginTop: 3,
     marginBottom: 20,
   },
   statusLabel: {
@@ -292,24 +321,55 @@ const styles = StyleSheet.create({
     color: COLORS.textPrimary,
     fontWeight: "600",
   },
+
   dateLocationContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    borderTopWidth: 1,
-    borderTopColor: "#F0F0F0",
+   
     paddingTop: 16,
   },
-  dateLocationItem: {
-    flex: 1,
-  },
+
   dateText: {
-    fontSize: 13,
+    fontSize: 15,
     fontWeight: "600",
-    color: COLORS.textPrimary,
+    color: "#999999",
     marginBottom: 4,
   },
   locationText: {
-    fontSize: 12,
+    fontSize: 16,
+    color:  COLORS.textPrimary,
+    fontWeight: "700",
+  },
+  imagesContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+     borderTopWidth: 1,
+    borderTopColor: "#F0F0F0",
+    paddingTop: 18,
+    
+   
+  },
+
+  statusImage: {
+    width: 30,
+    height: 30,
+  },
+  statusImageInactive: {
+    opacity: 0.4,
+  },
+  imagePlaceholder: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "#F0F0F0",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  imagePlaceholderText: {
+    fontSize: 10,
+    fontWeight: "600",
     color: "#999999",
   },
 });

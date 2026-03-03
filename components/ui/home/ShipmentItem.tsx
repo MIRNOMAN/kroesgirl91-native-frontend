@@ -1,32 +1,36 @@
-import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { COLORS } from "../../../constants/colors";
 
 interface ShipmentItemProps {
   id: string;
-  date: string;
-  destination: string;
+  name: string;
+  avatar?: string;
+  status?: string;
   onPress?: () => void;
 }
 
 export default function ShipmentItem({
   id,
-  date,
-  destination,
+  name,
+  avatar,
+  status = "On process",
   onPress,
 }: ShipmentItemProps) {
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
-      <View style={styles.iconContainer}>
-        <Ionicons name="cube" size={24} color={COLORS.textPrimary} />
-      </View>
+      {avatar ? (
+        <Image source={{ uri: avatar }} style={styles.avatar} />
+      ) : (
+        <View style={[styles.avatar, styles.avatarPlaceholder]} />
+      )}
       <View style={styles.content}>
-        <Text style={styles.id}>Frank Johnson</Text>
-        <Text style={styles.destination}>{destination}</Text>
-        <Text style={styles.date}>{date}</Text>
+        <Text style={styles.name}>{name}</Text>
+        <Text style={styles.trackingId}>ID: {id}</Text>
       </View>
-      <Text style={styles.status}>In progress</Text>
+      <View style={styles.statusBadge}>
+        <Text style={styles.statusText}>{status}</Text>
+      </View>
     </TouchableOpacity>
   );
 }
@@ -37,7 +41,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#FFFFFF",
     borderRadius: 12,
-    padding: 16,
+    padding: 12,
     marginHorizontal: 20,
     marginBottom: 12,
     elevation: 1,
@@ -46,36 +50,37 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 2,
   },
-  iconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: "#F5F5F5",
-    justifyContent: "center",
-    alignItems: "center",
+  avatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 12,
     marginRight: 12,
+  },
+  avatarPlaceholder: {
+    backgroundColor: "#E0E0E0",
   },
   content: {
     flex: 1,
   },
-  id: {
-    fontSize: 15,
+  name: {
+    fontSize: 16,
     fontWeight: "600",
     color: COLORS.textPrimary,
     marginBottom: 4,
   },
-  destination: {
+  trackingId: {
     fontSize: 13,
-    color: COLORS.textSecondary,
-    marginBottom: 2,
+    color: "#999999",
   },
-  date: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
+  statusBadge: {
+    backgroundColor: "#FFF3E0",
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 8,
   },
-  status: {
-    fontSize: 12,
+  statusText: {
+    fontSize: 13,
     color: "#FF9800",
-    fontWeight: "600",
+    fontWeight: "500",
   },
 });

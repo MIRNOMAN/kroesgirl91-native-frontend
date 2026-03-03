@@ -66,14 +66,16 @@
   ],
   "shipments": [
     {
-      "id": "SH001",
-      "date": "10 Oct 2025",
-      "destination": "Diriyin, Riyadh"
+      "id": "H314315796",
+      "name": "Frank Johnson",
+      "avatar": "https://i.pravatar.cc/150?img=5",
+      "status": "On process"
     },
     {
-      "id": "SH002",
-      "date": "10 Oct 2025",
-      "destination": "Diriyin, Riyadh"
+      "id": "H314315797",
+      "name": "Frank Johnson",
+      "avatar": "https://i.pravatar.cc/150?img=5",
+      "status": "On process"
     }
   ]
 }

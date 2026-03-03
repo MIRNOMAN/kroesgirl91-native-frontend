@@ -1,6 +1,12 @@
 import { useRouter } from "expo-router";
 import React from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
+import {
+  ImageBackground,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import CurrentShipment from "../../components/ui/home/CurrentShipment";
 import DeliveryCard from "../../components/ui/home/DeliveryCard";
@@ -9,10 +15,11 @@ import ServiceCard from "../../components/ui/home/ServiceCard";
 import ShipmentItem from "../../components/ui/home/ShipmentItem";
 import homeData from "../../constants/homeData.json";
 
-import redDeliveryIcon from "../../assets/Custom_icons/red-delivery.png";
-import storeIcon from "../../assets/Custom_icons/store-icon.png";
 import backround1 from "../../assets/backround/backround_1.png";
 import backround2 from "../../assets/backround/backround_2.png";
+import backround from "../../assets/backround/Photoroom.png";
+import redDeliveryIcon from "../../assets/Custom_icons/red-delivery.png";
+import storeIcon from "../../assets/Custom_icons/store-icon.png";
 
 const SERVICE_IMAGES = {
   "store-icon": storeIcon,
@@ -66,31 +73,69 @@ export default function HomeScreen() {
           ))}
         </View>
 
-        {/* Current Shipment - Conditional Rendering */}
-        {hasCurrentShipments && (
-          <CurrentShipment
-            recipientName={homeData.currentShipments[0].recipientName}
-            recipientAvatar={homeData.currentShipments[0].recipientAvatar}
-            trackingId={homeData.currentShipments[0].trackingId}
-            status={homeData.currentShipments[0].status}
-            statuses={homeData.currentShipments[0].statuses}
-            startDate={homeData.currentShipments[0].startDate}
-            startLocation={homeData.currentShipments[0].startLocation}
-            endDate={homeData.currentShipments[0].endDate}
-            endLocation={homeData.currentShipments[0].endLocation}
-          />
-        )}
+        <View>
+          <Text
+            style={{
+              fontSize: 22,
+              fontWeight: "700",
+              marginLeft: 20,
+              marginTop: 20,
+              marginBottom: 10,
+              color: "#333",
+            }}
+          >
+            Current Shipment
+          </Text>
+        </View>
 
-        {/* Shipment Items */}
-        {homeData.shipments.map((shipment) => (
-          <ShipmentItem
-            key={shipment.id}
-            id={shipment.id}
-            date={shipment.date}
-            destination={shipment.destination}
-            onPress={() => router.push("/(tabs)/tracking")}
-          />
-        ))}
+        {/* Shipment Section With Background */}
+        <ImageBackground
+          source={backround}
+          style={styles.shipmentSection}
+          imageStyle={styles.shipmentBackgroundImage}
+        >
+          {/* Current Shipment - Conditional Rendering */}
+          {hasCurrentShipments && (
+            <CurrentShipment
+              recipientName={homeData.currentShipments[0].recipientName}
+              recipientAvatar={homeData.currentShipments[0].recipientAvatar}
+              trackingId={homeData.currentShipments[0].trackingId}
+              status={homeData.currentShipments[0].status}
+              statuses={homeData.currentShipments[0].statuses}
+              startDate={homeData.currentShipments[0].startDate}
+              startLocation={homeData.currentShipments[0].startLocation}
+              endDate={homeData.currentShipments[0].endDate}
+              endLocation={homeData.currentShipments[0].endLocation}
+            />
+          )}
+
+          <View>
+            <Text
+              style={{
+                fontSize: 22,
+                fontWeight: "700",
+                marginLeft: 20,
+                marginTop: 10,
+                marginBottom: 10,
+                color: "#333",
+              }}
+            >
+              Current Shipment
+            </Text>
+          </View>
+
+          {/* Shipment Items */}
+          {homeData.shipments.map((shipment) => (
+            <ShipmentItem
+              key={shipment.id}
+              id={shipment.id}
+              name={shipment.name}
+              avatar={shipment.avatar}
+              status={shipment.status}
+              onPress={() => router.push("/(tabs)/tracking")}
+            />
+          ))}
+        </ImageBackground>
 
         <View style={styles.bottomSpacing} />
       </ScrollView>
@@ -115,5 +160,13 @@ const styles = StyleSheet.create({
   },
   bottomSpacing: {
     height: 20,
+  },
+  shipmentSection: {
+    overflow: "hidden",
+  },
+
+  shipmentBackgroundImage: {
+    borderRadius: 20,
+    resizeMode: "cover",
   },
 });
