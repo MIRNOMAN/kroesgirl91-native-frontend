@@ -151,6 +151,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F8F9FA",
+    marginBottom: 0,
   },
   serviceCardsContainer: {
     flexDirection: "row",
@@ -159,10 +160,11 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   bottomSpacing: {
-    height: 20,
+    height: 50,
   },
   shipmentSection: {
     overflow: "hidden",
+    paddingBottom: 40,
   },
 
   shipmentBackgroundImage: {

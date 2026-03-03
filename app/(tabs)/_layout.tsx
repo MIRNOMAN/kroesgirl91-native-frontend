@@ -31,10 +31,10 @@ export default function TabsLayout() {
           height: Platform.OS === "ios" ? 80 : 65,
           paddingBottom: Platform.OS === "ios" ? 25 : 12,
           paddingTop: 8,
-          
+
           paddingHorizontal: 10,
           marginHorizontal: 16,
-          marginBottom: Platform.OS === "ios" ? 0 : 12,
+          marginBottom: Platform.OS === "ios" ? 0 : 10,
           borderRadius: 30,
           position: "absolute",
           bottom: Platform.OS === "ios" ? 20 : 10,
@@ -60,6 +60,9 @@ export default function TabsLayout() {
             color={color}
           />
         ),
+        sceneStyle: {
+          paddingBottom: Platform.OS === "ios" ? 110 : 90,
+        },
       })}
     >
       <Tabs.Screen name="home" options={{ title: "Home" }} />

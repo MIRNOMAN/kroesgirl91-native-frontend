@@ -1,0 +1,135 @@
+{
+  "mapConfig": {
+    "apiKey": "AIzaSyAWTfPRGzLQr32QPUaz8YrLcrK_rsZDKR0",
+    "initialRegion": {
+      "latitude": 23.8103,
+      "longitude": 90.4125,
+      "latitudeDelta": 0.02,
+      "longitudeDelta": 0.02
+    }
+  },
+  "markers": [
+    {
+      "id": "m1",
+      "coordinate": { "latitude": 23.8103, "longitude": 90.4125 },
+      "title": "Current Location",
+      "type": "current"
+    },
+    {
+      "id": "m2",
+      "coordinate": { "latitude": 23.815, "longitude": 90.42 },
+      "title": "Pickup Point",
+      "type": "pickup"
+    },
+    {
+      "id": "m3",
+      "coordinate": { "latitude": 23.82, "longitude": 90.43 },
+      "title": "Delivery Point",
+      "type": "delivery"
+    }
+  ],
+  "riders": [
+    {
+      "id": "r1",
+      "coordinate": { "latitude": 23.809, "longitude": 90.414 },
+      "name": "Rider 1",
+      "type": "rider"
+    },
+    {
+      "id": "r2",
+      "coordinate": { "latitude": 23.812, "longitude": 90.41 },
+      "name": "Rider 2",
+      "type": "rider"
+    },
+    {
+      "id": "r3",
+      "coordinate": { "latitude": 23.814, "longitude": 90.418 },
+      "name": "Rider 3",
+      "type": "rider"
+    },
+    {
+      "id": "r4",
+      "coordinate": { "latitude": 23.807, "longitude": 90.42 },
+      "name": "Rider 4",
+      "type": "rider"
+    },
+    {
+      "id": "r5",
+      "coordinate": { "latitude": 23.816, "longitude": 90.405 },
+      "name": "Rider 5",
+      "type": "rider"
+    }
+  ],
+  "deliveryStatus": {
+    "driver": {
+      "id": "D001",
+      "name": "Frank Johnson",
+      "driverId": "ID: N0140070116",
+      "avatar": "https://randomuser.me/api/portraits/men/32.jpg",
+      "phone": "+1234567890",
+      "rating": 4.8
+    },
+    "vehicle": {
+      "number": "DHM-GA-31-8359",
+      "type": "White Toyota Corolla"
+    },
+    "progress": [
+      { "id": 1, "label": "Accepted", "icon": "accepted", "completed": true },
+      { "id": 2, "label": "Picked", "icon": "picked", "completed": true },
+      { "id": 3, "label": "In Transit", "icon": "transit", "completed": true },
+      {
+        "id": 4,
+        "label": "Out for Delivery",
+        "icon": "outForDelivery",
+        "completed": false
+      },
+      { "id": 5, "label": "Delivered", "icon": "delivered", "completed": false }
+    ],
+    "orderDetails": {
+      "orderDate": "Oct 2025",
+      "deliveryDate": "Oct 2025",
+      "pickupLocation": "Diriyah, Riyadh",
+      "deliveryLocation": "Diriyah, Riyadh",
+      "customer": "Diriyah, Riyadh",
+      "orderCost": "$120.00",
+      "quantity": "1 Box",
+      "weight": "20 KG"
+    },
+    "paymentMethod": "Cash",
+    "routeCoordinates": [
+      { "latitude": 23.8103, "longitude": 90.4125 },
+      { "latitude": 23.812, "longitude": 90.415 },
+      { "latitude": 23.815, "longitude": 90.42 },
+      { "latitude": 23.818, "longitude": 90.425 },
+      { "latitude": 23.82, "longitude": 90.43 }
+    ]
+  },
+  "driverArrived": {
+    "title": "Driver Arrived",
+    "subtitle": "Driver arrived on your location",
+    "dropoffLocation": {
+      "label": "Dropoff Location",
+      "address": "Road 3, Block C, Dhanpara",
+      "distance": "200 Km"
+    },
+    "driver": {
+      "name": "Brooklyn Simmons",
+      "avatar": "https://randomuser.me/api/portraits/women/44.jpg"
+    },
+    "vehicle": {
+      "number": "DHM-GA-31-8359",
+      "type": "White Toyota Corolla"
+    }
+  },
+  "tripSuccess": {
+    "title": "Successfully End Trip",
+    "subtitle": "Estimated arrival time : 15 min",
+    "buttonText": "Go to home"
+  },
+  "searchPlaceholder": "I am looking for",
+  "buttonTexts": {
+    "choosePremier": "Choose Premier",
+    "messageDriver": "Message Driver",
+    "close": "Close"
+  }
+}
