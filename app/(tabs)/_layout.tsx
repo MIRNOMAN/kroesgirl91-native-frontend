@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
+import { Platform } from "react-native";
 
 const getTabIconName = (
   routeName: string,
@@ -25,22 +26,31 @@ export default function TabsLayout() {
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: "#1A3A52",
+          backgroundColor: "#1A3A4A",
           borderTopWidth: 0,
-          height: 70,
-          paddingBottom: 10,
-          paddingTop: 10,
-          elevation: 8,
+          height: Platform.OS === "ios" ? 80 : 65,
+          paddingBottom: Platform.OS === "ios" ? 25 : 12,
+          paddingTop: 8,
+          
+          paddingHorizontal: 10,
+          marginHorizontal: 16,
+          marginBottom: Platform.OS === "ios" ? 0 : 12,
+          borderRadius: 30,
+          position: "absolute",
+          bottom: Platform.OS === "ios" ? 20 : 10,
+          left: 0,
+          right: 0,
+          elevation: 10,
           shadowColor: "#000",
           shadowOffset: { width: 0, height: -4 },
-          shadowOpacity: 0.1,
-          shadowRadius: 8,
+          shadowOpacity: 0.15,
+          shadowRadius: 10,
         },
         tabBarActiveTintColor: "#FFFFFF",
-        tabBarInactiveTintColor: "#8FACBD",
+        tabBarInactiveTintColor: "#7A9BAD",
         tabBarLabelStyle: {
           fontSize: 12,
-          fontWeight: "600",
+          fontWeight: "500",
           marginTop: 4,
         },
         tabBarIcon: ({ color, focused }) => (
@@ -53,7 +63,7 @@ export default function TabsLayout() {
       })}
     >
       <Tabs.Screen name="home" options={{ title: "Home" }} />
-      <Tabs.Screen name="tracking" options={{ title: "Tracking" }} />
+      <Tabs.Screen name="tracking" options={{ title: "Track" }} />
       <Tabs.Screen name="shipment" options={{ title: "Shipment" }} />
       <Tabs.Screen name="profile" options={{ title: "Profile" }} />
     </Tabs>
