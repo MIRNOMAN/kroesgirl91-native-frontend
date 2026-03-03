@@ -77,5 +77,71 @@
       "avatar": "https://i.pravatar.cc/150?img=5",
       "status": "On process"
     }
+  ],
+  "filterTabs": ["All", "Delivered", "Pending", "Cancelled"],
+  "orders": [
+    {
+      "id": "SD123456",
+      "date": "Feb 20, 2026",
+      "status": "Delivered",
+      "price": 45.0,
+      "shippingType": "Standard",
+      "origin": "Paramaribo",
+      "destination": "Nickerie"
+    },
+    {
+      "id": "SD123457",
+      "date": "Feb 18, 2026",
+      "status": "Delivered",
+      "price": 32.5,
+      "shippingType": "Express",
+      "origin": "Paramaribo",
+      "destination": "Albina"
+    },
+    {
+      "id": "SD123458",
+      "date": "Feb 20, 2026",
+      "status": "Pending",
+      "price": 45.0,
+      "shippingType": "Standard",
+      "origin": "Paramaribo",
+      "destination": "Nickerie"
+    },
+    {
+      "id": "SD123459",
+      "date": "Feb 22, 2026",
+      "status": "Pending",
+      "price": 55.0,
+      "shippingType": "Express",
+      "origin": "Nickerie",
+      "destination": "Paramaribo"
+    },
+    {
+      "id": "SD123460",
+      "date": "Feb 20, 2026",
+      "status": "Cancelled",
+      "price": 45.0,
+      "shippingType": "Standard",
+      "origin": "Paramaribo",
+      "destination": "Nickerie"
+    },
+    {
+      "id": "SD123461",
+      "date": "Feb 15, 2026",
+      "status": "Delivered",
+      "price": 28.0,
+      "shippingType": "Standard",
+      "origin": "Albina",
+      "destination": "Paramaribo"
+    },
+    {
+      "id": "SD123462",
+      "date": "Feb 25, 2026",
+      "status": "Pending",
+      "price": 65.0,
+      "shippingType": "Express",
+      "origin": "Paramaribo",
+      "destination": "Moengo"
+    }
   ]
 }
