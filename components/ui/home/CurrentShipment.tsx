@@ -61,8 +61,6 @@ export default function CurrentShipment({
 
   return (
     <View style={styles.container}>
-     
-
       <View style={styles.recipientInfo}>
         {recipientAvatar ? (
           <Image source={{ uri: recipientAvatar }} style={styles.avatar} />
@@ -83,7 +81,7 @@ export default function CurrentShipment({
       {/* Status Images Row */}
       <View style={styles.imagesContainer}>
         {statuses.map((statusItem, index) => (
-          <View key={index} >
+          <View key={index}>
             {getStatusImage(statusItem.image) ? (
               <Image
                 source={getStatusImage(statusItem.image)}
@@ -129,8 +127,8 @@ export default function CurrentShipment({
                 {statusItem.active && (
                   <Ionicons
                     name="checkmark"
-                    size={CIRCLE_SIZE * 0.5}
-                    color="#1A1A1A"
+                    size={CIRCLE_SIZE * 0.7}
+                    style={styles.checkmark}
                   />
                 )}
               </View>
@@ -173,13 +171,13 @@ export default function CurrentShipment({
       {(startDate || endDate) && (
         <View style={styles.dateLocationContainer}>
           {startDate && (
-            <View >
+            <View>
               <Text style={styles.dateText}>{startDate}</Text>
               <Text style={styles.locationText}>{startLocation}</Text>
             </View>
           )}
           {endDate && (
-            <View >
+            <View>
               <Text style={styles.dateText}>{endDate}</Text>
               <Text style={styles.locationText}>{endLocation}</Text>
             </View>
@@ -250,7 +248,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginBottom: 16,
     paddingHorizontal: 0,
-  
+
     paddingTop: 10,
   },
   statusCircle: {
@@ -325,7 +323,7 @@ const styles = StyleSheet.create({
   dateLocationContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-   
+
     paddingTop: 16,
   },
 
@@ -337,7 +335,7 @@ const styles = StyleSheet.create({
   },
   locationText: {
     fontSize: 16,
-    color:  COLORS.textPrimary,
+    color: COLORS.textPrimary,
     fontWeight: "700",
   },
   imagesContainer: {
@@ -345,11 +343,9 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 12,
-     borderTopWidth: 1,
+    borderTopWidth: 1,
     borderTopColor: "#F0F0F0",
     paddingTop: 18,
-    
-   
   },
 
   statusImage: {
@@ -371,5 +367,10 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: "600",
     color: "#999999",
+  },
+  checkmark: {
+    fontSize: 15,
+    fontWeight: "800",
+    color: "#1A1A1A",
   },
 });

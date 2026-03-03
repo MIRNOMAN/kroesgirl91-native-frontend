@@ -79,10 +79,10 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     alignSelf: "flex-end",
-    marginTop: 8,
+    marginBottom: 0,
   },
   image: {
-    width: 110,
+    width: 100,
     height: 90,
   },
 });

@@ -41,7 +41,8 @@ export default function DeliveryCard({
 const styles = StyleSheet.create({
   container: {
     borderRadius: 16,
-    padding: 30,
+    padding: 20,
+    height: 100,
     marginHorizontal: 20,
     marginVertical: 12,
     flexDirection: "row",
