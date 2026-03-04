@@ -70,6 +70,13 @@ export default function TabsLayout() {
       <Tabs.Screen name="shipment" options={{ title: "Shipment" }} />
       <Tabs.Screen name="profile" options={{ title: "Profile" }} />
       <Tabs.Screen
+        name="business-bulk"
+        options={{
+          href: null,
+          tabBarStyle: { display: "none" },
+        }}
+      />
+      <Tabs.Screen
         name="create-delivery"
         options={{
           href: null,

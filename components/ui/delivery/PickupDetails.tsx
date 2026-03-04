@@ -56,6 +56,14 @@ const PickupDetails: React.FC<PickupDetailsProps> = ({
   const [predictions, setPredictions] = useState<PlacePrediction[]>([]);
   const [loading, setLoading] = useState(false);
 
+  const openLocationSearch = () => {
+    setShowLocationModal(true);
+    setSearchQuery(data.fullAddress);
+    if (data.fullAddress.trim().length >= 3) {
+      searchPlaces(data.fullAddress);
+    }
+  };
+
   const searchPlaces = async (query: string) => {
     if (query.length < 3) {
       setPredictions([]);
@@ -102,9 +110,6 @@ const PickupDetails: React.FC<PickupDetailsProps> = ({
     setPredictions([]);
   };
 
-  const isFormValid =
-    data.fullName.trim() && data.phoneNumber.trim() && data.fullAddress.trim();
-
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{title}</Text>
@@ -130,17 +135,25 @@ const PickupDetails: React.FC<PickupDetailsProps> = ({
 
         <DeliveryInput
           label="Full Address"
-          placeholder="Who should we contact?"
+          placeholder="Search pickup address"
           value={data.fullAddress}
-          onChangeText={(text) => onDataChange({ ...data, fullAddress: text })}
+          onChangeText={(text) => {
+            onDataChange({ ...data, fullAddress: text });
+            setSearchQuery(text);
+            if (!showLocationModal) {
+              setShowLocationModal(true);
+            }
+            searchPlaces(text);
+          }}
+          onFocus={openLocationSearch}
           icon="location-outline"
           isLocationInput
-          onLocationPress={() => setShowLocationModal(true)}
+          onLocationPress={openLocationSearch}
         />
       </View>
 
       <View style={styles.buttonContainer}>
-        <DeliveryButton title="Next" onPress={onNext} disabled={!isFormValid} />
+        <DeliveryButton title="Next" onPress={onNext} />
       </View>
 
       {/* Location Search Modal */}
@@ -217,13 +230,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: isSmallDevice ? 16 : 20,
   },
   title: {
-    fontSize: isSmallDevice ? 23 : 22,
+    fontSize: isSmallDevice ? 24 : 24,
     fontWeight: "700",
     color: "#1A3A4A",
     marginBottom: 10,
+    marginTop: 25,
   },
   subtitle: {
-    fontSize: isSmallDevice ? 14 : 14,
+    fontSize: isSmallDevice ? 15 : 14,
     color: "#666666",
     marginBottom: isSmallDevice ? 20 : 24,
   },

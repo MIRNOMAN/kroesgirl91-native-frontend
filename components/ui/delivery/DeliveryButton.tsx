@@ -74,15 +74,15 @@ const styles = StyleSheet.create({
     marginVertical: 8,
   },
   primaryButton: {
-    backgroundColor: "#1A3A4A",
+    backgroundColor: "#002B3B",
   },
   secondaryButton: {
-    backgroundColor: "#F5A623",
+    backgroundColor: "#002B3B",
   },
   outlineButton: {
     backgroundColor: "transparent",
     borderWidth: 2,
-    borderColor: "#1A3A4A",
+    borderColor: "#002B3B",
   },
   disabledButton: {
     opacity: 0.6,
@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
   },
   outlineButtonText: {
-    color: "#1A3A4A",
+    color: "#002B3B",
   },
 });
 

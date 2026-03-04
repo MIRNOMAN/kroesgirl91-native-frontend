@@ -14,6 +14,7 @@ import HeaderSection from "../../components/ui/home/HeaderSection";
 import ServiceCard from "../../components/ui/home/ServiceCard";
 import ShipmentItem from "../../components/ui/home/ShipmentItem";
 import homeData from "../../constants/homeData.json";
+import { APP_ROUTES } from "../../constants/routes";
 
 import backround1 from "../../assets/backround/backround_1.png";
 import backround2 from "../../assets/backround/backround_2.png";
@@ -35,6 +36,15 @@ export default function HomeScreen() {
   const router = useRouter();
   const hasCurrentShipments =
     homeData.currentShipments && homeData.currentShipments.length > 0;
+
+  const handleServicePress = (serviceTitle: string) => {
+    if (serviceTitle === "Business/Bulk") {
+      router.push(APP_ROUTES.businessBulk);
+      return;
+    }
+
+    console.log(`Pressed ${serviceTitle}`);
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -68,7 +78,7 @@ export default function HomeScreen() {
                   service.background as keyof typeof BACKGROUND_IMAGES
                 ]
               }
-              onPress={() => console.log(`Pressed ${service.title}`)}
+              onPress={() => handleServicePress(service.title)}
             />
           ))}
         </View>

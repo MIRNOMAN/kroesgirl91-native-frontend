@@ -105,11 +105,7 @@ const ChooseRide: React.FC<ChooseRideProps> = ({
       </View>
 
       <View style={styles.buttonContainer}>
-        <DeliveryButton
-          title="Next"
-          onPress={onNext}
-          disabled={!selectedRide}
-        />
+        <DeliveryButton title="Next" onPress={onNext} />
       </View>
     </View>
   );

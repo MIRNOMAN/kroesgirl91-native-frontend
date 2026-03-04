@@ -102,9 +102,6 @@ const DeliveryDetails: React.FC<DeliveryDetailsProps> = ({
     setPredictions([]);
   };
 
-  const isFormValid =
-    data.name.trim() && data.phoneNumber.trim() && data.fullAddress.trim();
-
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{title}</Text>
@@ -140,7 +137,7 @@ const DeliveryDetails: React.FC<DeliveryDetailsProps> = ({
       </View>
 
       <View style={styles.buttonContainer}>
-        <DeliveryButton title="Next" onPress={onNext} disabled={!isFormValid} />
+        <DeliveryButton title="Next" onPress={onNext} />
       </View>
 
       {/* Location Search Modal */}
@@ -221,6 +218,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#1A3A4A",
     marginBottom: 8,
+    marginTop: 20,
   },
   subtitle: {
     fontSize: isSmallDevice ? 13 : 14,

@@ -17,6 +17,7 @@ interface DeliveryInputProps {
   placeholder: string;
   value: string;
   onChangeText: (text: string) => void;
+  onFocus?: () => void;
   keyboardType?: "default" | "phone-pad" | "numeric" | "email-address";
   icon?: keyof typeof Ionicons.glyphMap;
   isLocationInput?: boolean;
@@ -30,6 +31,7 @@ const DeliveryInput: React.FC<DeliveryInputProps> = ({
   placeholder,
   value,
   onChangeText,
+  onFocus,
   keyboardType = "default",
   icon,
   isLocationInput = false,
@@ -60,6 +62,7 @@ const DeliveryInput: React.FC<DeliveryInputProps> = ({
           placeholderTextColor="#AAAAAA"
           value={value}
           onChangeText={onChangeText}
+          onFocus={onFocus}
           keyboardType={keyboardType}
           multiline={multiline}
           editable={editable}
@@ -82,8 +85,8 @@ const styles = StyleSheet.create({
     marginBottom: isSmallDevice ? 16 : 20,
   },
   label: {
-    fontSize: isSmallDevice ? 13 : 14,
-    fontWeight: "500",
+    fontSize: isSmallDevice ? 15 : 14,
+    fontWeight: "700",
     color: "#333333",
     marginBottom: 8,
   },

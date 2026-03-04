@@ -11,6 +11,7 @@ export const APP_ROUTES = {
   otp: "/otp" as Href,
   verifyOtp: "/verify-otp" as Href,
   home: "/home" as Href,
+  businessBulk: "/(tabs)/business-bulk" as Href,
   tracking: "/tracking" as Href,
   shipment: "/shipment" as Href,
   profile: "/profile" as Href,

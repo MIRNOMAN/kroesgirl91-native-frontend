@@ -45,8 +45,6 @@ const PackageDetails: React.FC<PackageDetailsProps> = ({
     }
   };
 
-  const isFormValid = data.description.trim() && data.paymentMethod;
-
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{title}</Text>
@@ -143,7 +141,7 @@ const PackageDetails: React.FC<PackageDetailsProps> = ({
       </View>
 
       <View style={styles.buttonContainer}>
-        <DeliveryButton title="Next" onPress={onNext} disabled={!isFormValid} />
+        <DeliveryButton title="Next" onPress={onNext} />
       </View>
     </View>
   );
@@ -155,7 +153,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: isSmallDevice ? 16 : 20,
   },
   title: {
-    fontSize: isSmallDevice ? 20 : 22,
+    fontSize: isSmallDevice ? 21 : 22,
     fontWeight: "700",
     color: "#1A3A4A",
     marginBottom: 8,
