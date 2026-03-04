@@ -25,7 +25,6 @@ export default function CustomSpinner({
     );
 
     animation.start();
-
     return () => animation.stop();
   }, [duration]);
 
@@ -35,13 +34,16 @@ export default function CustomSpinner({
   });
 
   const dotCount = 8;
-  const dotSize = size * 0.14;
   const radius = size / 2.6;
 
   const dots = Array.from({ length: dotCount }).map((_, index) => {
     const angle = (index / dotCount) * Math.PI * 2;
     const x = Math.cos(angle) * radius;
     const y = Math.sin(angle) * radius;
+
+    const progress = index / (dotCount - 1);
+    const dotSize = size * 0.18 * (1 - progress * 0.55);
+    const opacity = 1 - progress * 0.85;
 
     return (
       <View
@@ -53,7 +55,7 @@ export default function CustomSpinner({
             height: dotSize,
             borderRadius: dotSize / 2,
             backgroundColor: color,
-            opacity: 1 - index * 0.12, // fade effect
+            opacity,
             transform: [{ translateX: x }, { translateY: y }],
           },
         ]}
@@ -63,7 +65,15 @@ export default function CustomSpinner({
 
   return (
     <View style={[styles.wrapper, { width: size, height: size }]}>
-      <Animated.View style={{ transform: [{ rotate }] }}>
+      <Animated.View
+        style={{
+          width: size,
+          height: size,
+          alignItems: "center",
+          justifyContent: "center",
+          transform: [{ rotate }],
+        }}
+      >
         {dots}
       </Animated.View>
     </View>

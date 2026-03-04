@@ -1,7 +1,8 @@
 import { useRouter } from "expo-router";
 import { useEffect } from "react";
-import { Image, SafeAreaView, StatusBar, StyleSheet, View } from "react-native";
-import CustomSpinner from "../components/ui/CustomSpinner";
+import { Image, StatusBar, StyleSheet, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import DotSpinner from "../components/ui/DotSpinner";
 import { APP_ROUTES } from "../constants/routes";
 
 export default function Index() {
@@ -27,7 +28,7 @@ export default function Index() {
           />
         </View>
         <View style={styles.loader}>
-          <CustomSpinner size={38} color="#FFFFFF" duration={900} />
+          <DotSpinner />
         </View>
       </View>
     </SafeAreaView>
