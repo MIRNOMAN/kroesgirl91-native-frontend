@@ -42,7 +42,7 @@ export default function TripSuccessModal({
           {/* Success Illustration */}
           <View style={styles.illustrationContainer}>
             <Image
-              source={require("../../../assets/successfull/successfull.png")}
+              source={require("../../../assets/successfull/success.png")}
               style={styles.illustration}
               resizeMode="contain"
             />
@@ -91,8 +91,8 @@ const styles = StyleSheet.create({
     elevation: 15,
   },
   illustrationContainer: {
-    width: isSmallDevice ? 140 : 160,
-    height: isSmallDevice ? 140 : 160,
+    width: isSmallDevice ? 140 : 200,
+    height: isSmallDevice ? 140 : 200,
     marginBottom: 24,
     justifyContent: "center",
     alignItems: "center",

@@ -1,21 +1,17 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import {
   Dimensions,
-  FlatList,
   Image,
   ImageSourcePropType,
   Pressable,
-  SafeAreaView,
   StyleSheet,
   Text,
   View,
-  ViewToken,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-// Mocking these since I don't have your constants file
-// Replace these imports with your actual constant files
 const COLORS = {
   surface: "#FFFFFF",
   border: "#E0E0E0",
@@ -29,7 +25,7 @@ const COLORS = {
 
 const APP_ROUTES = {
   login: "/login",
-};
+} as const;
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -67,27 +63,10 @@ const ONBOARDING_DATA: OnboardingItem[] = [
 export default function OnboardingScreen() {
   const router = useRouter();
   const [activeIndex, setActiveIndex] = useState(0);
-  const flatListRef = useRef<FlatList>(null);
-
-  // Updates the dot index based on which slide is mostly visible
-  const onViewableItemsChanged = useRef(
-    ({ viewableItems }: { viewableItems: ViewToken[] }) => {
-      if (viewableItems.length > 0) {
-        setActiveIndex(viewableItems[0].index ?? 0);
-      }
-    },
-  ).current;
-
-  const viewabilityConfig = useRef({
-    itemVisiblePercentThreshold: 50,
-  }).current;
 
   const onNext = () => {
     if (activeIndex < ONBOARDING_DATA.length - 1) {
-      flatListRef.current?.scrollToIndex({
-        index: activeIndex + 1,
-        animated: true,
-      });
+      setActiveIndex(activeIndex + 1);
     } else {
       router.replace(APP_ROUTES.login);
     }
@@ -95,30 +74,11 @@ export default function OnboardingScreen() {
 
   const onBack = () => {
     if (activeIndex > 0) {
-      flatListRef.current?.scrollToIndex({
-        index: activeIndex - 1,
-        animated: true,
-      });
+      setActiveIndex(activeIndex - 1);
     }
   };
 
-  const renderItem = ({ item }: { item: OnboardingItem }) => (
-    <View style={styles.slide}>
-      <View style={styles.illustrationArea}>
-        <View style={styles.illustrationCircle}>
-          <Image
-            source={item.image}
-            style={styles.illustrationImage}
-            resizeMode="contain"
-          />
-        </View>
-      </View>
-      <View style={styles.textContainer}>
-        <Text style={styles.title}>{item.title}</Text>
-        <Text style={styles.subtitle}>{item.description}</Text>
-      </View>
-    </View>
-  );
+  const currentItem = ONBOARDING_DATA[activeIndex];
 
   return (
     <SafeAreaView style={styles.container}>
@@ -142,20 +102,22 @@ export default function OnboardingScreen() {
         </Pressable>
       </View>
 
-      {/* Content Slider */}
-      <FlatList
-        ref={flatListRef}
-        data={ONBOARDING_DATA}
-        renderItem={renderItem}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        bounces={false}
-        keyExtractor={(item) => item.id}
-        onViewableItemsChanged={onViewableItemsChanged}
-        viewabilityConfig={viewabilityConfig}
-        scrollEventThrottle={16}
-      />
+      {/* Content */}
+      <View style={styles.slide}>
+        <View style={styles.illustrationArea}>
+          <View style={styles.illustrationCircle}>
+            <Image
+              source={currentItem.image}
+              style={styles.illustrationImage}
+              resizeMode="contain"
+            />
+          </View>
+        </View>
+        <View style={styles.textContainer}>
+          <Text style={styles.title}>{currentItem.title}</Text>
+          <Text style={styles.subtitle}>{currentItem.description}</Text>
+        </View>
+      </View>
 
       {/* Bottom Controls */}
       <View style={styles.bottomRow}>
@@ -221,7 +183,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   slide: {
-    width: SCREEN_WIDTH,
+    flex: 1,
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 30,
@@ -233,14 +195,13 @@ const styles = StyleSheet.create({
   },
   illustrationCircle: {
     aspectRatio: 1,
-    borderRadius: (SCREEN_WIDTH * 0.7) / 2,
-
+    borderRadius: (SCREEN_WIDTH * 0.9) / 2,
     alignItems: "center",
     justifyContent: "center",
   },
   illustrationImage: {
-    width: "100%",
-    height: "100%",
+    width: SCREEN_WIDTH * 0.9,
+    height: SCREEN_WIDTH * 0.9,
   },
   textContainer: {
     flex: 0.4,

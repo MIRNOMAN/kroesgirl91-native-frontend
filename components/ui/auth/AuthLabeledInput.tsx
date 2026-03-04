@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   label: {
-    fontSize: 21,
+    fontSize: 16,
     fontWeight: "600",
     color: COLORS.textPrimary,
   },

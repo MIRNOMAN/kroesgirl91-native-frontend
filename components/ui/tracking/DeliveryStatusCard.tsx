@@ -4,6 +4,7 @@ import {
   Dimensions,
   Image,
   Platform,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -77,145 +78,151 @@ export default function DeliveryStatusCard({
   buttonText = "Choose Premier",
 }: DeliveryStatusCardProps) {
   return (
-    <View style={styles.container}>
-      {/* Header - Delivery Status */}
-      <Text style={styles.headerTitle}>Delivery Status</Text>
+    <ScrollView
+      style={{ flex: 1 }}
+      contentContainerStyle={{ paddingBottom: 30 }}
+      showsVerticalScrollIndicator={false}
+    >
+      <View style={styles.container}>
+        <Text style={styles.headerTitle}>Delivery Status</Text>
 
-      {/* Driver Info */}
-      <View style={styles.driverSection}>
-        <View style={styles.driverInfo}>
-          <Image source={{ uri: driver.avatar }} style={styles.driverAvatar} />
-          <View style={styles.driverDetails}>
-            <Text style={styles.driverName}>{driver.name}</Text>
-            <Text style={styles.driverId}>{driver.driverId}</Text>
-          </View>
-        </View>
-        <TouchableOpacity
-          style={styles.callButton}
-          onPress={onCallDriver}
-          activeOpacity={0.7}
-        >
-          <Ionicons name="chevron-forward" size={20} color="#FFFFFF" />
-        </TouchableOpacity>
-      </View>
-
-      {/* Progress Steps with Images */}
-      <View style={styles.progressContainer}>
-        {/* Status Images Row */}
-        <View style={styles.imagesRow}>
-          {progress.map((step) => (
-            <View key={step.id} style={styles.imageWrapper}>
-              <Image
-                source={getStatusImage(step.icon)}
-                style={[
-                  styles.statusImage,
-                  !step.completed && styles.statusImageInactive,
-                ]}
-                resizeMode="contain"
-              />
+        <View style={styles.driverSection}>
+          <View style={styles.driverInfo}>
+            <Image
+              source={{ uri: driver.avatar }}
+              style={styles.driverAvatar}
+            />
+            <View style={styles.driverDetails}>
+              <Text style={styles.driverName}>{driver.name}</Text>
+              <Text style={styles.driverId}>{driver.driverId}</Text>
             </View>
-          ))}
+          </View>
+          <TouchableOpacity
+            style={styles.callButton}
+            onPress={onCallDriver}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="chevron-forward" size={20} color="#FFFFFF" />
+          </TouchableOpacity>
         </View>
 
-        {/* Progress Dots and Lines */}
-        <View style={styles.dotsRow}>
-          {progress.map((step, index) => (
-            <View key={step.id} style={styles.dotWrapper}>
-              <View
-                style={[
-                  styles.progressDot,
-                  { backgroundColor: step.completed ? "#FFB800" : "#E0E0E0" },
-                ]}
-              >
-                {step.completed && (
-                  <Ionicons name="checkmark" size={10} color="#FFFFFF" />
-                )}
+        <View style={styles.progressContainer}>
+          <View style={styles.imagesRow}>
+            {progress.map((step) => (
+              <View key={step.id} style={styles.imageWrapper}>
+                <Image
+                  source={getStatusImage(step.icon)}
+                  style={[
+                    styles.statusImage,
+                    !step.completed && styles.statusImageInactive,
+                  ]}
+                  resizeMode="contain"
+                />
               </View>
-              {index < progress.length - 1 && (
+            ))}
+          </View>
+
+          <View style={styles.dotsRow}>
+            {progress.map((step, index) => (
+              <View key={step.id} style={styles.dotWrapper}>
                 <View
                   style={[
-                    styles.progressLine,
-                    { backgroundColor: step.completed ? "#FFB800" : "#E0E0E0" },
+                    styles.progressDot,
+                    {
+                      backgroundColor: step.completed ? "#FFB800" : "#E0E0E0",
+                    },
                   ]}
-                />
-              )}
+                >
+                  {step.completed && (
+                    <Ionicons name="checkmark" size={10} color="#FFFFFF" />
+                  )}
+                </View>
+                {index < progress.length - 1 && (
+                  <View
+                    style={[
+                      styles.progressLine,
+                      {
+                        backgroundColor: step.completed ? "#FFB800" : "#E0E0E0",
+                      },
+                    ]}
+                  />
+                )}
+              </View>
+            ))}
+          </View>
+
+          <View style={styles.labelsRow}>
+            {progress.map((step) => (
+              <Text
+                key={step.id}
+                style={[
+                  styles.progressLabel,
+                  { color: step.completed ? "#003C52" : "#A0A0A0" },
+                ]}
+                numberOfLines={2}
+              >
+                {step.label}
+              </Text>
+            ))}
+          </View>
+        </View>
+
+        <View style={styles.orderSection}>
+          <View style={styles.orderRow}>
+            <View style={styles.orderColumn}>
+              <Text style={styles.orderLabel}>{orderDetails.orderDate}</Text>
+              <Text style={styles.orderValue}>
+                {orderDetails.pickupLocation}
+              </Text>
             </View>
-          ))}
+            <View style={styles.orderColumn}>
+              <Text style={styles.orderLabel}>{orderDetails.deliveryDate}</Text>
+              <Text style={styles.orderValue}>
+                {orderDetails.deliveryLocation}
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.orderRow}>
+            <View style={styles.orderColumn}>
+              <Text style={styles.orderLabel}>Customer</Text>
+              <Text style={styles.orderValue}>{orderDetails.customer}</Text>
+            </View>
+            <View style={styles.orderColumn}>
+              <Text style={styles.orderLabel}>Order Cost</Text>
+              <Text style={styles.orderValue}>{orderDetails.orderCost}</Text>
+            </View>
+          </View>
+
+          <View style={styles.orderRow}>
+            <View style={styles.orderColumn}>
+              <Text style={styles.orderLabel}>Quantity</Text>
+              <Text style={styles.orderValue}>{orderDetails.quantity}</Text>
+            </View>
+            <View style={styles.orderColumn}>
+              <Text style={styles.orderLabel}>Weight</Text>
+              <Text style={styles.orderValue}>{orderDetails.weight}</Text>
+            </View>
+          </View>
         </View>
 
-        {/* Labels Row */}
-        <View style={styles.labelsRow}>
-          {progress.map((step) => (
-            <Text
-              key={step.id}
-              style={[
-                styles.progressLabel,
-                { color: step.completed ? "#003C52" : "#A0A0A0" },
-              ]}
-              numberOfLines={2}
-            >
-              {step.label}
-            </Text>
-          ))}
-        </View>
+        <TouchableOpacity style={styles.paymentSection} activeOpacity={0.7}>
+          <View style={styles.paymentInfo}>
+            <Ionicons name="cash-outline" size={20} color="#003C52" />
+            <Text style={styles.paymentText}>{paymentMethod}</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color="#A0A0A0" />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.premierButton}
+          onPress={onChoosePremier}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.premierButtonText}>{buttonText}</Text>
+        </TouchableOpacity>
       </View>
-
-      {/* Order Details */}
-      <View style={styles.orderSection}>
-        <View style={styles.orderRow}>
-          <View style={styles.orderColumn}>
-            <Text style={styles.orderLabel}>{orderDetails.orderDate}</Text>
-            <Text style={styles.orderValue}>{orderDetails.pickupLocation}</Text>
-          </View>
-          <View style={styles.orderColumn}>
-            <Text style={styles.orderLabel}>{orderDetails.deliveryDate}</Text>
-            <Text style={styles.orderValue}>
-              {orderDetails.deliveryLocation}
-            </Text>
-          </View>
-        </View>
-
-        <View style={styles.orderRow}>
-          <View style={styles.orderColumn}>
-            <Text style={styles.orderLabel}>Customer</Text>
-            <Text style={styles.orderValue}>{orderDetails.customer}</Text>
-          </View>
-          <View style={styles.orderColumn}>
-            <Text style={styles.orderLabel}>order cost</Text>
-            <Text style={styles.orderValue}>{orderDetails.orderCost}</Text>
-          </View>
-        </View>
-
-        <View style={styles.orderRow}>
-          <View style={styles.orderColumn}>
-            <Text style={styles.orderLabel}>Quantity</Text>
-            <Text style={styles.orderValue}>{orderDetails.quantity}</Text>
-          </View>
-          <View style={styles.orderColumn}>
-            <Text style={styles.orderLabel}>Weight</Text>
-            <Text style={styles.orderValue}>{orderDetails.weight}</Text>
-          </View>
-        </View>
-      </View>
-
-      {/* Payment Method */}
-      <TouchableOpacity style={styles.paymentSection} activeOpacity={0.7}>
-        <View style={styles.paymentInfo}>
-          <Ionicons name="cash-outline" size={20} color="#003C52" />
-          <Text style={styles.paymentText}>{paymentMethod}</Text>
-        </View>
-        <Ionicons name="chevron-forward" size={20} color="#A0A0A0" />
-      </TouchableOpacity>
-
-      {/* Choose Premier Button */}
-      <TouchableOpacity
-        style={styles.premierButton}
-        onPress={onChoosePremier}
-        activeOpacity={0.8}
-      >
-        <Text style={styles.premierButtonText}>{buttonText}</Text>
-      </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 }
 
@@ -377,6 +384,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingVertical: Platform.OS === "ios" ? 16 : 14,
     alignItems: "center",
+    marginBottom: Platform.OS === "ios" ? 0 : 50,
+    
   },
   premierButtonText: {
     fontSize: isSmallDevice ? 15 : 16,

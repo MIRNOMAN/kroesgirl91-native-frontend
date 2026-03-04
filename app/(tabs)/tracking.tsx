@@ -199,6 +199,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     marginBottom: TAB_BAR_HEIGHT,
+
   },
   mapContainer: {
     height: height * 0.4,
