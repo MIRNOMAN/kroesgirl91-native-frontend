@@ -15,8 +15,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 const COLORS = {
   surface: "#FFFFFF",
   border: "#E0E0E0",
-  textPrimary: "#1A1A1A",
-  textSecondary: "#666666",
+  textPrimary: "#2D2D2D",
+  textSecondary: "#636F85",
   onboardingTint: "#F0F7FF",
   onboardingDot: "#D1D1D1",
   onboardingPrimary: "#002B3B",
@@ -209,8 +209,8 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   title: {
-    fontSize: 28,
-    fontWeight: "900",
+    fontSize: 27,
+    fontWeight: "700",
     color: COLORS.textPrimary,
     textAlign: "center",
     marginBottom: 15,
