@@ -27,17 +27,33 @@ export default function ProfileCard({
             <Text style={styles.profileName}>{name}</Text>
             {onEditPress && (
               <TouchableOpacity onPress={onEditPress}>
-                <FontAwesome name="edit" size={22} color="#FEB334"/>
-               
+                <FontAwesome name="edit" size={22} color="#FEB334" />
               </TouchableOpacity>
             )}
           </View>
-         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 4, marginTop: 6 }}>
-             <Fontisto name="email" size={16} color="#FEB334" /> <Text style={styles.profileEmail}>{email}</Text>
-         </View>
-         <View style={{ flexDirection: "row", alignItems: "center",  gap: 4, marginTop: 4 }}>
-             <Ionicons name="call-outline" size={16} color="#FEB334" /> <Text style={styles.profilePhone}>{phone}</Text>
-         </View>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 4,
+              marginTop: 6,
+            }}
+          >
+            <Fontisto name="email" size={16} color="#FEB334" />
+            <Text style={styles.profileEmail}>{email}</Text>
+          </View>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 4,
+              marginTop: 4,
+            }}
+          >
+            <Ionicons name="call-outline" size={16} color="#FEB334" />
+            <Text style={styles.profilePhone}>{phone}</Text>
+          </View>
         </View>
       </View>
     </View>
@@ -73,7 +89,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    
   },
   profileName: {
     fontSize: 18,
