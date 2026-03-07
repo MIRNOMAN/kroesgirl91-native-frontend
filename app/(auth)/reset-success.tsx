@@ -1,4 +1,4 @@
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect } from "react";
 import {
   ActivityIndicator,
@@ -14,6 +14,11 @@ import { APP_ROUTES } from "../../constants/routes";
 
 export default function ResetSuccessScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams<{ message?: string }>();
+  const successMessage =
+    typeof params.message === "string" && params.message.trim().length > 0
+      ? params.message
+      : "Password updated successfully.";
 
   // Auto redirect after 2 seconds
   useEffect(() => {
@@ -43,7 +48,7 @@ export default function ResetSuccessScreen() {
           </View>
 
           <Text style={styles.title}>Congratulations!</Text>
-          <Text style={styles.subtitle}>Your location is set manually.</Text>
+          <Text style={styles.subtitle}>{successMessage}</Text>
 
           <ActivityIndicator
             size="small"

@@ -6,6 +6,11 @@ type LoginRequest = {
   password: string;
 };
 
+type ResetPasswordRequest = {
+  newPassword: string;
+  resetToken: string;
+};
+
 type LoginUser = {
   id: string;
   email: string;
@@ -31,6 +36,7 @@ export type LoginResponse = {
 };
 
 const authApi = baseApi.injectEndpoints({
+  overrideExisting: true,
   endpoints: (build) => ({
     //user register --done
     createUserRegister: build.mutation({
@@ -54,10 +60,20 @@ const authApi = baseApi.injectEndpoints({
       },
       invalidatesTags: ["Auth"],
     }),
+    forgotOtpSend: build.mutation({
+      query: (data) => {
+        return {
+          url: `/auth/forgot-pwd/verify-otp`,
+          method: "POST",
+          body: data,
+        };
+      },
+      invalidatesTags: ["Auth"],
+    }),
     userForgotPassword: build.mutation({
       query: (data) => {
         return {
-          url: `/auth/forgot-password`,
+          url: `/auth/forgot-pwd`,
           method: "POST",
           body: data,
         };
@@ -76,11 +92,20 @@ const authApi = baseApi.injectEndpoints({
       invalidatesTags: ["Auth"],
     }),
     userResetPassword: build.mutation({
-      query: (data) => {
+      query: ({ newPassword, resetToken }: ResetPasswordRequest) => {
+        const authorizationToken = resetToken.startsWith("Bearer ")
+          ? resetToken
+          : `Bearer ${resetToken}`;
+
         return {
-          url: `/auth/reset-password`,
+          url: `/auth/forgot-pwd/reset-pwd`,
           method: "POST",
-          body: data,
+          headers: {
+            Authorization: authorizationToken,
+          },
+          body: {
+            newPassword,
+          },
         };
       },
       invalidatesTags: ["Auth"],
@@ -164,4 +189,5 @@ export const {
   useUpdateMeUserMutation,
   useUpdateUserStatusMutation,
   useGetAllUsersQuery,
+  useForgotOtpSendMutation,
 } = authApi;
