@@ -1,4 +1,5 @@
 import { useRouter } from "expo-router";
+import { useState } from "react";
 import {
   Keyboard,
   KeyboardAvoidingView,
@@ -10,13 +11,90 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { toast } from "sonner-native";
 import AuthLabeledInput from "../../components/ui/auth/AuthLabeledInput";
 import AuthTitleBlock from "../../components/ui/auth/AuthTitleBlock";
 import { COLORS } from "../../constants/colors";
 import { APP_ROUTES } from "../../constants/routes";
+import { useAuth } from "../../hooks/useAuth";
+import {
+  useCreateUserLoginMutation,
+  type LoginResponse,
+} from "../../redux/api/userApi";
+
+type LoginErrorShape = {
+  data?: {
+    message?: string;
+  };
+  error?: string;
+};
 
 export default function LoginScreen() {
   const router = useRouter();
+  const { signIn } = useAuth();
+  const [email, setEmail] = useState(__DEV__ ? "pro101@gmail.com" : "");
+  const [password, setPassword] = useState(__DEV__ ? "111111" : "");
+  const [createUserLogin, { isLoading }] = useCreateUserLoginMutation();
+
+  const getErrorMessage = (error: unknown) => {
+    const parsedError = error as LoginErrorShape;
+
+    return (
+      parsedError?.data?.message ||
+      parsedError?.error ||
+      "Login failed. Please try again."
+    );
+  };
+
+  const handleLogin = async () => {
+    const normalizedEmail = email.trim().toLowerCase();
+    const trimmedPassword = password.trim();
+
+    console.log("[LOGIN][REQUEST]", {
+      emailInput: email,
+      normalizedEmail,
+      passwordLength: trimmedPassword.length,
+    });
+
+    if (!normalizedEmail || !trimmedPassword) {
+      console.log("[LOGIN][VALIDATION_FAILED] Missing email or password");
+      toast.warning("Email and password are required");
+      return;
+    }
+
+    try {
+      const response = (await createUserLogin({
+        email: normalizedEmail,
+        password: trimmedPassword,
+      }).unwrap()) as LoginResponse;
+
+      console.log("[LOGIN][RESPONSE]", {
+        success: response?.success,
+        statusCode: response?.statusCode,
+        message: response?.message,
+        hasAccessToken: Boolean(response?.data?.accessToken),
+        userEmail: response?.data?.user?.email,
+      });
+
+      if (!response?.success || !response?.data?.accessToken) {
+        console.log("[LOGIN][INVALID_RESPONSE]", response);
+        toast.error("Login failed. Invalid server response.");
+        return;
+      }
+
+      signIn({
+        role: response.data.user.role,
+        accessToken: response.data.accessToken,
+      });
+
+      toast.success(response.data.message || response.message);
+      router.replace(APP_ROUTES.home);
+    } catch (error) {
+      console.error("[LOGIN][ERROR_RAW]", error);
+      console.log("[LOGIN][ERROR_PARSED]", getErrorMessage(error));
+      toast.error(getErrorMessage(error));
+    }
+  };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.authBg }}>
@@ -42,6 +120,9 @@ export default function LoginScreen() {
                   placeholder="Enter Email Here"
                   keyboardType="email-address"
                   autoCapitalize="none"
+                  value={email}
+                  onChangeText={setEmail}
+                  autoCorrect={false}
                   compact
                 />
 
@@ -50,6 +131,10 @@ export default function LoginScreen() {
                   placeholder="Enter Password Here"
                   secureTextEntry
                   showPasswordToggle
+                  value={password}
+                  onChangeText={setPassword}
+                  autoCapitalize="none"
+                  autoCorrect={false}
                   compact
                 />
 
@@ -75,14 +160,22 @@ export default function LoginScreen() {
 
               <Pressable
                 className="btn-primary"
-                onPress={() => router.replace(APP_ROUTES.home)}
+                onPress={handleLogin}
+                disabled={isLoading}
+                style={({ pressed }) => [
+                  {
+                    opacity: pressed || isLoading ? 0.7 : 1,
+                  },
+                ]}
               >
-                <Text className="btn-text">Sign In</Text>
+                <Text className="btn-text">
+                  {isLoading ? "Signing In..." : "Sign In"}
+                </Text>
               </Pressable>
 
               <View style={styles.signupRow}>
                 <Text style={styles.signupText}>
-                  Don&apos;t have an account? 
+                  Don&apos;t have an account?
                 </Text>
 
                 <Pressable
@@ -133,7 +226,7 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   forgotTextcss: {
-       fontSize: 14,
+    fontSize: 14,
 
     fontWeight: "500",
   },
@@ -143,9 +236,9 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   forgotContainer: {
-  width: "100%",
-  alignItems: "flex-end",
-},
+    width: "100%",
+    alignItems: "flex-end",
+  },
   termsText: {
     fontSize: 13,
     lineHeight: 18,

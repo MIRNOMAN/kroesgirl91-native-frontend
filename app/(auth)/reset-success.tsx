@@ -22,7 +22,7 @@ export default function ResetSuccessScreen() {
     }, 2000);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [router]);
 
   return (
     <SafeAreaView style={styles.container}>

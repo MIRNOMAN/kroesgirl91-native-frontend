@@ -1,6 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Tabs } from "expo-router";
+import { Redirect, Tabs } from "expo-router";
 import { Platform } from "react-native";
+
+import { APP_ROUTES } from "@/constants/routes";
+import { useAppSelector } from "@/redux/store";
 
 const getTabIconName = (
   routeName: string,
@@ -21,6 +24,12 @@ const getTabIconName = (
 };
 
 export default function TabsLayout() {
+  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
+
+  if (!isAuthenticated) {
+    return <Redirect href={APP_ROUTES.login} />;
+  }
+
   return (
     <Tabs
       screenOptions={({ route }) => ({

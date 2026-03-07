@@ -1,6 +1,15 @@
-import { Stack } from "expo-router";
+import { Redirect, Stack } from "expo-router";
+
+import { APP_ROUTES } from "@/constants/routes";
+import { useAppSelector } from "@/redux/store";
 
 export default function AuthLayout() {
+  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
+
+  if (isAuthenticated) {
+    return <Redirect href={APP_ROUTES.home} />;
+  }
+
   return (
     <Stack
       screenOptions={{

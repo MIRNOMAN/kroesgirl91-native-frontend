@@ -17,9 +17,16 @@ import {
 } from "../../components/ui/profile";
 import { COLORS } from "../../constants/colors";
 import { APP_ROUTES } from "../../constants/routes";
+import { useAuth } from "../../hooks/useAuth";
 
 export default function ProfileScreen() {
   const router = useRouter();
+  const { signOut } = useAuth();
+
+  const handleLogout = () => {
+    signOut();
+    router.replace(APP_ROUTES.login);
+  };
 
   const userData = {
     name: "Darrell Steward",
@@ -78,7 +85,7 @@ export default function ProfileScreen() {
             </ProfileMenuSection>
 
             {/* Logout Button */}
-            <LogoutButton onPress={() => router.replace(APP_ROUTES.login)} />
+            <LogoutButton onPress={handleLogout} />
           </ScrollView>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
