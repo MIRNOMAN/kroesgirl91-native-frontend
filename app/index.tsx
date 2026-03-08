@@ -1,3 +1,5 @@
+import { useAppSelector } from "@/redux/store";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { useEffect } from "react";
 import { Image, StatusBar, StyleSheet, View } from "react-native";
@@ -5,16 +7,27 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import DotSpinner from "../components/ui/DotSpinner";
 import { APP_ROUTES } from "../constants/routes";
 
+const ONBOARDING_SEEN_KEY = "onboarding_seen";
+
 export default function Index() {
   const router = useRouter();
+  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      router.replace(APP_ROUTES.onboarding);
+    const timer = setTimeout(async () => {
+      if (isAuthenticated) {
+        router.replace(APP_ROUTES.home);
+        return;
+      }
+
+      const hasSeenOnboarding = await AsyncStorage.getItem(ONBOARDING_SEEN_KEY);
+      router.replace(
+        hasSeenOnboarding === "true" ? APP_ROUTES.login : APP_ROUTES.onboarding,
+      );
     }, 2200);
 
     return () => clearTimeout(timer);
-  }, [router]);
+  }, [isAuthenticated, router]);
 
   return (
     <SafeAreaView style={styles.safeArea}>

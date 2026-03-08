@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -12,6 +13,8 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { APP_ROUTES } from "@/constants/routes";
+
 const COLORS = {
   surface: "#FFFFFF",
   border: "#E0E0E0",
@@ -23,9 +26,7 @@ const COLORS = {
   white: "#FFFFFF",
 };
 
-const APP_ROUTES = {
-  login: "/login",
-} as const;
+const ONBOARDING_SEEN_KEY = "onboarding_seen";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -64,11 +65,16 @@ export default function OnboardingScreen() {
   const router = useRouter();
   const [activeIndex, setActiveIndex] = useState(0);
 
-  const onNext = () => {
+  const finishOnboarding = async () => {
+    await AsyncStorage.setItem(ONBOARDING_SEEN_KEY, "true");
+    router.replace(APP_ROUTES.login);
+  };
+
+  const onNext = async () => {
     if (activeIndex < ONBOARDING_DATA.length - 1) {
       setActiveIndex(activeIndex + 1);
     } else {
-      router.replace(APP_ROUTES.login);
+      await finishOnboarding();
     }
   };
 
@@ -94,7 +100,7 @@ export default function OnboardingScreen() {
         </Pressable>
 
         <Pressable
-          onPress={() => router.replace(APP_ROUTES.login)}
+          onPress={finishOnboarding}
           hitSlop={15}
           style={styles.skipButton}
         >
