@@ -6,6 +6,12 @@ type LoginRequest = {
   password: string;
 };
 
+type RegisterRequest = {
+  email: string;
+  fullName: string;
+  password: string;
+};
+
 type ResetPasswordRequest = {
   newPassword: string;
   resetToken: string;
@@ -35,14 +41,48 @@ export type LoginResponse = {
   };
 };
 
+export type RegisterResponse = {
+  success?: boolean;
+  statusCode?: number;
+  message?: string;
+  data?: {
+    message?: string;
+    user?: {
+      id?: string;
+      email?: string;
+      fullName?: string;
+      profileImage?: string | null;
+      role?: "USER";
+      isAccountVerified?: boolean;
+      createdAt?: string;
+    };
+    otpResponse?: {
+      id?: string;
+      expiresAt?: string;
+      code?: string;
+    };
+  };
+};
+
 const authApi = baseApi.injectEndpoints({
   overrideExisting: true,
   endpoints: (build) => ({
     //user register --done
-    createUserRegister: build.mutation({
+    createUserRegister: build.mutation<RegisterResponse, RegisterRequest>({
       query: (data) => {
         return {
           url: `/auth/signup`,
+          method: "POST",
+          body: data,
+        };
+      },
+      invalidatesTags: ["Auth"],
+    }),
+
+    registerOtpVerification: build.mutation({
+      query: (data) => {
+        return {
+          url: `/auth/verify-account`,
           method: "POST",
           body: data,
         };
@@ -190,4 +230,5 @@ export const {
   useUpdateUserStatusMutation,
   useGetAllUsersQuery,
   useForgotOtpSendMutation,
+  useRegisterOtpVerificationMutation,
 } = authApi;
