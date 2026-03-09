@@ -1,7 +1,10 @@
 import { Feather } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
   Image,
   Keyboard,
   KeyboardAvoidingView,
@@ -18,16 +21,70 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ProfileHeader } from "../../components/ui/profile";
 import { COLORS } from "../../constants/colors";
+import {
+  useGetMeUserQuery,
+  useUpdateMeUserMutation,
+} from "../../redux/api/userApi";
 
 export default function EditProfileScreen() {
   const router = useRouter();
-  const [fullName, setFullName] = useState("Darnell Steward");
-  const [email, setEmail] = useState("darnellsteward@example.com");
-  const [mobileNumber, setMobileNumber] = useState("+1 789 234 5678");
 
-  const handleSave = () => {
-    // Save profile logic here
-    router.back();
+  const { data: meData, isLoading: isFetching } = useGetMeUserQuery();
+  const [updateMeUser, { isLoading: isUpdating }] = useUpdateMeUserMutation();
+
+  const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [localImage, setLocalImage] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<any>(null);
+
+  useEffect(() => {
+    if (meData?.data) {
+      setFullName(meData.data.fullName ?? "");
+      setPhone(meData.data.phone ?? "");
+    }
+  }, [meData]);
+
+  const handlePickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert(
+        "Permission required",
+        "Please allow access to your photo library.",
+      );
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+    if (!result.canceled && result.assets.length > 0) {
+      const asset = result.assets[0];
+      setLocalImage(asset.uri);
+      const fileName = asset.uri.split("/").pop() ?? "profile.jpg";
+      const match = /\.(\w+)$/.exec(fileName);
+      const type = match ? `image/${match[1]}` : "image/jpeg";
+      setImageFile({ uri: asset.uri, name: fileName, type });
+    }
+  };
+
+  const handleSave = async () => {
+    if (!fullName.trim()) {
+      Alert.alert("Validation", "Full name cannot be empty.");
+      return;
+    }
+    try {
+      await updateMeUser({
+        data: { fullName: fullName.trim(), phone: phone.trim() },
+        profile: imageFile ?? undefined,
+      }).unwrap();
+      Alert.alert("Success", "Profile updated successfully.", [
+        { text: "OK", onPress: () => router.back() },
+      ]);
+    } catch (err: any) {
+      Alert.alert("Error", err?.data?.message ?? "Failed to update profile.");
+    }
   };
 
   return (
@@ -54,59 +111,91 @@ export default function EditProfileScreen() {
               {/* Avatar */}
               <View style={styles.avatarContainer}>
                 <Image
-                  source={{ uri: "https://i.pravatar.cc/150?img=11" }}
+                  source={
+                    localImage
+                      ? { uri: localImage }
+                      : meData?.data?.profileImage
+                        ? { uri: meData.data.profileImage }
+                        : { uri: "https://i.pravatar.cc/150?img=11" }
+                  }
                   style={styles.avatar}
                 />
-                <TouchableOpacity style={styles.editAvatarButton}>
+                <TouchableOpacity
+                  style={styles.editAvatarButton}
+                  onPress={handlePickImage}
+                >
                   <Feather name="edit-3" size={16} color="#FFFFFF" />
-                 
                 </TouchableOpacity>
+              </View>
+
+              {/* Email (read-only) */}
+              <View style={styles.emailBadge}>
+                <Feather name="mail" size={15} color="#FEB334" />
+                <Text style={styles.emailText} numberOfLines={1}>
+                  {meData?.data?.email ?? "—"}
+                </Text>
               </View>
 
               {/* Form */}
               <View style={styles.form}>
+                {/* Full Name */}
                 <View style={styles.inputGroup}>
                   <Text style={styles.label}>Full Name</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={fullName}
-                    onChangeText={setFullName}
-                    placeholder="Enter full name"
-                    placeholderTextColor="#999999"
-                  />
+                  <View style={styles.inputWrapper}>
+                    <Feather
+                      name="user"
+                      size={18}
+                      color="#FEB334"
+                      style={styles.inputIcon}
+                    />
+                    <TextInput
+                      style={styles.input}
+                      value={fullName}
+                      onChangeText={setFullName}
+                      placeholder="Enter full name"
+                      placeholderTextColor={COLORS.authPlaceholder}
+                    />
+                  </View>
                 </View>
 
+                {/* Phone */}
                 <View style={styles.inputGroup}>
-                  <Text style={styles.label}>Email</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={email}
-                    onChangeText={setEmail}
-                    placeholder="Enter email"
-                    placeholderTextColor="#999999"
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                  />
-                </View>
-
-                <View style={styles.inputGroup}>
-                  <Text style={styles.label}>Mobile Number</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={mobileNumber}
-                    onChangeText={setMobileNumber}
-                    placeholder="Enter mobile number"
-                    placeholderTextColor="#999999"
-                    keyboardType="phone-pad"
-                  />
+                  <Text style={styles.label}>Phone Number</Text>
+                  <View style={styles.inputWrapper}>
+                    <Feather
+                      name="phone"
+                      size={18}
+                      color="#FEB334"
+                      style={styles.inputIcon}
+                    />
+                    <TextInput
+                      style={styles.input}
+                      value={phone}
+                      onChangeText={setPhone}
+                      placeholder="Enter phone number"
+                      placeholderTextColor={COLORS.authPlaceholder}
+                      keyboardType="phone-pad"
+                    />
+                  </View>
                 </View>
               </View>
             </ScrollView>
 
             {/* Save Button */}
             <View style={styles.bottomSection}>
-              <Pressable style={styles.saveButton} onPress={handleSave}>
-                <Text style={styles.saveButtonText}>Save</Text>
+              <Pressable
+                style={[
+                  styles.saveButton,
+                  isUpdating && styles.saveButtonDisabled,
+                ]}
+                onPress={handleSave}
+                disabled={isUpdating || isFetching}
+              >
+                {isUpdating ? (
+                  <ActivityIndicator color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.saveButtonText}>Save Changes</Text>
+                )}
               </Pressable>
             </View>
           </View>
@@ -123,10 +212,6 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    borderRadius: 20,
-    borderColor: "#FEB334",
-    borderWidth: 1,
-
   },
   scrollView: {
     flex: 1,
@@ -138,7 +223,7 @@ const styles = StyleSheet.create({
   },
   avatarContainer: {
     alignItems: "center",
-    marginBottom: 32,
+    marginBottom: 12,
   },
   avatar: {
     width: 120,
@@ -151,35 +236,63 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 0,
     right: "35%",
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     backgroundColor: "#FEB334",
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 3,
-    borderColor: "#FEB334",
+    borderColor: "#FFFFFF",
+  },
+  emailBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "center",
+    backgroundColor: "#FFF8EC",
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    marginBottom: 28,
+    gap: 6,
+    borderWidth: 1,
+    borderColor: "#FEB33440",
+  },
+  emailText: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: COLORS.textPrimary,
   },
   form: {
-    gap: 20,
+    gap: 22,
   },
   inputGroup: {
     gap: 8,
   },
   label: {
-    fontSize: 16,
-    fontWeight: "600",
+    fontSize: 15,
+    fontWeight: "700",
     color: COLORS.textPrimary,
+    letterSpacing: 0.3,
+  },
+  inputWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: "#E8E8E8",
+    paddingHorizontal: 14,
+  },
+  inputIcon: {
+    marginRight: 10,
   },
   input: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    flex: 1,
+    paddingVertical: 15,
     fontSize: 15,
+    fontWeight: "600",
     color: COLORS.textPrimary,
-    borderWidth: 1,
-    borderColor: "#E8E8E8",
   },
   bottomSection: {
     paddingHorizontal: 20,
@@ -188,14 +301,17 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     backgroundColor: "#1A3A4A",
-    paddingVertical: 16,
-    borderRadius: 12,
+    paddingVertical: 17,
+    borderRadius: 14,
     alignItems: "center",
+  },
+  saveButtonDisabled: {
+    opacity: 0.6,
   },
   saveButtonText: {
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: "700",
     color: "#FFFFFF",
-   
+    letterSpacing: 0.5,
   },
 });

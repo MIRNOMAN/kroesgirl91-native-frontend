@@ -20,37 +20,25 @@ export default function ProfileCard({
 }: ProfileCardProps) {
   return (
     <View style={styles.container}>
+      {/* Edit Icon on top-right */}
+      {onEditPress && (
+        <TouchableOpacity style={styles.editBtn} onPress={onEditPress}>
+          <FontAwesome name="edit" size={22} color="#FEB334" />
+        </TouchableOpacity>
+      )}
+
       <View style={styles.profileInfo}>
         <Image source={{ uri: avatar }} style={styles.avatar} />
+
         <View style={styles.profileDetails}>
-          <View style={styles.nameRow}>
-            <Text style={styles.profileName}>{name}</Text>
-            {onEditPress && (
-              <TouchableOpacity onPress={onEditPress}>
-                <FontAwesome name="edit" size={22} color="#FEB334" />
-              </TouchableOpacity>
-            )}
-          </View>
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 4,
-              marginTop: 6,
-            }}
-          >
+          <Text style={styles.profileName}>{name}</Text>
+
+          <View style={styles.row}>
             <Fontisto name="email" size={16} color="#FEB334" />
             <Text style={styles.profileEmail}>{email}</Text>
           </View>
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 4,
-              marginTop: 4,
-            }}
-          >
+
+          <View style={styles.row}>
             <Ionicons name="call-outline" size={16} color="#FEB334" />
             <Text style={styles.profilePhone}>{phone}</Text>
           </View>
@@ -68,12 +56,24 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     borderWidth: 1,
     borderColor: COLORS.border,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
     shadowRadius: 4,
+    position: "relative", // required for absolute positioning of edit icon
   },
+
+  editBtn: {
+    position: "absolute",
+    top: 12,
+    right: 12,
+  },
+
   profileInfo: {
     flexDirection: "row",
     alignItems: "center",
   },
+
   avatar: {
     width: 70,
     height: 70,
@@ -82,27 +82,33 @@ const styles = StyleSheet.create({
     borderColor: COLORS.borderRounded,
     marginRight: 14,
   },
+
   profileDetails: {
     flex: 1,
   },
-  nameRow: {
+
+  row: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
+    gap: 4,
+    marginTop: 4,
   },
+
   profileName: {
     fontSize: 18,
     fontWeight: "700",
     color: COLORS.textPrimary,
   },
+
   profileEmail: {
     fontSize: 15,
     color: COLORS.textSecondary,
-    marginTop: 2,
+    marginLeft: 4,
   },
+
   profilePhone: {
     fontSize: 15,
     color: COLORS.textSecondary,
-    marginTop: 2,
+    marginLeft: 4,
   },
 });

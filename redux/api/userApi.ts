@@ -64,6 +64,21 @@ export type RegisterResponse = {
   };
 };
 
+export type GetMeUserResponse = {
+  success?: boolean;
+  statusCode?: number;
+  message?: string;
+  data?: {
+    id?: string;
+    fullName?: string;
+    email?: string;
+    phone?: string;
+    profileImage?: string | null;
+    isAccountVerified?: boolean;
+    role?: "USER";
+  };
+};
+
 const authApi = baseApi.injectEndpoints({
   overrideExisting: true,
   endpoints: (build) => ({
@@ -161,7 +176,7 @@ const authApi = baseApi.injectEndpoints({
       },
       invalidatesTags: ["Users"],
     }),
-    getMeUser: build.query({
+    getMeUser: build.query<GetMeUserResponse, void>({
       query: () => {
         return {
           url: `/users/me`,
@@ -175,11 +190,11 @@ const authApi = baseApi.injectEndpoints({
         const formData = new FormData();
         formData.append("data", JSON.stringify(payload.data));
         if (payload.profile) {
-          formData.append("profile", payload.profile);
+          formData.append("image", payload.profile);
         }
 
         return {
-          url: `/users/profile`,
+          url: `/users/update-profile`,
           method: "PATCH",
           body: formData,
         };

@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Text,
   TouchableWithoutFeedback,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -18,21 +19,26 @@ import {
 import { COLORS } from "../../constants/colors";
 import { APP_ROUTES } from "../../constants/routes";
 import { useAuth } from "../../hooks/useAuth";
+import { useGetMeUserQuery } from "../../redux/api/userApi";
+
+const DEFAULT_AVATAR = "https://i.pravatar.cc/150?img=11";
 
 export default function ProfileScreen() {
   const router = useRouter();
   const { signOut } = useAuth();
+  const { data, isLoading } = useGetMeUserQuery();
 
   const handleLogout = () => {
     signOut();
     router.replace(APP_ROUTES.login);
   };
 
+  const profile = data?.data;
   const userData = {
-    name: "Darrell Steward",
-    email: "darrellsteward@example.com",
-    phone: "+1 789 234 5678",
-    avatar: "https://i.pravatar.cc/150?img=11",
+    name: profile?.fullName || "User",
+    email: profile?.email || "Not provided",
+    phone: profile?.phone || "Not provided",
+    avatar: profile?.profileImage || DEFAULT_AVATAR,
   };
 
   return (
@@ -51,13 +57,26 @@ export default function ProfileScreen() {
             <Text style={styles.headerTitle}>Profile</Text>
 
             {/* Profile Card */}
-            <ProfileCard
-              name={userData.name}
-              email={userData.email}
-              phone={userData.phone}
-              avatar={userData.avatar}
-              onEditPress={() => router.push(APP_ROUTES.editProfile)}
-            />
+            {isLoading ? (
+              <View style={styles.profileSkeletonCard}>
+                <View style={styles.profileSkeletonTopRow}>
+                  <View style={styles.profileSkeletonAvatar} />
+                  <View style={styles.profileSkeletonTextWrap}>
+                    <View style={styles.skeletonNameLine} />
+                    <View style={styles.skeletonEmailLine} />
+                    <View style={styles.skeletonPhoneLine} />
+                  </View>
+                </View>
+              </View>
+            ) : (
+              <ProfileCard
+                name={userData.name}
+                email={userData.email}
+                phone={userData.phone}
+                avatar={userData.avatar}
+                onEditPress={() => router.push(APP_ROUTES.editProfile)}
+              />
+            )}
 
             {/* Support & Help Section */}
             <ProfileMenuSection title="Support & Help">
@@ -113,5 +132,46 @@ const styles = StyleSheet.create({
     color: COLORS.textPrimary,
     marginBottom: 20,
     marginTop: 8,
+  },
+  profileSkeletonCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  profileSkeletonTopRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  profileSkeletonAvatar: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    marginRight: 14,
+    backgroundColor: "#E9ECEF",
+  },
+  profileSkeletonTextWrap: {
+    flex: 1,
+    gap: 10,
+  },
+  skeletonNameLine: {
+    width: "60%",
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: "#E9ECEF",
+  },
+  skeletonEmailLine: {
+    width: "80%",
+    height: 14,
+    borderRadius: 8,
+    backgroundColor: "#ECEFF1",
+  },
+  skeletonPhoneLine: {
+    width: "50%",
+    height: 14,
+    borderRadius: 8,
+    backgroundColor: "#ECEFF1",
   },
 });
