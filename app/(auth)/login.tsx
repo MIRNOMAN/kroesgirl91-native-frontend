@@ -154,8 +154,21 @@ export default function LoginScreen() {
               <Text style={styles.termsText}>
                 By continuing, you confirm that you are 18 years or older and
                 agree to our{" "}
-                <Text style={styles.linkInline}>Terms & Conditions</Text> and{" "}
-                <Text style={styles.linkInline}>Privacy Policy.</Text>
+                <Text
+                  style={styles.linkInline}
+                  accessibilityRole="link"
+                  onPress={() => router.push(APP_ROUTES.termsConditions)}
+                >
+                  Terms & Conditions
+                </Text>{" "}
+                and{" "}
+                <Text
+                  style={styles.linkInline}
+                  accessibilityRole="link"
+                  onPress={() => router.push(APP_ROUTES.privacyPolicy)}
+                >
+                  Privacy Policy.
+                </Text>
               </Text>
 
               <Pressable
