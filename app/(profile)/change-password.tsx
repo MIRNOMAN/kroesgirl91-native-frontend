@@ -2,6 +2,8 @@ import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
@@ -17,9 +19,13 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ProfileHeader } from "../../components/ui/profile";
 import { COLORS } from "../../constants/colors";
+import { useUpdateChangePasswordMutation } from "../../redux/api/userApi";
 
 export default function ChangePasswordScreen() {
   const router = useRouter();
+  const [updateChangePassword, { isLoading }] =
+    useUpdateChangePasswordMutation();
+
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -27,9 +33,30 @@ export default function ChangePasswordScreen() {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const handleSave = () => {
-    // Change password logic here
-    router.back();
+  const handleSave = async () => {
+    if (!oldPassword.trim() || !newPassword.trim() || !confirmPassword.trim()) {
+      Alert.alert("Validation", "All fields are required.");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      Alert.alert(
+        "Validation",
+        "New password and confirm password do not match.",
+      );
+      return;
+    }
+    if (newPassword.length < 6) {
+      Alert.alert("Validation", "New password must be at least 6 characters.");
+      return;
+    }
+    try {
+      await updateChangePassword({ oldPassword, newPassword }).unwrap();
+      Alert.alert("Success", "Password changed successfully.", [
+        { text: "OK", onPress: () => router.back() },
+      ]);
+    } catch (err: any) {
+      Alert.alert("Error", err?.data?.message ?? "Failed to change password.");
+    }
   };
 
   return (
@@ -133,8 +160,16 @@ export default function ChangePasswordScreen() {
 
             {/* Save Button */}
             <View style={styles.bottomSection}>
-              <Pressable style={styles.saveButton} onPress={handleSave}>
-                <Text style={styles.saveButtonText}>Save</Text>
+              <Pressable
+                style={[styles.saveButton, isLoading && { opacity: 0.6 }]}
+                onPress={handleSave}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <ActivityIndicator color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.saveButtonText}>Save</Text>
+                )}
               </Pressable>
             </View>
           </View>

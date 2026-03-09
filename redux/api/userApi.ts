@@ -202,15 +202,14 @@ const authApi = baseApi.injectEndpoints({
       invalidatesTags: ["Auth"],
     }),
 
-    updateChangePassword: build.mutation<
-      { message: string }, // response type
-      { oldPassword: string; newPassword: string } // request type
-    >({
-      query: (data) => ({
-        url: `/auth/change-password`,
-        method: "POST",
-        body: data,
-      }),
+    updateChangePassword: build.mutation({
+      query: (data) => {
+        return {
+          url: `/auth/change-password`,
+          method: "PATCH",
+          body: data,
+        };
+      },
       invalidatesTags: ["Auth"],
     }),
     getAllUsers: build.query({
@@ -246,4 +245,5 @@ export const {
   useGetAllUsersQuery,
   useForgotOtpSendMutation,
   useRegisterOtpVerificationMutation,
+  useUpdateChangePasswordMutation,
 } = authApi;
