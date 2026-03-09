@@ -1,11 +1,10 @@
 import { Feather } from "@expo/vector-icons";
-import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  Image,
+ 
   Keyboard,
   KeyboardAvoidingView,
   Platform,
@@ -14,7 +13,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  TouchableOpacity,
+  
   TouchableWithoutFeedback,
   View,
 } from "react-native";
@@ -34,8 +33,8 @@ export default function EditProfileScreen() {
 
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
-  const [localImage, setLocalImage] = useState<string | null>(null);
-  const [imageFile, setImageFile] = useState<any>(null);
+  // const [localImage, setLocalImage] = useState<string | null>(null);
+  // const [imageFile, setImageFile] = useState<any>(null);
 
   useEffect(() => {
     if (meData?.data) {
@@ -44,30 +43,30 @@ export default function EditProfileScreen() {
     }
   }, [meData]);
 
-  const handlePickImage = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== "granted") {
-      Alert.alert(
-        "Permission required",
-        "Please allow access to your photo library.",
-      );
-      return;
-    }
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
-    if (!result.canceled && result.assets.length > 0) {
-      const asset = result.assets[0];
-      setLocalImage(asset.uri);
-      const fileName = asset.uri.split("/").pop() ?? "profile.jpg";
-      const match = /\.(\w+)$/.exec(fileName);
-      const type = match ? `image/${match[1]}` : "image/jpeg";
-      setImageFile({ uri: asset.uri, name: fileName, type });
-    }
-  };
+  // const handlePickImage = async () => {
+  //   const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+  //   if (status !== "granted") {
+  //     Alert.alert(
+  //       "Permission required",
+  //       "Please allow access to your photo library.",
+  //     );
+  //     return;
+  //   }
+  //   const result = await ImagePicker.launchImageLibraryAsync({
+  //     mediaTypes: ImagePicker.MediaTypeOptions.Images,
+  //     allowsEditing: true,
+  //     aspect: [1, 1],
+  //     quality: 0.8,
+  //   });
+  //   if (!result.canceled && result.assets.length > 0) {
+  //     const asset = result.assets[0];
+  //     setLocalImage(asset.uri);
+  //     const fileName = asset.uri.split("/").pop() ?? "profile.jpg";
+  //     const match = /\.(\w+)$/.exec(fileName);
+  //     const type = match ? `image/${match[1]}` : "image/jpeg";
+  //     setImageFile({ uri: asset.uri, name: fileName, type });
+  //   }
+  // };
 
   const handleSave = async () => {
     if (!fullName.trim()) {
@@ -77,7 +76,7 @@ export default function EditProfileScreen() {
     try {
       await updateMeUser({
         data: { fullName: fullName.trim(), phone: phone.trim() },
-        profile: imageFile ?? undefined,
+        profile:  undefined,
       }).unwrap();
       Alert.alert("Success", "Profile updated successfully.", [
         { text: "OK", onPress: () => router.back() },
@@ -109,7 +108,7 @@ export default function EditProfileScreen() {
               keyboardShouldPersistTaps="handled"
             >
               {/* Avatar */}
-              <View style={styles.avatarContainer}>
+              {/* <View style={styles.avatarContainer}>
                 <Image
                   source={
                     localImage
@@ -126,12 +125,12 @@ export default function EditProfileScreen() {
                 >
                   <Feather name="edit-3" size={16} color="#FFFFFF" />
                 </TouchableOpacity>
-              </View>
+              </View> */}
 
               {/* Email (read-only) */}
               <View style={styles.emailBadge}>
-                <Feather name="mail" size={15} color="#FEB334" />
-                <Text style={styles.emailText} numberOfLines={1}>
+                <Feather name="mail" size={23} color="#FEB334" />
+                <Text style={styles.emailText} numberOfLines={2}>
                   {meData?.data?.email ?? "—"}
                 </Text>
               </View>
@@ -259,12 +258,12 @@ const styles = StyleSheet.create({
     borderColor: "#FEB33440",
   },
   emailText: {
-    fontSize: 14,
+    fontSize: 17,
     fontWeight: "500",
     color: COLORS.textPrimary,
   },
   form: {
-    gap: 22,
+    gap: 26,
   },
   inputGroup: {
     gap: 8,

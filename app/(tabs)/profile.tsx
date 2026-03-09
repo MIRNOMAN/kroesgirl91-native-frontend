@@ -73,7 +73,7 @@ export default function ProfileScreen() {
                 name={userData.name}
                 email={userData.email}
                 phone={userData.phone}
-                avatar={userData.avatar}
+                // avatar={userData.avatar}
                 onEditPress={() => router.push(APP_ROUTES.editProfile)}
               />
             )}

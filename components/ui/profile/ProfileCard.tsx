@@ -1,13 +1,13 @@
 import { FontAwesome, Fontisto, Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {  StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { COLORS } from "../../../constants/colors";
 
 interface ProfileCardProps {
   name: string;
   email: string;
   phone: string;
-  avatar: string;
+  // avatar: string;
   onEditPress?: () => void;
 }
 
@@ -15,7 +15,7 @@ export default function ProfileCard({
   name,
   email,
   phone,
-  avatar,
+  
   onEditPress,
 }: ProfileCardProps) {
   return (
@@ -28,7 +28,7 @@ export default function ProfileCard({
       )}
 
       <View style={styles.profileInfo}>
-        <Image source={{ uri: avatar }} style={styles.avatar} />
+        {/* <Image source={{ uri: avatar }} style={styles.avatar} /> */}
 
         <View style={styles.profileDetails}>
           <Text style={styles.profileName}>{name}</Text>
