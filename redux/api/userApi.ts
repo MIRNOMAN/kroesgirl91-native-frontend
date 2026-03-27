@@ -73,6 +73,7 @@ export type GetMeUserResponse = {
     fullName?: string;
     email?: string;
     phone?: string;
+    address?: string;
     profileImage?: string | null;
     isAccountVerified?: boolean;
     role?: "USER";

@@ -36,6 +36,8 @@ const ChooseRide: React.FC<ChooseRideProps> = ({
   onSelectRide,
   onNext,
 }) => {
+  const canProceed = Boolean(selectedRide);
+
   const getIconName = (icon: string): keyof typeof Ionicons.glyphMap => {
     switch (icon) {
       case "bicycle":
@@ -105,7 +107,7 @@ const ChooseRide: React.FC<ChooseRideProps> = ({
       </View>
 
       <View style={styles.buttonContainer}>
-        <DeliveryButton title="Next" onPress={onNext} />
+        <DeliveryButton title="Next" onPress={onNext} disabled={!canProceed} />
       </View>
     </View>
   );

@@ -52,16 +52,7 @@
       "priceLabel": "Send",
       "icon": "bicycle"
     },
-    {
-      "id": "express",
-      "title": "Express Delivery",
-      "subtitle": "Ultrafast, no-quality limits",
-      "description": "",
-      "price": 200,
-      "currency": "$",
-      "priceLabel": "Send",
-      "icon": "car"
-    },
+
     {
       "id": "next-day",
       "title": "Next Day",

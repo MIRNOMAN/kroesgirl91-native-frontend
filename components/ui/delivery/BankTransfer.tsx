@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
-import React, { useState } from "react";
+import React from "react";
 import {
   Alert,
   Dimensions,
@@ -22,15 +22,19 @@ interface BankTransferProps {
     accountNumber: string;
     routingNumber: string;
   };
+  screenshotUri: string | null;
+  onScreenshotChange: (uri: string | null) => void;
+  isSubmitting?: boolean;
   onConfirm: () => void;
 }
 
 const BankTransfer: React.FC<BankTransferProps> = ({
   bankDetails,
+  screenshotUri,
+  onScreenshotChange,
+  isSubmitting = false,
   onConfirm,
 }) => {
-  const [screenshot, setScreenshot] = useState<string | null>(null);
-
   const pickImage = async () => {
     const permissionResult =
       await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -51,7 +55,7 @@ const BankTransfer: React.FC<BankTransferProps> = ({
     });
 
     if (!result.canceled && result.assets[0]) {
-      setScreenshot(result.assets[0].uri);
+      onScreenshotChange(result.assets[0].uri);
     }
   };
 
@@ -69,8 +73,11 @@ const BankTransfer: React.FC<BankTransferProps> = ({
           onPress={pickImage}
           activeOpacity={0.7}
         >
-          {screenshot ? (
-            <Image source={{ uri: screenshot }} style={styles.uploadedImage} />
+          {screenshotUri ? (
+            <Image
+              source={{ uri: screenshotUri }}
+              style={styles.uploadedImage}
+            />
           ) : (
             <View style={styles.uploadPlaceholder}>
               <View style={styles.uploadIconContainer}>
@@ -113,10 +120,10 @@ const BankTransfer: React.FC<BankTransferProps> = ({
 
       <View style={styles.buttonContainer}>
         <DeliveryButton
-          title="Confirm booking"
+          title={isSubmitting ? "Submitting..." : "Confirm booking"}
           onPress={onConfirm}
           variant="secondary"
-          disabled={!screenshot}
+          disabled={!screenshotUri || isSubmitting}
         />
       </View>
     </View>

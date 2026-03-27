@@ -16,6 +16,7 @@ const isSmallDevice = width < 375;
 interface PackageData {
   description: string;
   instructions: string;
+  quantity: number;
   weight: number;
   paymentMethod: "cash" | "bank" | null;
 }
@@ -42,6 +43,16 @@ const PackageDetails: React.FC<PackageDetailsProps> = ({
   const decrementWeight = () => {
     if (data.weight > 0) {
       onDataChange({ ...data, weight: data.weight - 1 });
+    }
+  };
+
+  const incrementQuantity = () => {
+    onDataChange({ ...data, quantity: data.quantity + 1 });
+  };
+
+  const decrementQuantity = () => {
+    if (data.quantity > 1) {
+      onDataChange({ ...data, quantity: data.quantity - 1 });
     }
   };
 
@@ -82,6 +93,29 @@ const PackageDetails: React.FC<PackageDetailsProps> = ({
               <TouchableOpacity
                 style={styles.weightButton}
                 onPress={incrementWeight}
+              >
+                <Ionicons name="add" size={20} color="#1A3A4A" />
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+
+        {/* Quantity Input */}
+        <View style={styles.weightContainer}>
+          <Text style={styles.label}>Quantity</Text>
+          <View style={styles.weightInputRow}>
+            <Text style={styles.weightPlaceholder}>Set parcel quantity</Text>
+            <View style={styles.weightControls}>
+              <TouchableOpacity
+                style={styles.weightButton}
+                onPress={decrementQuantity}
+              >
+                <Ionicons name="remove" size={20} color="#1A3A4A" />
+              </TouchableOpacity>
+              <Text style={styles.weightValue}>{data.quantity}</Text>
+              <TouchableOpacity
+                style={styles.weightButton}
+                onPress={incrementQuantity}
               >
                 <Ionicons name="add" size={20} color="#1A3A4A" />
               </TouchableOpacity>

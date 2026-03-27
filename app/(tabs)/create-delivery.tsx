@@ -1,10 +1,14 @@
+import * as Location from "expo-location";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
+  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
+  Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -21,6 +25,8 @@ import {
   StepIndicator,
 } from "../../components/ui/delivery";
 import createDeliveryData from "../../constants/createDeliveryData.json";
+import { useCreateDeliveryMutation } from "../../redux/api/createDelivery";
+import { useGetMeUserQuery } from "../../redux/api/userApi";
 
 type Step =
   | "pickup"
@@ -49,15 +55,46 @@ interface DeliveryData {
 interface PackageData {
   description: string;
   instructions: string;
+  quantity: number;
   weight: number;
   paymentMethod: "cash" | "bank" | null;
 }
+
+type OrderType = "PICKUP" | "DELIVERY";
+
+interface CreateOrderPayload {
+  type: OrderType;
+  job_description: string;
+  job_delivery_datetime: string;
+  price: number;
+  quantity: number;
+  weight: number;
+  paymentMethod: "COD" | "BANK";
+  fullName: string;
+  phone: string;
+  email: string;
+  address: string;
+  latitude: number;
+  longitude: number;
+  specialInstructions: string;
+}
+
+type FormLocationData = PickupData | DeliveryData;
 
 export default function CreateDeliveryScreen() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [step, setStep] = useState<Step>("pickup");
   const [showConfirmed, setShowConfirmed] = useState(false);
+  const [orderType, setOrderType] = useState<OrderType>("PICKUP");
+  const [bankImageUri, setBankImageUri] = useState<string | null>(null);
+
+  const [createDelivery, { isLoading: isCreatingDelivery }] =
+    useCreateDeliveryMutation();
+  const { data: meUserResponse } = useGetMeUserQuery();
+
+  const meUser = meUserResponse?.data;
+  const meAddress = meUserResponse?.data?.address ?? "";
 
   // Form Data States
   const [pickupData, setPickupData] = useState<PickupData>({
@@ -77,9 +114,47 @@ export default function CreateDeliveryScreen() {
   const [packageData, setPackageData] = useState<PackageData>({
     description: "",
     instructions: "",
+    quantity: 1,
     weight: 0,
     paymentMethod: null,
   });
+
+  useEffect(() => {
+    if (!meUser) {
+      return;
+    }
+
+    setDeliveryData((prev) => ({
+      ...prev,
+      name: prev.name || meUser.fullName || "",
+      phoneNumber: prev.phoneNumber || meUser.phone || "",
+      fullAddress: prev.fullAddress || meAddress,
+    }));
+  }, [meAddress, meUser]);
+
+  useEffect(() => {
+    if (packageData.paymentMethod !== "bank" && bankImageUri) {
+      setBankImageUri(null);
+    }
+  }, [bankImageUri, packageData.paymentMethod]);
+
+  const selectedRideOption = useMemo(
+    () =>
+      createDeliveryData.rideOptions.find(
+        (option) => option.id === selectedRide,
+      ),
+    [selectedRide],
+  );
+
+  const getJobDeliveryDateTime = (): string => {
+    const date = new Date();
+
+    if (selectedRide === "next-day") {
+      date.setDate(date.getDate() + 1);
+    }
+
+    return date.toISOString();
+  };
 
   const getHeaderTitle = (): string => {
     switch (step) {
@@ -123,26 +198,248 @@ export default function CreateDeliveryScreen() {
   };
 
   const handlePickupNext = () => {
+    if (
+      !pickupData.fullName.trim() ||
+      !pickupData.phoneNumber.trim() ||
+      !pickupData.fullAddress.trim()
+    ) {
+      Alert.alert("Required", "Please complete pickup details before next.");
+      return;
+    }
+
     setStep("delivery");
     setCurrentStep(2);
   };
 
   const handleDeliveryNext = () => {
+    if (
+      !deliveryData.name.trim() ||
+      !deliveryData.phoneNumber.trim() ||
+      !deliveryData.fullAddress.trim()
+    ) {
+      Alert.alert("Required", "Please complete delivery details before next.");
+      return;
+    }
+
     setStep("ride");
     setCurrentStep(3);
   };
 
   const handleRideNext = () => {
+    if (!selectedRide) {
+      Alert.alert("Required", "Please select a ride option.");
+      return;
+    }
+
     setStep("package");
     setCurrentStep(4);
   };
 
   const handlePackageNext = () => {
+    if (!packageData.description.trim()) {
+      Alert.alert("Required", "Please enter package description.");
+      return;
+    }
+
+    if (packageData.weight <= 0) {
+      Alert.alert("Required", "Package weight should be greater than 0.");
+      return;
+    }
+
+    if (packageData.quantity <= 0) {
+      Alert.alert("Required", "Quantity should be greater than 0.");
+      return;
+    }
+
+    if (!packageData.paymentMethod) {
+      Alert.alert("Required", "Please select a payment method.");
+      return;
+    }
+
     setStep("payment");
   };
 
-  const handleConfirmBooking = () => {
-    setShowConfirmed(true);
+  const isLocationComplete = (value: FormLocationData) => {
+    return (
+      Boolean(value.fullAddress.trim()) &&
+      Number.isFinite(value.latitude) &&
+      Number.isFinite(value.longitude)
+    );
+  };
+
+  const askLocationPermissionConfirmation = async () => {
+    return new Promise<boolean>((resolve) => {
+      Alert.alert(
+        "Location Required",
+        "User location not found. Allow current location to auto-fill latitude, longitude, and address?",
+        [
+          {
+            text: "Cancel",
+            style: "cancel",
+            onPress: () => resolve(false),
+          },
+          {
+            text: "Allow Location",
+            onPress: () => resolve(true),
+          },
+        ],
+        {
+          cancelable: true,
+          onDismiss: () => resolve(false),
+        },
+      );
+    });
+  };
+
+  const formatAddress = (address?: Location.LocationGeocodedAddress) => {
+    if (!address) {
+      return "";
+    }
+
+    return [
+      address.name,
+      address.street,
+      address.city,
+      address.region,
+      address.postalCode,
+      address.country,
+    ]
+      .filter(Boolean)
+      .join(", ");
+  };
+
+  const resolveCurrentLocation = async (): Promise<
+    Pick<FormLocationData, "fullAddress" | "latitude" | "longitude">
+  > => {
+    const permission = await Location.requestForegroundPermissionsAsync();
+
+    if (permission.status !== "granted") {
+      throw new Error("LOCATION_PERMISSION_DENIED");
+    }
+
+    const current = await Location.getCurrentPositionAsync({
+      accuracy: Location.Accuracy.High,
+    });
+
+    let fullAddress = "";
+    try {
+      const reverse = await Location.reverseGeocodeAsync({
+        latitude: current.coords.latitude,
+        longitude: current.coords.longitude,
+      });
+      fullAddress = formatAddress(reverse[0]);
+    } catch {
+      fullAddress = "";
+    }
+
+    return {
+      fullAddress,
+      latitude: current.coords.latitude,
+      longitude: current.coords.longitude,
+    };
+  };
+
+  const handleConfirmBooking = async () => {
+    if (!packageData.paymentMethod) {
+      Alert.alert("Required", "Please select a payment method.");
+      return;
+    }
+
+    if (packageData.paymentMethod === "bank" && !bankImageUri) {
+      Alert.alert("Required", "Please upload payment screenshot.");
+      return;
+    }
+
+    const sourceData = orderType === "PICKUP" ? pickupData : deliveryData;
+    let bookingLocationData: FormLocationData = sourceData;
+
+    if (!isLocationComplete(sourceData)) {
+      const shouldProceed = await askLocationPermissionConfirmation();
+      if (!shouldProceed) {
+        return;
+      }
+
+      try {
+        const currentLocation = await resolveCurrentLocation();
+        bookingLocationData = {
+          ...sourceData,
+          fullAddress:
+            sourceData.fullAddress ||
+            currentLocation.fullAddress ||
+            `${currentLocation.latitude}, ${currentLocation.longitude}`,
+          latitude: currentLocation.latitude,
+          longitude: currentLocation.longitude,
+        };
+
+        if (orderType === "PICKUP") {
+          setPickupData((prev) => ({
+            ...prev,
+            fullAddress: bookingLocationData.fullAddress,
+            latitude: bookingLocationData.latitude,
+            longitude: bookingLocationData.longitude,
+          }));
+        } else {
+          setDeliveryData((prev) => ({
+            ...prev,
+            fullAddress: bookingLocationData.fullAddress,
+            latitude: bookingLocationData.latitude,
+            longitude: bookingLocationData.longitude,
+          }));
+        }
+      } catch (error) {
+        const isPermissionDenied =
+          (error as Error)?.message === "LOCATION_PERMISSION_DENIED";
+        Alert.alert(
+          "Location Missing",
+          isPermissionDenied
+            ? "Location permission is required to continue booking."
+            : "Unable to fetch current location. Please try again.",
+        );
+        return;
+      }
+    }
+
+    const payload: CreateOrderPayload = {
+      type: orderType,
+      job_description: packageData.description,
+      job_delivery_datetime: getJobDeliveryDateTime(),
+      price:
+        selectedRideOption?.price ??
+        createDeliveryData.pricingDetails.deliveryFee +
+          createDeliveryData.pricingDetails.serviceFee,
+      quantity: packageData.quantity,
+      weight: packageData.weight,
+      paymentMethod: packageData.paymentMethod === "bank" ? "BANK" : "COD",
+      fullName:
+        orderType === "PICKUP" ? pickupData.fullName : deliveryData.name,
+      phone: bookingLocationData.phoneNumber,
+      email: meUser?.email || "",
+      address: bookingLocationData.fullAddress,
+      latitude: bookingLocationData.latitude ?? 0,
+      longitude: bookingLocationData.longitude ?? 0,
+      specialInstructions: packageData.instructions,
+    };
+
+    try {
+      await createDelivery({
+        data: payload,
+        image:
+          packageData.paymentMethod === "bank" && bankImageUri
+            ? {
+                uri: bankImageUri,
+                type: "image/jpeg",
+                name: `payment-${Date.now()}.jpg`,
+              }
+            : undefined,
+      }).unwrap();
+
+      setShowConfirmed(true);
+    } catch (error) {
+      const message =
+        (error as { data?: { message?: string } })?.data?.message ||
+        "Failed to create delivery. Please try again.";
+      Alert.alert("Request Failed", message);
+    }
   };
 
   const handleTrackShipment = () => {
@@ -220,15 +517,23 @@ export default function CreateDeliveryScreen() {
           return (
             <BankTransfer
               bankDetails={createDeliveryData.bankTransfer.bankDetails}
+              screenshotUri={bankImageUri}
+              onScreenshotChange={setBankImageUri}
+              isSubmitting={isCreatingDelivery}
               onConfirm={handleConfirmBooking}
             />
           );
         }
         return (
           <CashOnDelivery
-            amount={50}
+            amount={
+              selectedRideOption?.price ??
+              createDeliveryData.pricingDetails.deliveryFee +
+                createDeliveryData.pricingDetails.serviceFee
+            }
             shipmentSummary={getShipmentSummary()}
             pricingDetails={createDeliveryData.pricingDetails}
+            isSubmitting={isCreatingDelivery}
             onConfirm={handleConfirmBooking}
           />
         );
@@ -257,6 +562,43 @@ export default function CreateDeliveryScreen() {
               currentStep={currentStep}
             />
           )}
+
+          <View style={styles.typeSelectorContainer}>
+            <TouchableOpacity
+              style={[
+                styles.typeButton,
+                orderType === "PICKUP" && styles.typeButtonSelected,
+              ]}
+              onPress={() => setOrderType("PICKUP")}
+              activeOpacity={0.8}
+            >
+              <Text
+                style={[
+                  styles.typeButtonText,
+                  orderType === "PICKUP" && styles.typeButtonTextSelected,
+                ]}
+              >
+                Pickup
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.typeButton,
+                orderType === "DELIVERY" && styles.typeButtonSelected,
+              ]}
+              onPress={() => setOrderType("DELIVERY")}
+              activeOpacity={0.8}
+            >
+              <Text
+                style={[
+                  styles.typeButtonText,
+                  orderType === "DELIVERY" && styles.typeButtonTextSelected,
+                ]}
+              >
+                Delivery
+              </Text>
+            </TouchableOpacity>
+          </View>
 
           {/* Step Content */}
           <ScrollView
@@ -300,5 +642,31 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingBottom: Platform.OS === "ios" ? 40 : 20,
+  },
+  typeSelectorContainer: {
+    flexDirection: "row",
+    marginHorizontal: 20,
+    marginBottom: 12,
+    borderRadius: 12,
+    backgroundColor: "#F7F7F7",
+    padding: 4,
+    gap: 8,
+  },
+  typeButton: {
+    flex: 1,
+    borderRadius: 10,
+    paddingVertical: 10,
+    alignItems: "center",
+  },
+  typeButtonSelected: {
+    backgroundColor: "#F5A623",
+  },
+  typeButtonText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#666666",
+  },
+  typeButtonTextSelected: {
+    color: "#FFFFFF",
   },
 });

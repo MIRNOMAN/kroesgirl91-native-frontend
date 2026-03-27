@@ -67,19 +67,19 @@ export default function RegisterScreen() {
     const trimmedPhone = phone.trim();
 
     // ✅ required validation
-    // if (!normalizedFullName || !normalizedEmail || !trimmedPassword) {
-    //   toast.warning("Full name, email and password are required");
-    //   return;
-    // }
-
-    // ✅ email validation
-    const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
-      normalizedEmail
-    );
-    if (!isEmailValid) {
-      toast.warning("Please enter a valid email");
+    if (!normalizedFullName || !normalizedEmail || !trimmedPassword) {
+      toast.warning("Full name, email and password are required");
       return;
     }
+
+    // ✅ email validation
+    // const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+    //   normalizedEmail
+    // );
+    // if (!isEmailValid) {
+    //   toast.warning("Please enter a valid email");
+    //   return;
+    // }
 
     // ✅ password validation
     if (trimmedPassword.length < 8) {

@@ -35,6 +35,7 @@ interface CashOnDeliveryProps {
   amount: number;
   shipmentSummary: ShipmentSummary;
   pricingDetails: PricingDetails;
+  isSubmitting?: boolean;
   onConfirm: () => void;
 }
 
@@ -42,6 +43,7 @@ const CashOnDelivery: React.FC<CashOnDeliveryProps> = ({
   amount,
   shipmentSummary,
   pricingDetails,
+  isSubmitting = false,
   onConfirm,
 }) => {
   const total = pricingDetails.deliveryFee + pricingDetails.serviceFee;
@@ -165,9 +167,10 @@ const CashOnDelivery: React.FC<CashOnDeliveryProps> = ({
 
       <View style={styles.buttonContainer}>
         <DeliveryButton
-          title="Confirm booking"
+          title={isSubmitting ? "Submitting..." : "Confirm booking"}
           onPress={onConfirm}
           variant="secondary"
+          disabled={isSubmitting}
         />
       </View>
     </View>

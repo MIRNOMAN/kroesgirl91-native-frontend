@@ -5,6 +5,7 @@ import {
   Dimensions,
   FlatList,
   Modal,
+  Platform,
   StyleSheet,
   Text,
   TextInput,
@@ -17,7 +18,34 @@ import DeliveryInput from "./DeliveryInput";
 const { width, height } = Dimensions.get("window");
 const isSmallDevice = width < 375;
 
-const GOOGLE_PLACES_API_KEY = "AIzaSyAWTfPRGzLQr32QPUaz8YrLcrK_rsZDKR0";
+const MAPPR_DEFAULT_KEY =
+  process.env.EXPO_PUBLIC_MAPPR_KEY || "bc2706f0-28d7-11f1-a301-ede322482ab2";
+const MAPPR_WEB_KEY =
+  process.env.EXPO_PUBLIC_MAPPR_WEB_KEY || MAPPR_DEFAULT_KEY;
+const MAPPR_ANDROID_KEY =
+  process.env.EXPO_PUBLIC_MAPPR_ANDROID_KEY || MAPPR_DEFAULT_KEY;
+const MAPPR_IOS_KEY =
+  process.env.EXPO_PUBLIC_MAPPR_IOS_KEY || MAPPR_DEFAULT_KEY;
+const MAPPR_SERVER_KEY =
+  process.env.EXPO_PUBLIC_MAPPR_SERVER_KEY || MAPPR_DEFAULT_KEY;
+const MAPPR_FORM_KEY =
+  process.env.EXPO_PUBLIC_MAPPR_FORM_KEY || MAPPR_DEFAULT_KEY;
+
+const getMapprKey = () => {
+  if (Platform.OS === "android") {
+    return MAPPR_ANDROID_KEY || MAPPR_SERVER_KEY;
+  }
+
+  if (Platform.OS === "ios") {
+    return MAPPR_IOS_KEY || MAPPR_SERVER_KEY;
+  }
+
+  return MAPPR_WEB_KEY || MAPPR_FORM_KEY || MAPPR_SERVER_KEY;
+};
+
+const MAPPR_ACCESS_TOKEN = getMapprKey();
+const MAPPR_API_BASE_URL =
+  process.env.EXPO_PUBLIC_MAPPR_API_BASE_URL || "https://maps.flightmap.io/api";
 
 interface PickupData {
   fullName: string;
@@ -36,12 +64,12 @@ interface PickupDetailsProps {
 }
 
 interface PlacePrediction {
-  place_id: string;
+  id: string;
   description: string;
-  structured_formatting: {
-    main_text: string;
-    secondary_text: string;
-  };
+  mainText: string;
+  secondaryText: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 const PickupDetails: React.FC<PickupDetailsProps> = ({
@@ -72,39 +100,57 @@ const PickupDetails: React.FC<PickupDetailsProps> = ({
 
     setLoading(true);
     try {
+      const params = new URLSearchParams({
+        text: query.trim(),
+        currentlatitude: String(data.latitude ?? 23.8103),
+        currentlongitude: String(data.longitude ?? 90.4125),
+        skip_cache: "0",
+        fm_token: MAPPR_ACCESS_TOKEN,
+        radius: "0",
+        offering: "3",
+        language: "en",
+      });
+
       const response = await fetch(
-        `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(
-          query,
-        )}&key=${GOOGLE_PLACES_API_KEY}&types=address`,
+        `${MAPPR_API_BASE_URL}/search?${params.toString()}`,
       );
       const result = await response.json();
-      if (result.predictions) {
-        setPredictions(result.predictions);
-      }
+
+      const mappedPredictions: PlacePrediction[] = Array.isArray(result?.data)
+        ? result.data
+            .map((item: any, index: number) => ({
+              id: String(item.id || item.name || index),
+              description: item.address || item.name || "",
+              mainText: item.name || item.address || "",
+              secondaryText: item.address || "",
+              latitude:
+                typeof item.lat === "number"
+                  ? item.lat
+                  : Number(item.position?.lat),
+              longitude:
+                typeof item.lng === "number"
+                  ? item.lng
+                  : Number(item.position?.lng),
+            }))
+            .filter((item: PlacePrediction) => item.description)
+        : [];
+
+      setPredictions(mappedPredictions);
     } catch (error) {
-      console.error("Error searching places:", error);
+      console.error("Error searching Mappr places:", error);
+      setPredictions([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const selectPlace = async (placeId: string, description: string) => {
-    try {
-      const response = await fetch(
-        `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=geometry&key=${GOOGLE_PLACES_API_KEY}`,
-      );
-      const result = await response.json();
-
-      const location = result.result?.geometry?.location;
-      onDataChange({
-        ...data,
-        fullAddress: description,
-        latitude: location?.lat,
-        longitude: location?.lng,
-      });
-    } catch {
-      onDataChange({ ...data, fullAddress: description });
-    }
+  const selectPlace = (place: PlacePrediction) => {
+    onDataChange({
+      ...data,
+      fullAddress: place.description,
+      latitude: place.latitude,
+      longitude: place.longitude,
+    });
     setShowLocationModal(false);
     setSearchQuery("");
     setPredictions([]);
@@ -193,19 +239,17 @@ const PickupDetails: React.FC<PickupDetailsProps> = ({
 
             <FlatList
               data={predictions}
-              keyExtractor={(item) => item.place_id}
+              keyExtractor={(item) => item.id}
               renderItem={({ item }) => (
                 <TouchableOpacity
                   style={styles.predictionItem}
-                  onPress={() => selectPlace(item.place_id, item.description)}
+                  onPress={() => selectPlace(item)}
                 >
                   <Ionicons name="location-outline" size={20} color="#F5A623" />
                   <View style={styles.predictionText}>
-                    <Text style={styles.predictionMain}>
-                      {item.structured_formatting.main_text}
-                    </Text>
+                    <Text style={styles.predictionMain}>{item.mainText}</Text>
                     <Text style={styles.predictionSecondary}>
-                      {item.structured_formatting.secondary_text}
+                      {item.secondaryText}
                     </Text>
                   </View>
                 </TouchableOpacity>

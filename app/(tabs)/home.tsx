@@ -43,6 +43,11 @@ export default function HomeScreen() {
       return;
     }
 
+    if (serviceTitle === "Store Pickup") {
+      router.push("/(tabs)/create-delivery");
+      return;
+    }
+
     console.log(`Pressed ${serviceTitle}`);
   };
 
