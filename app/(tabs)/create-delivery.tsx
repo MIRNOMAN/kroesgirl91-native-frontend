@@ -12,6 +12,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { toast } from "sonner-native";
 
 import {
   BankTransfer,
@@ -146,14 +147,69 @@ export default function CreateDeliveryScreen() {
     [selectedRide],
   );
 
-  const getJobDeliveryDateTime = (): string => {
-    const date = new Date();
+  const formatRideDate = (date: Date, includeTime: boolean = false): string => {
+    const dateStr = date.toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
 
-    if (selectedRide === "next-day") {
-      date.setDate(date.getDate() + 1);
+    if (includeTime) {
+      const timeStr = date.toLocaleTimeString("en-GB", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      });
+      return `${dateStr} ${timeStr}`;
     }
 
-    return date.toISOString();
+    return dateStr;
+  };
+
+  const rideOptionsWithDynamicDates = (() => {
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+
+    // Add 10 minutes to same-day delivery
+    const sameDayWithBuffer = new Date(today);
+    sameDayWithBuffer.setMinutes(sameDayWithBuffer.getMinutes() + 10);
+
+    return createDeliveryData.rideOptions.map((option) => {
+      if (option.id === "same-day") {
+        return {
+          ...option,
+          subtitle: `Date: ${formatRideDate(sameDayWithBuffer, true)}`,
+        };
+      }
+
+      if (option.id === "next-day") {
+        return {
+          ...option,
+          subtitle: `Date: ${formatRideDate(tomorrow)}`,
+        };
+      }
+
+      return option;
+    });
+  })();
+
+  const getJobDeliveryDateTime = (): string => {
+    // Capture the exact current moment in time
+    const now = new Date();
+
+    if (selectedRide === "same-day") {
+      // For same-day delivery, apply a 10-minute buffer from current time
+      now.setMinutes(now.getMinutes() + 10);
+    }
+
+    if (selectedRide === "next-day") {
+      // For next-day delivery, increment date but keep the current time
+      now.setDate(now.getDate() + 1);
+    }
+
+    // Convert to ISO 8601 format (UTC timezone) - this is the accurate moment of booking
+    return now.toISOString();
   };
 
   const getHeaderTitle = (): string => {
@@ -420,8 +476,10 @@ export default function CreateDeliveryScreen() {
       specialInstructions: packageData.instructions,
     };
 
+    console.log(payload);
+
     try {
-      await createDelivery({
+      const response = await createDelivery({
         data: payload,
         image:
           packageData.paymentMethod === "bank" && bankImageUri
@@ -432,7 +490,8 @@ export default function CreateDeliveryScreen() {
               }
             : undefined,
       }).unwrap();
-
+      console.log(response);
+      toast.success(response?.message || "Delivery created successfully");
       setShowConfirmed(true);
     } catch (error) {
       const message =
@@ -496,7 +555,7 @@ export default function CreateDeliveryScreen() {
       case "ride":
         return (
           <ChooseRide
-            rideOptions={createDeliveryData.rideOptions}
+            rideOptions={rideOptionsWithDynamicDates}
             selectedRide={selectedRide}
             onSelectRide={setSelectedRide}
             onNext={handleRideNext}

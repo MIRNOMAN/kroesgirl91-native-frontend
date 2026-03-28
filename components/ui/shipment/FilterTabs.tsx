@@ -1,4 +1,10 @@
-import { Dimensions, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  Dimensions,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+} from "react-native";
 
 const { width } = Dimensions.get("window");
 
@@ -14,7 +20,11 @@ export const FilterTabs = ({
   onTabChange,
 }: FilterTabsProps) => {
   return (
-    <View style={styles.filterContainer}>
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={styles.filterContainer}
+    >
       {tabs.map((tab) => {
         const isActive = activeTab === tab;
         return (
@@ -31,29 +41,33 @@ export const FilterTabs = ({
           </Pressable>
         );
       })}
-    </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   filterContainer: {
     flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: 20,
-    marginBottom:30,
+    marginBottom: 16,
     marginTop: 10,
     gap: 8,
   },
   filterTab: {
-    paddingHorizontal: width > 400 ? 16 : 16,
-    paddingVertical: 8,
-    borderRadius: 16,
+    height: 38,
+    paddingHorizontal: width > 400 ? 14 : 12,
+    borderRadius: 14,
     backgroundColor: "#F5F5F5",
+    justifyContent: "center",
+    alignItems: "center",
+    alignSelf: "flex-start",
   },
   filterTabActive: {
     backgroundColor: "#1A3A4A",
   },
   filterText: {
-    fontSize: width > 400 ? 14 : 13,
+    fontSize: width > 400 ? 13 : 12,
     fontWeight: "500",
     color: "#666",
   },

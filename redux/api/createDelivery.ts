@@ -1,3 +1,4 @@
+import { TGetOrdersQuery, TGetOrdersResponse } from "../../types";
 import { baseApi } from "./baseApi";
 
 type CreateDeliveryPayload = {
@@ -28,10 +29,23 @@ type CreateDeliveryRequest = {
   image?: UploadImage;
 };
 
+type CreateDeliveryResponse = {
+  success?: boolean;
+  statusCode?: number;
+  message?: string;
+  data?: {
+    message?: string;
+    [key: string]: unknown;
+  };
+};
+
 const createDeliveryApi = baseApi.injectEndpoints({
   overrideExisting: true,
   endpoints: (build) => ({
-    createDelivery: build.mutation<unknown, CreateDeliveryRequest>({
+    createDelivery: build.mutation<
+      CreateDeliveryResponse,
+      CreateDeliveryRequest
+    >({
       query: ({ data, image }) => {
         const formData = new FormData();
         formData.append("data", JSON.stringify(data));
@@ -48,7 +62,16 @@ const createDeliveryApi = baseApi.injectEndpoints({
       },
       invalidatesTags: ["Deliveries"],
     }),
+    getAllOrders: build.query<TGetOrdersResponse, TGetOrdersQuery>({
+      query: (query) => ({
+        url: `/orders`,
+        method: "POST",
+        body: query,
+      }),
+      providesTags: ["Deliveries"],
+    }),
   }),
 });
 
-export const { useCreateDeliveryMutation } = createDeliveryApi;
+export const { useCreateDeliveryMutation, useGetAllOrdersQuery } =
+  createDeliveryApi;

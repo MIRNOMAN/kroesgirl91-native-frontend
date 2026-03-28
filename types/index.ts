@@ -9,7 +9,7 @@ export type TUser = {
   id: string;
   name: string;
   email: string;
-  role: "BUYER" | "GARAGE" | "DEALERSHIP" | "CAR_OWNER" | "SUPERADMIN"; 
+  role: "BUYER" | "GARAGE" | "DEALERSHIP" | "CAR_OWNER" | "SUPERADMIN";
   createdAt: string; // ISO date string
   updatedAt: string; // ISO date string
   phoneNumber: string;
@@ -22,8 +22,8 @@ export type TUser = {
   };
 };
 
-export type TProduct = { 
-  _id: string;  
+export type TProduct = {
+  _id: string;
   title: string;
   description: string;
   photos: { thumbnail: string; cover: string };
@@ -71,5 +71,48 @@ export type TResponse<T> = {
   message: string;
 };
 
+export type TResponseRedux<T> = TResponse<T> & BaseQueryApi;
 
-export type TResponseRedux<T> = TResponse<T> & BaseQueryApi
+export type TOrderType = "PICKUP" | "DELIVERY";
+
+export type TOrderPaymentMethod = "CASH" | "COD" | "BANK";
+
+export type TOrderStatus =
+  | "PENDING"
+  | "SUCCESSFUL"
+  | "DELIVERED"
+  | "CANCELLED"
+  | "COMPLETED"
+  | "STARTED"
+  | "ARRIVED"
+  | "ACKNOWLEDGED"
+  | string;
+
+export type TOrder = {
+  id: string;
+  orderType: TOrderType;
+  deliveryDate: string;
+  deliveryAddress: string;
+  status: TOrderStatus;
+  price: number;
+  quantity: number;
+  weight: number;
+  paymentMethod: TOrderPaymentMethod;
+  trackingUrl: string | null;
+  tookanJobId: string | null;
+  createdAt: string;
+  updatedAt: string;
+  [key: string]: unknown;
+};
+
+export type TGetOrdersQuery = {
+  date: string;
+  job_type: TOrderType;
+};
+
+export type TGetOrdersResponse = {
+  success: boolean;
+  statusCode: number;
+  message: string;
+  data: TOrder[];
+};

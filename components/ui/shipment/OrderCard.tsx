@@ -4,6 +4,13 @@ import { COLORS } from "../../../constants/colors";
 
 const { width } = Dimensions.get("window");
 
+const toDisplayLabel = (value: string) =>
+  value
+    .toLowerCase()
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+
 export interface Order {
   id: string;
   date: string;
@@ -15,12 +22,16 @@ export interface Order {
 }
 
 const getStatusColor = (status: string) => {
-  switch (status) {
-    case "Delivered":
+  switch (status.toUpperCase()) {
+    case "SUCCESSFUL":
       return { bg: "#E8F5E9", text: "#2E7D32" };
-    case "Pending":
+    case "PENDING":
       return { bg: "#FFF3E0", text: "#E65100" };
-    case "Cancelled":
+    case "STARTED":
+      return { bg: "#E3F2FD", text: "#1565C0" };
+    case "ARRIVED":
+      return { bg: "#E0F2FE", text: "#0369A1" };
+    case "CANCELLED":
       return { bg: "#FFEBEE", text: "#C62828" };
     default:
       return { bg: "#E3F2FD", text: "#1565C0" };
@@ -47,7 +58,7 @@ export const OrderCard = ({ order }: OrderCardProps) => {
             style={[styles.statusBadge, { backgroundColor: statusColor.bg }]}
           >
             <Text style={[styles.statusText, { color: statusColor.text }]}>
-              {order.status}
+              {toDisplayLabel(order.status)}
             </Text>
           </View>
         </View>
