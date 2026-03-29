@@ -1,7 +1,5 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { Feather } from "@expo/vector-icons";
-import DateTimePicker, {
-  DateTimePickerEvent,
-} from "@react-native-community/datetimepicker";
 import { useMemo, useState } from "react";
 import {
   Dimensions,
@@ -32,9 +30,9 @@ type ShipmentStatus =
   | "SUCCESSFUL"
   | "CANCELLED";
 type StatusFilter = "ALL" | ShipmentStatus;
-type JobTypeFilter = TOrderType;
 
-const JOB_TYPE_OPTIONS: JobTypeFilter[] = ["PICKUP", "DELIVERY"];
+
+
 const STATUS_FILTERS: StatusFilter[] = [
   "ALL",
   "PENDING",
@@ -65,7 +63,7 @@ const formatOrderDate = (date: string) => {
   });
 };
 
-const formatDateForApi = (date: Date) => date.toISOString().split("T")[0];
+
 
 const normalizeOrderStatus = (status: TOrderStatus): ShipmentStatus => {
   const normalized = status.toUpperCase();
@@ -90,20 +88,21 @@ const normalizeOrderStatus = (status: TOrderStatus): ShipmentStatus => {
 };
 
 export default function ShipmentScreen() {
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [selectedJobType, setSelectedJobType] =
-    useState<JobTypeFilter>("PICKUP");
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const itemsPerPage = 10;
   const [activeStatus, setActiveStatus] = useState<StatusFilter>("ALL");
 
-  const queryParams = useMemo(
-    () => ({
-      date: formatDateForApi(selectedDate),
-      job_type: selectedJobType,
-    }),
-    [selectedDate, selectedJobType],
-  );
+  // Query params for API (remove date and job_type)
+const queryParams = useMemo(
+  () => [
+    { name: "page", value: currentPage },
+    { name: "limit", value: itemsPerPage }
+  ],
+  [currentPage]
+);
 
+  // API call
   const {
     data: ordersResponse,
     isLoading,
@@ -112,8 +111,22 @@ export default function ShipmentScreen() {
     refetch,
   } = useGetAllOrdersQuery(queryParams);
 
-  const allOrders = ordersResponse?.data ?? [];
+  // Type safety for API response
+  type OrderApiResponse = {
+    data: any[];
+    meta?: {
+      currentPage: number;
+      itemsPerPage: number;
+      totalItems: number;
+      totalPages: number;
+      hasNextPage: boolean;
+      hasPreviousPage: boolean;
+    };
+  };
+  const allOrders = (ordersResponse as OrderApiResponse)?.data ?? [];
+  const meta = (ordersResponse as OrderApiResponse)?.meta;
 
+  // Filter by status
   const filteredOrders = useMemo(() => {
     return allOrders.filter((order) =>
       activeStatus === "ALL"
@@ -122,6 +135,7 @@ export default function ShipmentScreen() {
     );
   }, [allOrders, activeStatus]);
 
+  // Map to OrderCard data
   const orderCardData: Order[] = useMemo(
     () =>
       filteredOrders.map((order) => ({
@@ -139,70 +153,10 @@ export default function ShipmentScreen() {
   const showInitialLoading =
     isLoading || (isFetching && allOrders.length === 0);
 
-  const onDateChange = (_event: DateTimePickerEvent, date?: Date) => {
-    setShowDatePicker(false);
-    if (date) {
-      setSelectedDate(date);
-    }
-  };
-
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <View style={styles.header}>
         <Text style={styles.title}>My Orders</Text>
-      </View>
-
-      <View style={styles.selectorBlock}>
-        <Text style={styles.selectorTitle}>Date</Text>
-        <Pressable
-          style={styles.datePickerButton}
-          onPress={() => setShowDatePicker(true)}
-        >
-          <Feather name="calendar" size={16} color="#1A3A4A" />
-          <Text style={styles.datePickerText}>
-            {formatDateForApi(selectedDate)}
-          </Text>
-        </Pressable>
-        {showDatePicker ? (
-          <DateTimePicker
-            value={selectedDate}
-            mode="date"
-            display={Platform.OS === "ios" ? "inline" : "default"}
-            onChange={onDateChange}
-          />
-        ) : null}
-      </View>
-
-      <View style={styles.selectorBlock}>
-        <Text style={styles.selectorTitle}>Job Type</Text>
-        <FlatList
-          horizontal
-          data={JOB_TYPE_OPTIONS}
-          keyExtractor={(item) => item}
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.selectorList}
-          renderItem={({ item }) => {
-            const isActive = selectedJobType === item;
-            return (
-              <Pressable
-                style={[
-                  styles.selectorChip,
-                  isActive && styles.selectorChipActive,
-                ]}
-                onPress={() => setSelectedJobType(item)}
-              >
-                <Text
-                  style={[
-                    styles.selectorChipText,
-                    isActive && styles.selectorChipTextActive,
-                  ]}
-                >
-                  {toTitleCase(item)}
-                </Text>
-              </Pressable>
-            );
-          }}
-        />
       </View>
 
       <FilterTabs
@@ -215,9 +169,50 @@ export default function ShipmentScreen() {
             (status) =>
               (status === "ALL" ? "All" : toTitleCase(status)) === tab,
           );
-          setActiveStatus(selected);
+          if (selected) {
+            setActiveStatus(selected);
+          }
         }}
       />
+
+          {/* Pagination Controls */}
+          {meta && meta.totalPages > 1 && (
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "center",
+                alignItems: "center",
+                marginVertical: 16,
+                gap: 12,
+              }}
+            >
+              <Pressable
+                style={[
+                  styles.retryButton,
+                  { opacity: meta.hasPreviousPage ? 1 : 0.5 },
+                ]}
+                disabled={!meta.hasPreviousPage}
+                onPress={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              >
+                <Text style={styles.retryButtonText}>Previous</Text>
+              </Pressable>
+              <Text style={{ fontWeight: "600", color: COLORS.textPrimary }}>
+                Page {meta.currentPage} of {meta.totalPages}
+              </Text>
+              <Pressable
+                style={[
+                  styles.retryButton,
+                  { opacity: meta.hasNextPage ? 1 : 0.5 },
+                ]}
+                disabled={!meta.hasNextPage}
+                onPress={() =>
+                  setCurrentPage((p) => Math.min(meta.totalPages, p + 1))
+                }
+              >
+                <Text style={styles.retryButtonText}>Next</Text>
+              </Pressable>
+            </View>
+          )}
 
       {showInitialLoading ? (
         <View style={styles.listContent}>
@@ -232,19 +227,22 @@ export default function ShipmentScreen() {
           </Pressable>
         </View>
       ) : (
-        <FlatList
-          data={orderCardData}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <OrderCard order={item} />}
-          contentContainerStyle={styles.listContent}
-          showsVerticalScrollIndicator={false}
-          ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <Feather name="package" size={48} color="#ccc" />
-              <Text style={styles.emptyText}>No orders found</Text>
-            </View>
-          }
-        />
+        <>
+          <FlatList
+            data={orderCardData}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => <OrderCard order={item} />}
+            contentContainerStyle={styles.listContent}
+            showsVerticalScrollIndicator={false}
+            ListEmptyComponent={
+              <View style={styles.emptyContainer}>
+                <Feather name="package" size={48} color="#ccc" />
+                <Text style={styles.emptyText}>No orders found</Text>
+              </View>
+            }
+          />
+      
+        </>
       )}
     </SafeAreaView>
   );
@@ -268,14 +266,14 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   selectorBlock: {
-    marginBottom: 6,
+    marginBottom: 12,
   },
   selectorTitle: {
     fontSize: 13,
     fontWeight: "600",
     color: "#4B5563",
     marginHorizontal: 20,
-    marginBottom: 8,
+    marginBottom: 12,
   },
   selectorList: {
     paddingHorizontal: 20,

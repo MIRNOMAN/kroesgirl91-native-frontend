@@ -78,6 +78,7 @@ interface CreateOrderPayload {
   latitude: number;
   longitude: number;
   specialInstructions: string;
+  isAgreedToTerms: boolean;
 }
 
 type FormLocationData = PickupData | DeliveryData;
@@ -89,6 +90,8 @@ export default function CreateDeliveryScreen() {
   const [showConfirmed, setShowConfirmed] = useState(false);
   const [orderType, setOrderType] = useState<OrderType>("PICKUP");
   const [bankImageUri, setBankImageUri] = useState<string | null>(null);
+  // Prohibited items agreement state
+  const [isAgreedToProhibited, setIsAgreedToProhibited] = useState(false);
 
   const [createDelivery, { isLoading: isCreatingDelivery }] =
     useCreateDeliveryMutation();
@@ -474,6 +477,7 @@ export default function CreateDeliveryScreen() {
       latitude: bookingLocationData.latitude ?? 0,
       longitude: bookingLocationData.longitude ?? 0,
       specialInstructions: packageData.instructions,
+      isAgreedToTerms: isAgreedToProhibited,
     };
 
     console.log(payload);
@@ -580,6 +584,8 @@ export default function CreateDeliveryScreen() {
               onScreenshotChange={setBankImageUri}
               isSubmitting={isCreatingDelivery}
               onConfirm={handleConfirmBooking}
+              isAgreedToProhibited={isAgreedToProhibited}
+              setIsAgreedToProhibited={setIsAgreedToProhibited}
             />
           );
         }
@@ -594,6 +600,8 @@ export default function CreateDeliveryScreen() {
             pricingDetails={createDeliveryData.pricingDetails}
             isSubmitting={isCreatingDelivery}
             onConfirm={handleConfirmBooking}
+            isAgreedToProhibited={isAgreedToProhibited}
+            setIsAgreedToProhibited={setIsAgreedToProhibited}
           />
         );
       default:

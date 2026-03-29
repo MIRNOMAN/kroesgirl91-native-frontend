@@ -1,7 +1,15 @@
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { Dimensions, StyleSheet, Text, View } from "react-native";
+import {
+  Dimensions,
+  Pressable,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import DeliveryButton from "./DeliveryButton";
+import { COLORS } from "@/constants/colors";
 
 const { width } = Dimensions.get("window");
 const isSmallDevice = width < 375;
@@ -37,6 +45,8 @@ interface CashOnDeliveryProps {
   pricingDetails: PricingDetails;
   isSubmitting?: boolean;
   onConfirm: () => void;
+  isAgreedToProhibited: boolean;
+  setIsAgreedToProhibited: (v: boolean) => void;
 }
 
 const CashOnDelivery: React.FC<CashOnDeliveryProps> = ({
@@ -45,6 +55,8 @@ const CashOnDelivery: React.FC<CashOnDeliveryProps> = ({
   pricingDetails,
   isSubmitting = false,
   onConfirm,
+  isAgreedToProhibited,
+  setIsAgreedToProhibited,
 }) => {
   const total = pricingDetails.deliveryFee + pricingDetails.serviceFee;
 
@@ -165,12 +177,31 @@ const CashOnDelivery: React.FC<CashOnDeliveryProps> = ({
         </View>
       </View>
 
+      {/* Prohibited items agreement checkbox */}
+        {/* Checkbox */}
+           <Pressable
+             style={styles.checkboxRow}
+             onPress={() => setIsAgreedToProhibited(!isAgreedToProhibited)}
+           >
+             <View
+               style={[
+                 styles.checkbox,
+                 isAgreedToProhibited && styles.checkboxChecked,
+               ]}
+             >
+               {isAgreedToProhibited && <Text style={styles.checkmark}>✓</Text>}
+             </View>
+             <Text style={styles.checkboxLabel}>
+               I confirm that this delivery does not contain harmful goods, drugs, or
+               explosives.
+             </Text>
+           </Pressable>
       <View style={styles.buttonContainer}>
         <DeliveryButton
           title={isSubmitting ? "Submitting..." : "Confirm booking"}
           onPress={onConfirm}
           variant="secondary"
-          disabled={isSubmitting}
+          disabled={isSubmitting || !isAgreedToProhibited}
         />
       </View>
     </View>
@@ -236,6 +267,42 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#1A3A4A",
   },
+    checkboxRow: {
+      flexDirection: "row",
+      alignItems: "flex-start",
+      marginTop: 10,
+      marginBottom: 18,
+      width: "100%",
+      gap: 10,
+    },
+    checkbox: {
+      width: 26,
+      height: 26,
+      borderRadius: 6,
+      borderWidth: 2.5,
+      borderColor: COLORS.onboardingPrimary,
+      backgroundColor: COLORS.white,
+      alignItems: "center",
+      justifyContent: "center",
+      marginTop: 2,
+    },
+    checkboxChecked: {
+      backgroundColor: COLORS.onboardingPrimary,
+      borderColor: COLORS.onboardingPrimary,
+    },
+    checkmark: {
+      color: COLORS.white,
+      fontSize: 18,
+      fontWeight: "bold",
+      marginTop: -2,
+    },
+    checkboxLabel: {
+      flex: 1,
+      fontSize: 14,
+      color: COLORS.onboardingPrimary,
+      fontWeight: "500",
+      marginTop: 2,
+    },
   summarySection: {
     backgroundColor: "#FFFFFF",
     borderRadius: 16,

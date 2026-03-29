@@ -1,3 +1,4 @@
+import { COLORS } from "@/constants/colors";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import React from "react";
@@ -5,6 +6,7 @@ import {
   Alert,
   Dimensions,
   Image,
+  Pressable,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -26,6 +28,8 @@ interface BankTransferProps {
   onScreenshotChange: (uri: string | null) => void;
   isSubmitting?: boolean;
   onConfirm: () => void;
+  isAgreedToProhibited: boolean;
+  setIsAgreedToProhibited: (v: boolean) => void;
 }
 
 const BankTransfer: React.FC<BankTransferProps> = ({
@@ -34,6 +38,8 @@ const BankTransfer: React.FC<BankTransferProps> = ({
   onScreenshotChange,
   isSubmitting = false,
   onConfirm,
+  isAgreedToProhibited,
+  setIsAgreedToProhibited,
 }) => {
   const pickImage = async () => {
     const permissionResult =
@@ -118,12 +124,30 @@ const BankTransfer: React.FC<BankTransferProps> = ({
         </View>
       </View>
 
+      {/* Checkbox */}
+      <Pressable
+        style={styles.checkboxRow}
+        onPress={() => setIsAgreedToProhibited(!isAgreedToProhibited)}
+      >
+        <View
+          style={[
+            styles.checkbox,
+            isAgreedToProhibited && styles.checkboxChecked,
+          ]}
+        >
+          {isAgreedToProhibited && <Text style={styles.checkmark}>✓</Text>}
+        </View>
+        <Text style={styles.checkboxLabel}>
+          I confirm that this delivery does not contain harmful goods, drugs, or
+          explosives.
+        </Text>
+      </Pressable>
       <View style={styles.buttonContainer}>
         <DeliveryButton
           title={isSubmitting ? "Submitting..." : "Confirm booking"}
           onPress={onConfirm}
           variant="secondary"
-          disabled={!screenshotUri || isSubmitting}
+          disabled={!screenshotUri || isSubmitting || !isAgreedToProhibited}
         />
       </View>
     </View>
@@ -172,6 +196,42 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 12,
+  },
+  checkboxRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginTop: 10,
+    marginBottom: 18,
+    width: "100%",
+    gap: 10,
+  },
+  checkbox: {
+    width: 26,
+    height: 26,
+    borderRadius: 6,
+    borderWidth: 2.5,
+    borderColor: COLORS.onboardingPrimary,
+    backgroundColor: COLORS.white,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 2,
+  },
+  checkboxChecked: {
+    backgroundColor: COLORS.onboardingPrimary,
+    borderColor: COLORS.onboardingPrimary,
+  },
+  checkmark: {
+    color: COLORS.white,
+    fontSize: 18,
+    fontWeight: "bold",
+    marginTop: -2,
+  },
+  checkboxLabel: {
+    flex: 1,
+    fontSize: 14,
+    color: COLORS.onboardingPrimary,
+    fontWeight: "500",
+    marginTop: 2,
   },
   uploadText: {
     fontSize: 15,

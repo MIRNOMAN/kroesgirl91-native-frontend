@@ -148,14 +148,14 @@ export default function VerifyOtpScreen() {
           <AuthButton
             title={
               isVerified
-                ? "Go to Home"
+                ? "Go to Agreement"
                 : isLoading
                   ? "Verifying..."
                   : "Verify OTP"
             }
             onPress={
               isVerified
-                ? () => router.replace(APP_ROUTES.home)
+                ? () => router.replace(APP_ROUTES.aggrement)
                 : handleVerifyOtp
             }
             disabled={isLoading}

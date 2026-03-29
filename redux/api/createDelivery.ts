@@ -1,4 +1,4 @@
-import { TGetOrdersQuery, TGetOrdersResponse } from "../../types";
+import { TGetOrdersQuery, TGetOrdersResponse, TQueryParam } from "../../types";
 import { baseApi } from "./baseApi";
 
 type CreateDeliveryPayload = {
@@ -62,12 +62,22 @@ const createDeliveryApi = baseApi.injectEndpoints({
       },
       invalidatesTags: ["Deliveries"],
     }),
-    getAllOrders: build.query<TGetOrdersResponse, TGetOrdersQuery>({
-      query: (query) => ({
-        url: `/orders`,
-        method: "POST",
-        body: query,
-      }),
+     getAllOrders: build.query({
+      query: (args) => {
+        const params = new URLSearchParams();
+        if (args.length > 0) {
+          args
+            .filter((arg: TQueryParam) => arg.value)
+            .forEach((arg: TQueryParam) =>
+              params.append(arg.name, String(arg.value)),
+            );
+        }
+        return {
+          url: `/orders`,
+          method: "GET",
+          params,
+        };
+      },
       providesTags: ["Deliveries"],
     }),
   }),

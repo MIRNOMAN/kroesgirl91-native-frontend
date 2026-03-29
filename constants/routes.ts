@@ -4,6 +4,7 @@ export const APP_ROUTES = {
   onboarding: "/onboarding" as Href,
   login: "/login" as Href,
   register: "/register" as Href,
+  aggrement: "/aggrement" as Href,
   forgotPassword: "/forgot-password" as Href,
   forgotOtp: "/forgot-otp" as Href,
   resetPassword: "/reset-password" as Href,
