@@ -1,3 +1,5 @@
+
+
 import { Feather, Ionicons } from "@expo/vector-icons";
 import React from "react";
 import {
@@ -21,7 +23,7 @@ interface ShipmentStatus {
 
 interface CurrentShipmentProps {
   recipientName: string;
-  recipientAvatar?: string;
+ 
   trackingId?: string;
   status: string;
   statuses: ShipmentStatus[];
@@ -33,7 +35,7 @@ interface CurrentShipmentProps {
 
 export default function CurrentShipment({
   recipientName,
-  recipientAvatar,
+ 
   trackingId,
   status,
   statuses,
@@ -59,14 +61,24 @@ export default function CurrentShipment({
     }
   };
 
+  function formatDateTime(dateStr?: string) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr;
+  return d.toLocaleString(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+  });
+}
+
   return (
     <View style={styles.container}>
       <View style={styles.recipientInfo}>
-        {recipientAvatar ? (
-          <Image source={{ uri: recipientAvatar }} style={styles.avatar} />
-        ) : (
-          <View style={[styles.avatar, styles.avatarPlaceholder]} />
-        )}
+    
 
         <View style={styles.recipientDetails}>
           <Text style={styles.recipientName}>{recipientName}</Text>
@@ -171,19 +183,23 @@ export default function CurrentShipment({
       {(startDate || endDate) && (
         <View style={styles.dateLocationContainer}>
           {startDate && (
-            <View>
-              <Text style={styles.dateText}>{startDate}</Text>
-              <Text style={styles.locationText}>{startLocation}</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.dateText}>From</Text>
+              <Text style={styles.dateText}>{formatDateTime(startDate)}</Text>
+              <Text style={styles.locationText}>{startLocation || '-'}</Text>
             </View>
           )}
           {endDate && (
-            <View>
-              <Text style={styles.dateText}>{endDate}</Text>
-              <Text style={styles.locationText}>{endLocation}</Text>
+            <View style={{ flex: 1, alignItems: 'flex-end' }}>
+              <Text style={styles.dateText}>To</Text>
+              <Text style={styles.dateText}>{formatDateTime(endDate)}</Text>
+              <Text style={styles.locationText}>{endLocation || '-'}</Text>
             </View>
           )}
         </View>
       )}
+
+
     </View>
   );
 }
@@ -328,15 +344,15 @@ const styles = StyleSheet.create({
   },
 
   dateText: {
-    fontSize: 15,
+    fontSize: 13,
     fontWeight: "600",
     color: "#999999",
     marginBottom: 4,
   },
   locationText: {
-    fontSize: 16,
+    fontSize: 12,
     color: COLORS.textPrimary,
-    fontWeight: "700",
+    fontWeight: "600",
   },
   imagesContainer: {
     flexDirection: "row",

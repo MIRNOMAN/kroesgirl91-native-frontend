@@ -1,11 +1,11 @@
 import React from "react";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {  StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { COLORS } from "../../../constants/colors";
 
-interface ShipmentItemProps {
+export interface ShipmentItemProps {
   id: string;
   name: string;
-  avatar?: string;
+ tookanJobId?: string;
   status?: string;
   onPress?: () => void;
 }
@@ -13,17 +13,13 @@ interface ShipmentItemProps {
 export default function ShipmentItem({
   id,
   name,
-  avatar,
+  
   status = "On process",
   onPress,
 }: ShipmentItemProps) {
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
-      {avatar ? (
-        <Image source={{ uri: avatar }} style={styles.avatar} />
-      ) : (
-        <View style={[styles.avatar, styles.avatarPlaceholder]} />
-      )}
+  
       <View style={styles.content}>
         <Text style={styles.name}>{name}</Text>
         <Text style={styles.trackingId}>ID: {id}</Text>

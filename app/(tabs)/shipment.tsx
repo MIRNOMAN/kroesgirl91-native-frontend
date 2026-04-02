@@ -19,7 +19,7 @@ import {
 } from "../../components/ui/shipment";
 import { COLORS } from "../../constants/colors";
 import { useGetAllOrdersQuery } from "../../redux/api/createDelivery";
-import { TOrderStatus, TOrderType } from "../../types";
+import { TOrderStatus,  } from "../../types";
 
 const { width } = Dimensions.get("window");
 
@@ -139,7 +139,7 @@ const queryParams = useMemo(
   const orderCardData: Order[] = useMemo(
     () =>
       filteredOrders.map((order) => ({
-        id: order.id,
+        id: order.tookanJobId,
         date: formatOrderDate(order.deliveryDate),
         status: normalizeOrderStatus(order.status as TOrderStatus),
         price: Number(order.price || 0),
