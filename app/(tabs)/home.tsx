@@ -27,16 +27,19 @@ import { getGreeting } from "../../utils/getGreeting";
 
 // Status steps for dynamic mapping
 const STATUS_STEPS = [
-  { key: "ACCEPTED", label: "Accepted", image: "accepted" },
-  { key: "PICKED", label: "Picked", image: "picked" },
-  { key: "IN_TRANSIT", label: "In Transit", image: "transit" },
-  {
-    key: "OUT_FOR_DELIVERY",
+  { key: "ASSIGNED", label: "Accepted", image: "accepted" },
+  { key: "STARTED", label: "Picked", image: "picked" },
+    {
+    key: "ARRIVED",
     label: "Out for Delivery",
     image: "outfordelivery",
   },
-  { key: "DELIVERED", label: "Delivered", image: "delivered" },
+  { key: "SUCCESSFUL", label: "In Transit", image: "transit" },
+
+  { key: "CANCELLED", label: "Delivered", image: "delivered" },
 ];
+
+
 
 // Map API status to step index
 const STATUS_INDEX_MAP: Record<string, number> = {
@@ -46,6 +49,11 @@ const STATUS_INDEX_MAP: Record<string, number> = {
   IN_TRANSIT: 2,
   OUT_FOR_DELIVERY: 3,
   DELIVERED: 4,
+    ASSIGNED: 0,
+  STARTED: 1,
+  ARRIVED: 2,
+  SUCCESSFUL: 3,
+  CANCELLED: 4,
 };
 
 function getShipmentStatuses(status: string) {

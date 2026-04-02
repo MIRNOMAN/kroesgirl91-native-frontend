@@ -80,8 +80,17 @@ const createDeliveryApi = baseApi.injectEndpoints({
       },
       providesTags: ["Deliveries"],
     }),
+    getAllAgents: build.query({
+      query: () => {
+        return {
+          url: `/agents`,
+          method: "GET",
+        };
+      },
+      providesTags: ["Deliveries"],
+    }),
   }),
 });
 
-export const { useCreateDeliveryMutation, useGetAllOrdersQuery } =
+export const { useCreateDeliveryMutation, useGetAllOrdersQuery, useGetAllAgentsQuery } =
   createDeliveryApi;

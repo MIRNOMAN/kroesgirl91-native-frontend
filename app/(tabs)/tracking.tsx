@@ -1,3 +1,4 @@
+import { useGetAllAgentsQuery } from "@/redux/api/createDelivery";
 import { useRouter } from "expo-router";
 import React, { useCallback, useState } from "react";
 import {
@@ -39,6 +40,23 @@ export default function TrackingScreen() {
     searchPlaceholder,
     buttonTexts,
   } = trackingData;
+
+  // Fetch live agents
+  const { data: agentsData, isLoading: agentsLoading } = useGetAllAgentsQuery({});
+
+  // Map agents to rider markers for the map
+  const liveDrivers = (agentsData?.data || [])
+    .filter((agent : any) => agent.latitude && agent.longitude)
+    .map((agent : any) => ({
+      id: agent.id,
+      coordinate: {
+        latitude: agent.latitude,
+        longitude: agent.longitude,
+      },
+      name: agent.name,
+      image: agent.fleetThumbImage || agent.fleetImage,
+      isAvailable: agent.isAvailable,
+    }));
 
   // Handle back navigation
   const handleBackPress = useCallback(() => {
@@ -93,7 +111,7 @@ export default function TrackingScreen() {
             <TrackingMapView
               mapConfig={mapConfig}
               markers={markers}
-              riders={riders}
+              riders={liveDrivers}
               searchPlaceholder={searchPlaceholder}
               onBackPress={handleBackPress}
               onRiderPress={handleRiderPress}
@@ -199,7 +217,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     marginBottom: TAB_BAR_HEIGHT,
-
   },
   mapContainer: {
     height: height * 0.4,

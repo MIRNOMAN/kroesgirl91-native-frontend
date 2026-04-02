@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import {
   Dimensions,
+  Image,
   Platform,
   StyleSheet,
   TextInput,
@@ -28,7 +29,9 @@ interface RiderData {
   id: string;
   coordinate: Coordinate;
   name: string;
-  type: string;
+  type?: string;
+  image?: string;
+  isAvailable?: number;
 }
 
 interface MapConfig {
@@ -124,8 +127,21 @@ export default function TrackingMapView({
               title={rider.name}
               onPress={() => onRiderPress?.(rider)}
             >
-              <View style={styles.riderMarker}>
-                <Ionicons name="bicycle" size={18} color="#FFFFFF" />
+              <View
+                style={[
+                  styles.riderMarker,
+                  {
+                    borderColor: rider.isAvailable ? "#FFD600" : "#ccc",
+                    borderWidth: 4,
+                    backgroundColor: "#fff",
+                  },
+                ]}
+              >
+                <Image
+                  source={{ uri: rider.image }}
+                  style={{ width: 48, height: 48, borderRadius: 24 }}
+                  resizeMode="cover"
+                />
               </View>
             </Marker>
           ))}

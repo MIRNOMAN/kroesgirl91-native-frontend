@@ -42,16 +42,17 @@
           "label": "Picked",
           "active": true
         },
+            {
+          "image": "outfordelivery",
+          "label": "Out for Delivery",
+          "active": false
+        },
         {
           "image": "transit",
           "label": "In Transit",
           "active": true
         },
-        {
-          "image": "outfordelivery",
-          "label": "Out for Delivery",
-          "active": false
-        },
+    
         {
           "image": "delivered",
           "label": "Delivered",
