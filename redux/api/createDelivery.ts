@@ -1,4 +1,4 @@
-import { TGetOrdersQuery, TGetOrdersResponse, TQueryParam } from "../../types";
+import { TAgentResponse, TQueryParam } from "../../types";
 import { baseApi } from "./baseApi";
 
 type CreateDeliveryPayload = {
@@ -62,7 +62,7 @@ const createDeliveryApi = baseApi.injectEndpoints({
       },
       invalidatesTags: ["Deliveries"],
     }),
-     getAllOrders: build.query({
+    getAllOrders: build.query({
       query: (args) => {
         const params = new URLSearchParams();
         if (args.length > 0) {
@@ -80,7 +80,7 @@ const createDeliveryApi = baseApi.injectEndpoints({
       },
       providesTags: ["Deliveries"],
     }),
-    getAllAgents: build.query({
+    getAllAgents: build.query<TAgentResponse, void>({
       query: () => {
         return {
           url: `/agents`,
@@ -92,5 +92,8 @@ const createDeliveryApi = baseApi.injectEndpoints({
   }),
 });
 
-export const { useCreateDeliveryMutation, useGetAllOrdersQuery, useGetAllAgentsQuery } =
-  createDeliveryApi;
+export const {
+  useCreateDeliveryMutation,
+  useGetAllOrdersQuery,
+  useGetAllAgentsQuery,
+} = createDeliveryApi;

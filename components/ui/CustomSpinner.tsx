@@ -21,12 +21,12 @@ export default function CustomSpinner({
         duration,
         easing: Easing.linear,
         useNativeDriver: true,
-      })
+      }),
     );
 
     animation.start();
     return () => animation.stop();
-  }, [duration]);
+  }, [duration, rotateAnim]);
 
   const rotate = rotateAnim.interpolate({
     inputRange: [0, 1],

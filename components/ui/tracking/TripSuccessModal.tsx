@@ -1,66 +1,31 @@
+import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-import {
-  Dimensions,
-  Image,
-  Modal,
-  Platform,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-const { width } = Dimensions.get("window");
-const isSmallDevice = width < 375;
-
-interface TripSuccessModalProps {
+type TripSuccessModalProps = {
   visible: boolean;
-  title: string;
-  subtitle: string;
-  buttonText: string;
-  onGoHome?: () => void;
-  onClose?: () => void;
-}
+  etaText?: string;
+  onGoHome: () => void;
+};
 
 export default function TripSuccessModal({
   visible,
-  title,
-  subtitle,
-  buttonText,
+  etaText = "Estimated arrival time: 15 min",
   onGoHome,
-  onClose,
 }: TripSuccessModalProps) {
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="fade"
-      onRequestClose={onClose}
-    >
+    <Modal visible={visible} transparent animationType="fade">
       <View style={styles.overlay}>
-        <View style={styles.container}>
-          {/* Success Illustration */}
-          <View style={styles.illustrationContainer}>
-            <Image
-              source={require("../../../assets/successfull/success.png")}
-              style={styles.illustration}
-              resizeMode="contain"
-            />
+        <View style={styles.card}>
+          <View style={styles.iconWrap}>
+            <Ionicons name="checkmark-done-circle" size={74} color="#0F4C5C" />
           </View>
 
-          {/* Success Message */}
-          <View style={styles.contentContainer}>
-            <Text style={styles.title}>{title}</Text>
-            <Text style={styles.subtitle}>{subtitle}</Text>
-          </View>
+          <Text style={styles.title}>Successfully End Trip</Text>
+          <Text style={styles.subtitle}>{etaText}</Text>
 
-          {/* Go to Home Button */}
-          <TouchableOpacity
-            style={styles.homeButton}
-            onPress={onGoHome}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.homeButtonText}>{buttonText}</Text>
+          <TouchableOpacity style={styles.button} onPress={onGoHome}>
+            <Text style={styles.buttonText}>Go to home</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -71,63 +36,51 @@ export default function TripSuccessModal({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "center",
+    backgroundColor: "rgba(15, 23, 42, 0.42)",
     alignItems: "center",
-    paddingHorizontal: 24,
+    justifyContent: "center",
+    padding: 20,
   },
-  container: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 24,
-    paddingVertical: isSmallDevice ? 32 : 40,
-    paddingHorizontal: isSmallDevice ? 24 : 32,
+  card: {
     width: "100%",
     maxWidth: 340,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 24,
+    padding: 22,
     alignItems: "center",
-    shadowColor: "#000",
+    shadowColor: "#0F172A",
     shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.2,
-    shadowRadius: 20,
-    elevation: 15,
+    shadowOpacity: 0.16,
+    shadowRadius: 30,
+    elevation: 10,
   },
-  illustrationContainer: {
-    width: isSmallDevice ? 140 : 200,
-    height: isSmallDevice ? 140 : 200,
-    marginBottom: 24,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  illustration: {
-    width: "100%",
-    height: "100%",
-  },
-  contentContainer: {
-    alignItems: "center",
-    marginBottom: 32,
+  iconWrap: {
+    marginBottom: 14,
   },
   title: {
-    fontSize: isSmallDevice ? 18 : 20,
-    fontWeight: "700",
-    color: "#003C52",
+    fontSize: 18,
+    fontWeight: "800",
+    color: "#0F172A",
     textAlign: "center",
-    marginBottom: 8,
   },
   subtitle: {
-    fontSize: isSmallDevice ? 13 : 14,
-    color: "#A0A0A0",
+    marginTop: 8,
+    fontSize: 13,
+    color: "#64748B",
     textAlign: "center",
   },
-  homeButton: {
-    backgroundColor: "#00B4D8",
-    borderRadius: 12,
-    paddingVertical: Platform.OS === "ios" ? 16 : 14,
-    paddingHorizontal: isSmallDevice ? 40 : 48,
+  button: {
+    marginTop: 22,
+    minHeight: 48,
     width: "100%",
+    borderRadius: 14,
+    backgroundColor: "#0F4C5C",
     alignItems: "center",
+    justifyContent: "center",
   },
-  homeButtonText: {
-    fontSize: isSmallDevice ? 15 : 16,
-    fontWeight: "600",
+  buttonText: {
     color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "800",
   },
 });

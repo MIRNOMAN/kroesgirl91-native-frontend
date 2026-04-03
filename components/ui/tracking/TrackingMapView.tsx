@@ -1,263 +1,321 @@
-import { Ionicons } from "@expo/vector-icons";
-import React from "react";
-import {
-  Dimensions,
-  Image,
-  Platform,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from "react-native-maps";
+import React, { useMemo } from "react";
+import { StyleSheet, View } from "react-native";
+import { WebView } from "react-native-webview";
 
-const { width } = Dimensions.get("window");
+import type { Coordinate, TrackingMapPoint } from "./types";
 
-interface Coordinate {
-  latitude: number;
-  longitude: number;
-}
+type TrackingMapViewProps = {
+  center: Coordinate;
+  points: TrackingMapPoint[];
+  route?: Coordinate[];
+  height?: number;
+  focusCoordinate?: Coordinate | null;
+};
 
-interface MarkerData {
-  id: string;
-  coordinate: Coordinate;
-  title: string;
-  type: string;
-}
+const MAPPR_ACCESS_TOKEN =
+  process.env.EXPO_PUBLIC_TOOKAN_MAP_KEY ??
+  process.env.EXPO_PUBLIC_MAPPR_KEY ??
+  "";
 
-interface RiderData {
-  id: string;
-  coordinate: Coordinate;
-  name: string;
-  type?: string;
-  image?: string;
-  isAvailable?: number;
-}
+const MAPPR_STYLE =
+  process.env.EXPO_PUBLIC_TOOKAN_MAP_STYLE ??
+  process.env.EXPO_PUBLIC_MAPPR_STYLE ??
+  "style-dark.json";
 
-interface MapConfig {
-  apiKey: string;
-  initialRegion: {
-    latitude: number;
-    longitude: number;
-    latitudeDelta: number;
-    longitudeDelta: number;
-  };
-}
+const buildMapHtml = ({
+  center,
+  points,
+  route,
+  accessToken,
+  mapStyle,
+  focusCoordinate,
+}: {
+  center: Coordinate;
+  points: TrackingMapPoint[];
+  route: Coordinate[];
+  accessToken: string;
+  mapStyle: string;
+  focusCoordinate?: Coordinate | null;
+}) => {
+  const payload = JSON.stringify({
+    center,
+    points,
+    route,
+    accessToken,
+    mapStyle,
+    focusCoordinate,
+  });
 
-interface TrackingMapViewProps {
-  mapConfig: MapConfig;
-  markers: MarkerData[];
-  riders?: RiderData[];
-  routeCoordinates?: Coordinate[];
-  searchPlaceholder?: string;
-  onBackPress?: () => void;
-  onRiderPress?: (rider: RiderData) => void;
-  showSearchBar?: boolean;
-  showRoute?: boolean;
-  showRiders?: boolean;
-}
+  return `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://maps.flightmap.io/flightmapjs"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v1.6.1/mapbox-gl.css" rel="stylesheet" />
+    <style>
+      html, body, #map {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        background: #eef4f6;
+        overflow: hidden;
+        font-family: Arial, sans-serif;
+      }
 
-const getMarkerColor = (type: string) => {
-  switch (type) {
-    case "current":
-      return "#FFB800";
-    case "pickup":
-      return "#003C52";
-    case "delivery":
-      return "#003C52";
-    default:
-      return "#003C52";
-  }
+      #map {
+        position: absolute;
+        inset: 0;
+      }
+
+      .map-overlay-error {
+        position: absolute;
+        left: 12px;
+        right: 12px;
+        bottom: 12px;
+        background: rgba(15, 23, 42, 0.9);
+        color: #ffffff;
+        font-size: 12px;
+        border-radius: 10px;
+        padding: 10px 12px;
+        z-index: 20;
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+    <div id="mapError" class="map-overlay-error"></div>
+    <script>
+      (function () {
+        const data = ${payload};
+        const errorBox = document.getElementById("mapError");
+
+        function showError(message) {
+          if (!errorBox) return;
+          errorBox.style.display = "block";
+          errorBox.textContent = message;
+        }
+
+        if (!data.accessToken) {
+          showError("Mappr token missing. Please set EXPO_PUBLIC_MAPPR_KEY.");
+          return;
+        }
+
+        try {
+          const initialCenter = data.focusCoordinate
+            ? [data.focusCoordinate.longitude, data.focusCoordinate.latitude]
+            : [data.center.longitude, data.center.latitude];
+
+          const map = new flightmap.Map({
+            container: "map",
+            style: data.mapStyle,
+            center: initialCenter,
+            zoom: 13,
+            accessToken: data.accessToken,
+          });
+
+          if (typeof flightmap.NavigationControl === "function") {
+            map.addControl(new flightmap.NavigationControl(), "bottom-right");
+          }
+
+          if (map.scrollZoom && typeof map.scrollZoom.enable === "function") {
+            map.scrollZoom.enable();
+          }
+
+          if (
+            map.touchZoomRotate &&
+            typeof map.touchZoomRotate.enable === "function"
+          ) {
+            map.touchZoomRotate.enable();
+          }
+
+          if (
+            map.doubleClickZoom &&
+            typeof map.doubleClickZoom.enable === "function"
+          ) {
+            map.doubleClickZoom.enable();
+          }
+
+          map.on("load", function () {
+            const pointFeatures = data.points.map(function (point) {
+              return {
+                type: "Feature",
+                geometry: {
+                  type: "Point",
+                  coordinates: [point.longitude, point.latitude],
+                },
+                properties: {
+                  id: point.id,
+                  kind: point.kind,
+                  title: point.title || "",
+                },
+              };
+            });
+
+            map.addSource("tracking-points", {
+              type: "geojson",
+              data: {
+                type: "FeatureCollection",
+                features: pointFeatures,
+              },
+            });
+
+            map.addLayer({
+              id: "tracking-point-circles",
+              type: "circle",
+              source: "tracking-points",
+              paint: {
+                "circle-radius": 8,
+                "circle-stroke-width": 2,
+                "circle-stroke-color": "#ffffff",
+                "circle-color": [
+                  "match",
+                  ["get", "kind"],
+                  "pickup",
+                  "#F59E0B",
+                  "dropoff",
+                  "#0F4C5C",
+                  "driver",
+                  "#FBBF24",
+                  "#94A3B8"
+                ]
+              }
+            });
+
+            map.addLayer({
+              id: "tracking-point-labels",
+              type: "symbol",
+              source: "tracking-points",
+              layout: {
+                "text-field": ["get", "title"],
+                "text-size": 11,
+                "text-offset": [0, 1.4],
+                "text-anchor": "top"
+              },
+              paint: {
+                "text-color": "#0F172A",
+                "text-halo-color": "#ffffff",
+                "text-halo-width": 1
+              }
+            });
+
+            if (Array.isArray(data.route) && data.route.length > 1) {
+              map.addSource("tracking-route", {
+                type: "geojson",
+                data: {
+                  type: "Feature",
+                  geometry: {
+                    type: "LineString",
+                    coordinates: data.route.map(function (point) {
+                      return [point.longitude, point.latitude];
+                    }),
+                  },
+                },
+              });
+
+              map.addLayer({
+                id: "tracking-route-line",
+                type: "line",
+                source: "tracking-route",
+                paint: {
+                  "line-color": "#0F4C5C",
+                  "line-width": 4,
+                  "line-opacity": 0.95,
+                  "line-dasharray": [2, 2],
+                },
+              });
+            }
+
+            if (data.focusCoordinate) {
+              map.flyTo({
+                center: [
+                  data.focusCoordinate.longitude,
+                  data.focusCoordinate.latitude,
+                ],
+                zoom: 15,
+                essential: true,
+              });
+            } else if (Array.isArray(data.points) && data.points.length > 0) {
+              let minLat = data.points[0].latitude;
+              let maxLat = data.points[0].latitude;
+              let minLng = data.points[0].longitude;
+              let maxLng = data.points[0].longitude;
+
+              data.points.forEach(function (point) {
+                if (point.latitude < minLat) minLat = point.latitude;
+                if (point.latitude > maxLat) maxLat = point.latitude;
+                if (point.longitude < minLng) minLng = point.longitude;
+                if (point.longitude > maxLng) maxLng = point.longitude;
+              });
+
+              map.fitBounds(
+                [
+                  [minLng, minLat],
+                  [maxLng, maxLat],
+                ],
+                { padding: 46, maxZoom: 15 },
+              );
+            }
+          });
+
+          map.on("error", function (event) {
+            const message = (event && event.error && event.error.message) || "Failed to load Flightmap tiles.";
+            showError(message);
+          });
+        } catch (error) {
+          showError((error && error.message) || "Map initialization failed.");
+        }
+      })();
+    </script>
+  </body>
+</html>`;
 };
 
 export default function TrackingMapView({
-  mapConfig,
-  markers,
-  riders = [],
-  routeCoordinates = [],
-  searchPlaceholder = "I am looking for",
-  onBackPress,
-  onRiderPress,
-  showSearchBar = true,
-  showRoute = false,
-  showRiders = false,
+  center,
+  points,
+  route = [],
+  height = 420,
+  focusCoordinate = null,
 }: TrackingMapViewProps) {
+  const html = useMemo(
+    () =>
+      buildMapHtml({
+        center,
+        points,
+        route,
+        accessToken: MAPPR_ACCESS_TOKEN,
+        mapStyle: MAPPR_STYLE,
+        focusCoordinate,
+      }),
+    [center, points, route, focusCoordinate],
+  );
+
   return (
-    <View style={styles.container}>
-      <MapView
-        style={styles.map}
-        provider={PROVIDER_GOOGLE}
-        initialRegion={mapConfig.initialRegion}
-        showsUserLocation
-        showsMyLocationButton={false}
-      >
-        {markers.map((marker) => (
-          <Marker
-            key={marker.id}
-            coordinate={marker.coordinate}
-            title={marker.title}
-          >
-            <View
-              style={[
-                styles.markerContainer,
-                { backgroundColor: getMarkerColor(marker.type) },
-              ]}
-            >
-              <Ionicons
-                name={
-                  marker.type === "current"
-                    ? "person"
-                    : marker.type === "pickup"
-                      ? "location"
-                      : "flag"
-                }
-                size={16}
-                color="#FFFFFF"
-              />
-            </View>
-          </Marker>
-        ))}
-
-        {/* Live Riders */}
-        {showRiders &&
-          riders.map((rider) => (
-            <Marker
-              key={rider.id}
-              coordinate={rider.coordinate}
-              title={rider.name}
-              onPress={() => onRiderPress?.(rider)}
-            >
-              <View
-                style={[
-                  styles.riderMarker,
-                  {
-                    borderColor: rider.isAvailable ? "#FFD600" : "#ccc",
-                    borderWidth: 4,
-                    backgroundColor: "#fff",
-                  },
-                ]}
-              >
-                <Image
-                  source={{ uri: rider.image }}
-                  style={{ width: 48, height: 48, borderRadius: 24 }}
-                  resizeMode="cover"
-                />
-              </View>
-            </Marker>
-          ))}
-
-        {showRoute && routeCoordinates.length > 1 && (
-          <Polyline
-            coordinates={routeCoordinates}
-            strokeColor="#003C52"
-            strokeWidth={3}
-            lineDashPattern={[10, 5]}
-          />
-        )}
-      </MapView>
-
-      {/* Back Button */}
-      <TouchableOpacity
-        style={styles.backButton}
-        onPress={onBackPress}
-        activeOpacity={0.7}
-      >
-        <Ionicons name="chevron-back" size={24} color="#003C52" />
-      </TouchableOpacity>
-
-      {/* Search Bar */}
-      {showSearchBar && (
-        <View style={styles.searchContainer}>
-          <View style={styles.searchBar}>
-            <Ionicons name="search" size={20} color="#A0A0A0" />
-            <TextInput
-              style={styles.searchInput}
-              placeholder={searchPlaceholder}
-              placeholderTextColor="#A0A0A0"
-            />
-          </View>
-        </View>
-      )}
+    <View style={[styles.container, { height }]}>
+      <WebView
+        originWhitelist={["*"]}
+        source={{ html }}
+        style={styles.webView}
+        scrollEnabled={false}
+        bounces={false}
+        javaScriptEnabled
+        domStorageEnabled
+        startInLoadingState={false}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    overflow: "hidden",
+    borderRadius: 28,
+    backgroundColor: "#EEF4F6",
+  },
+  webView: {
     flex: 1,
-    position: "relative",
-  },
-  map: {
-    width: "100%",
-    height: "100%",
-  },
-  backButton: {
-    position: "absolute",
-    top: Platform.OS === "ios" ? 50 : 20,
-    left: 16,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "#FFFFFF",
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-  searchContainer: {
-    position: "absolute",
-    top: Platform.OS === "ios" ? 100 : 70,
-    left: 16,
-    right: 16,
-  },
-  searchBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#FFFFFF",
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: Platform.OS === "ios" ? 14 : 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: width > 400 ? 16 : 14,
-    color: "#333333",
-    marginLeft: 12,
-    fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
-  },
-  markerContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  riderMarker: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: "#FFB800",
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 6,
-    borderWidth: 2,
-    borderColor: "#FFFFFF",
+    backgroundColor: "transparent",
   },
 });

@@ -1,146 +1,113 @@
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { Dimensions, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
-const { width } = Dimensions.get("window");
-const isSmallDevice = width < 375;
+import type { TrackingStep } from "./types";
 
-interface ProgressStep {
-  id: number;
-  label: string;
-  completed: boolean;
-}
+type TrackingProgressProps = {
+  steps: TrackingStep[];
+};
 
-interface TrackingProgressProps {
-  steps: ProgressStep[];
-  currentStep?: number;
-}
-
-const icons = ["checkmark-circle", "cube", "bicycle", "car", "home"];
-
-export default function TrackingProgress({
-  steps,
-  currentStep = 0,
-}: TrackingProgressProps) {
+export default function TrackingProgress({ steps }: TrackingProgressProps) {
   return (
     <View style={styles.container}>
-      <View style={styles.progressRow}>
-        {steps.map((step, index) => {
-          const isCompleted = step.completed;
-          const isActive = index === currentStep;
-          const iconColor = isCompleted
-            ? "#FFB800"
-            : isActive
-              ? "#003C52"
-              : "#E0E0E0";
+      {steps.map((step, index) => {
+        const isLast = index === steps.length - 1;
 
-          return (
-            <View key={step.id} style={styles.stepContainer}>
-              {/* Icon */}
+        return (
+          <View key={step.key} style={styles.stepColumn}>
+            <View style={styles.stepRow}>
               <View
                 style={[
-                  styles.iconContainer,
-                  {
-                    backgroundColor: isCompleted ? "#FFF5E6" : "#F5F5F5",
-                  },
+                  styles.node,
+                  step.completed ? styles.nodeActive : styles.nodeInactive,
                 ]}
               >
-                <Ionicons
-                  name={icons[index] as any}
-                  size={isSmallDevice ? 18 : 22}
-                  color={iconColor}
-                />
+                {step.completed ? (
+                  <Ionicons name="checkmark" size={10} color="#FFFFFF" />
+                ) : null}
               </View>
 
-              {/* Progress dot and line */}
-              <View style={styles.progressDotContainer}>
+              {!isLast ? (
                 <View
                   style={[
-                    styles.progressDot,
-                    {
-                      backgroundColor: isCompleted ? "#FFB800" : "#E0E0E0",
-                    },
+                    styles.connector,
+                    step.completed
+                      ? styles.connectorActive
+                      : styles.connectorInactive,
                   ]}
                 />
-                {index < steps.length - 1 && (
-                  <View
-                    style={[
-                      styles.progressLine,
-                      {
-                        backgroundColor: isCompleted ? "#FFB800" : "#E0E0E0",
-                      },
-                    ]}
-                  />
-                )}
-              </View>
-
-              {/* Label */}
-              <Text
-                style={[
-                  styles.stepLabel,
-                  {
-                    color: isCompleted ? "#003C52" : "#A0A0A0",
-                    fontWeight: isCompleted || isActive ? "600" : "400",
-                  },
-                ]}
-                numberOfLines={2}
-              >
-                {step.label}
-              </Text>
+              ) : null}
             </View>
-          );
-        })}
-      </View>
+
+            <Text
+              style={[
+                styles.label,
+                step.completed ? styles.labelActive : styles.labelInactive,
+              ]}
+            >
+              {step.label}
+            </Text>
+          </View>
+        );
+      })}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    paddingVertical: 16,
-  },
-  progressRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "flex-start",
+    justifyContent: "space-between",
   },
-  stepContainer: {
+  stepColumn: {
     flex: 1,
     alignItems: "center",
   },
-  iconContainer: {
-    width: isSmallDevice ? 40 : 48,
-    height: isSmallDevice ? 40 : 48,
-    borderRadius: isSmallDevice ? 20 : 24,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 8,
-  },
-  progressDotContainer: {
+  stepRow: {
+    width: "100%",
     flexDirection: "row",
     alignItems: "center",
-    position: "relative",
-    width: "100%",
-    justifyContent: "center",
-    marginBottom: 8,
   },
-  progressDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+  node: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    alignItems: "center",
+    justifyContent: "center",
     zIndex: 1,
   },
-  progressLine: {
-    position: "absolute",
-    left: "50%",
-    right: "-50%",
-    height: 2,
-    zIndex: 0,
+  nodeActive: {
+    backgroundColor: "#0F4C5C",
   },
-  stepLabel: {
-    fontSize: isSmallDevice ? 9 : 10,
+  nodeInactive: {
+    backgroundColor: "#D7E4E8",
+  },
+  connector: {
+    flex: 1,
+    height: 2,
+    marginHorizontal: 6,
+    borderRadius: 999,
+  },
+  connectorActive: {
+    backgroundColor: "#0F4C5C",
+  },
+  connectorInactive: {
+    backgroundColor: "#D7E4E8",
+  },
+  label: {
+    marginTop: 8,
+    fontSize: 11,
     textAlign: "center",
-    maxWidth: isSmallDevice ? 50 : 60,
-    lineHeight: isSmallDevice ? 12 : 14,
+    lineHeight: 14,
+  },
+  labelActive: {
+    color: "#0F172A",
+    fontWeight: "700",
+  },
+  labelInactive: {
+    color: "#94A3B8",
+    fontWeight: "500",
   },
 });

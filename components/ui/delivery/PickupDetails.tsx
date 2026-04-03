@@ -18,34 +18,48 @@ import DeliveryInput from "./DeliveryInput";
 const { width, height } = Dimensions.get("window");
 const isSmallDevice = width < 375;
 
-const MAPPR_DEFAULT_KEY =
-  process.env.EXPO_PUBLIC_MAPPR_KEY || "bc2706f0-28d7-11f1-a301-ede322482ab2";
-const MAPPR_WEB_KEY =
-  process.env.EXPO_PUBLIC_MAPPR_WEB_KEY || MAPPR_DEFAULT_KEY;
-const MAPPR_ANDROID_KEY =
-  process.env.EXPO_PUBLIC_MAPPR_ANDROID_KEY || MAPPR_DEFAULT_KEY;
-const MAPPR_IOS_KEY =
-  process.env.EXPO_PUBLIC_MAPPR_IOS_KEY || MAPPR_DEFAULT_KEY;
-const MAPPR_SERVER_KEY =
-  process.env.EXPO_PUBLIC_MAPPR_SERVER_KEY || MAPPR_DEFAULT_KEY;
-const MAPPR_FORM_KEY =
-  process.env.EXPO_PUBLIC_MAPPR_FORM_KEY || MAPPR_DEFAULT_KEY;
+const TOOKAN_MAP_DEFAULT_KEY =
+  process.env.EXPO_PUBLIC_TOOKAN_MAP_KEY ??
+  process.env.EXPO_PUBLIC_MAPPR_KEY ??
+  "bc2706f0-28d7-11f1-a301-ede322482ab2";
+const TOOKAN_MAP_WEB_KEY =
+  process.env.EXPO_PUBLIC_TOOKAN_MAP_WEB_KEY ??
+  process.env.EXPO_PUBLIC_MAPPR_WEB_KEY ??
+  TOOKAN_MAP_DEFAULT_KEY;
+const TOOKAN_MAP_ANDROID_KEY =
+  process.env.EXPO_PUBLIC_TOOKAN_MAP_ANDROID_KEY ??
+  process.env.EXPO_PUBLIC_MAPPR_ANDROID_KEY ??
+  TOOKAN_MAP_DEFAULT_KEY;
+const TOOKAN_MAP_IOS_KEY =
+  process.env.EXPO_PUBLIC_TOOKAN_MAP_IOS_KEY ??
+  process.env.EXPO_PUBLIC_MAPPR_IOS_KEY ??
+  TOOKAN_MAP_DEFAULT_KEY;
+const TOOKAN_MAP_SERVER_KEY =
+  process.env.EXPO_PUBLIC_TOOKAN_MAP_SERVER_KEY ??
+  process.env.EXPO_PUBLIC_MAPPR_SERVER_KEY ??
+  TOOKAN_MAP_DEFAULT_KEY;
+const TOOKAN_MAP_FORM_KEY =
+  process.env.EXPO_PUBLIC_TOOKAN_MAP_FORM_KEY ??
+  process.env.EXPO_PUBLIC_MAPPR_FORM_KEY ??
+  TOOKAN_MAP_DEFAULT_KEY;
 
-const getMapprKey = () => {
+const getTookanMapKey = () => {
   if (Platform.OS === "android") {
-    return MAPPR_ANDROID_KEY || MAPPR_SERVER_KEY;
+    return TOOKAN_MAP_ANDROID_KEY || TOOKAN_MAP_SERVER_KEY;
   }
 
   if (Platform.OS === "ios") {
-    return MAPPR_IOS_KEY || MAPPR_SERVER_KEY;
+    return TOOKAN_MAP_IOS_KEY || TOOKAN_MAP_SERVER_KEY;
   }
 
-  return MAPPR_WEB_KEY || MAPPR_FORM_KEY || MAPPR_SERVER_KEY;
+  return TOOKAN_MAP_WEB_KEY || TOOKAN_MAP_FORM_KEY || TOOKAN_MAP_SERVER_KEY;
 };
 
-const MAPPR_ACCESS_TOKEN = getMapprKey();
-const MAPPR_API_BASE_URL =
-  process.env.EXPO_PUBLIC_MAPPR_API_BASE_URL || "https://maps.flightmap.io/api";
+const TOOKAN_MAP_ACCESS_TOKEN = getTookanMapKey();
+const TOOKAN_MAP_API_BASE_URL =
+  process.env.EXPO_PUBLIC_TOOKAN_MAP_API_BASE_URL ||
+  process.env.EXPO_PUBLIC_MAPPR_API_BASE_URL ||
+  "https://maps.flightmap.io/api";
 
 interface PickupData {
   fullName: string;
@@ -105,14 +119,14 @@ const PickupDetails: React.FC<PickupDetailsProps> = ({
         currentlatitude: String(data.latitude ?? 23.8103),
         currentlongitude: String(data.longitude ?? 90.4125),
         skip_cache: "0",
-        fm_token: MAPPR_ACCESS_TOKEN,
+        fm_token: TOOKAN_MAP_ACCESS_TOKEN,
         radius: "0",
         offering: "3",
         language: "en",
       });
 
       const response = await fetch(
-        `${MAPPR_API_BASE_URL}/search?${params.toString()}`,
+        `${TOOKAN_MAP_API_BASE_URL}/search?${params.toString()}`,
       );
       const result = await response.json();
 
@@ -137,7 +151,7 @@ const PickupDetails: React.FC<PickupDetailsProps> = ({
 
       setPredictions(mappedPredictions);
     } catch (error) {
-      console.error("Error searching Mappr places:", error);
+      console.error("Error searching Tookan map places:", error);
       setPredictions([]);
     } finally {
       setLoading(false);

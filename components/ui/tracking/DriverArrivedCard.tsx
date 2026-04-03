@@ -1,119 +1,95 @@
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import {
-  Dimensions,
   Image,
-  Platform,
+  Linking,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
 
-const { width } = Dimensions.get("window");
-const isSmallDevice = width < 375;
+import type { TAgent } from "@/types";
 
-interface DropoffLocation {
-  label: string;
-  address: string;
-  distance: string;
-}
-
-interface Driver {
-  name: string;
-  avatar: string;
-}
-
-interface Vehicle {
-  number: string;
-  type: string;
-}
-
-interface DriverArrivedCardProps {
-  title: string;
-  subtitle: string;
-  dropoffLocation: DropoffLocation;
-  driver: Driver;
-  vehicle: Vehicle;
-  onMessageDriver?: () => void;
+type DriverArrivedCardProps = {
+  agent?: TAgent | null;
+  vehicleNumber?: string;
+  vehicleType?: string;
   onClose?: () => void;
-  messageButtonText?: string;
-  closeButtonText?: string;
-}
+  onMessageDriver?: () => void;
+};
 
 export default function DriverArrivedCard({
-  title,
-  subtitle,
-  dropoffLocation,
-  driver,
-  vehicle,
-  onMessageDriver,
+  agent,
+  vehicleNumber,
+  vehicleType,
   onClose,
-  messageButtonText = "Message Driver",
-  closeButtonText = "Close",
+  onMessageDriver,
 }: DriverArrivedCardProps) {
+  const handleMessageDriver = () => {
+    if (onMessageDriver) {
+      onMessageDriver();
+      return;
+    }
+
+    if (agent?.phone) {
+      void Linking.openURL(`tel:${agent.phone}`);
+    }
+  };
+
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.headerSection}>
-        <Text style={styles.title}>{title}</Text>
-        <Text style={styles.subtitle}>{subtitle}</Text>
+    <View style={styles.card}>
+      <View style={styles.header}>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.title}>Driver Arrived</Text>
+          <Text style={styles.subtitle}>Driver arrived on your location</Text>
+        </View>
+
+        <View style={styles.distanceChip}>
+          <Ionicons name="navigate-outline" size={14} color="#F59E0B" />
+          <Text style={styles.distanceText}>Live</Text>
+        </View>
       </View>
 
-      {/* Dropoff Location Info */}
-      <View style={styles.locationCard}>
-        <View style={styles.locationRow}>
-          <View style={styles.locationIcon}>
-            <Ionicons name="location" size={18} color="#003C52" />
-          </View>
-          <View style={styles.locationDetails}>
-            <Text style={styles.locationLabel}>{dropoffLocation.label}</Text>
-            <Text style={styles.locationAddress}>
-              {dropoffLocation.address}
+      <View style={styles.vehicleCard}>
+        <View style={styles.vehicleIcon}>
+          {agent?.fleetThumbImage ? (
+            <Image
+              source={{ uri: agent.fleetThumbImage }}
+              style={styles.avatar}
+            />
+          ) : (
+            <Ionicons name="bicycle-outline" size={22} color="#0F4C5C" />
+          )}
+        </View>
+
+        <View style={styles.vehicleContent}>
+          <Text style={styles.vehicleNumber} numberOfLines={1}>
+            {vehicleNumber || agent?.name || "Assigned driver"}
+          </Text>
+          <Text style={styles.vehicleType} numberOfLines={1}>
+            {vehicleType || agent?.transportDesc || "Tookan fleet rider"}
+          </Text>
+
+          <View style={styles.driverRow}>
+            <Ionicons name="person-circle-outline" size={18} color="#0F4C5C" />
+            <Text style={styles.driverName} numberOfLines={1}>
+              {agent?.username || agent?.name || "Agent assigned"}
             </Text>
           </View>
-          <View style={styles.distanceContainer}>
-            <Text style={styles.distance}>{dropoffLocation.distance}</Text>
-            <Text style={styles.distanceUnit}>Km</Text>
-          </View>
         </View>
       </View>
 
-      {/* Vehicle & Driver Info */}
-      <View style={styles.vehicleCard}>
-        <View style={styles.vehicleIconContainer}>
-          <Image
-            source={require("../../../assets/traking_image/traking_1.png")}
-            style={styles.vehicleImage}
-            resizeMode="contain"
-          />
-        </View>
-        <View style={styles.vehicleInfo}>
-          <Text style={styles.vehicleNumber}>{vehicle.number}</Text>
-          <Text style={styles.vehicleType}>{vehicle.type}</Text>
-        </View>
-        <View style={styles.driverContainer}>
-          <Image source={{ uri: driver.avatar }} style={styles.driverAvatar} />
-          <Text style={styles.driverName}>{driver.name}</Text>
-        </View>
-      </View>
-
-      {/* Action Buttons */}
-      <View style={styles.buttonContainer}>
+      <View style={styles.actions}>
         <TouchableOpacity
-          style={styles.messageButton}
-          onPress={onMessageDriver}
-          activeOpacity={0.8}
+          style={styles.secondaryButton}
+          onPress={handleMessageDriver}
         >
-          <Text style={styles.messageButtonText}>{messageButtonText}</Text>
+          <Text style={styles.secondaryButtonText}>Message Driver</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.closeButton}
-          onPress={onClose}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.closeButtonText}>{closeButtonText}</Text>
+        <TouchableOpacity style={styles.primaryButton} onPress={onClose}>
+          <Text style={styles.primaryButtonText}>Close</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -121,162 +97,127 @@ export default function DriverArrivedCard({
 }
 
 const styles = StyleSheet.create({
-  container: {
+  card: {
     backgroundColor: "#FFFFFF",
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    paddingTop: 24,
-    paddingHorizontal: isSmallDevice ? 16 : 20,
-    paddingBottom: Platform.OS === "ios" ? 34 : 24,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 10,
+    borderRadius: 24,
+    padding: 16,
+    marginHorizontal: 20,
+    marginBottom: 16,
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.08,
+    shadowRadius: 22,
+    elevation: 4,
   },
-  headerSection: {
-    marginBottom: 20,
+  header: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 12,
+    marginBottom: 16,
   },
   title: {
-    fontSize: isSmallDevice ? 18 : 20,
-    fontWeight: "700",
-    color: "#003C52",
-    marginBottom: 4,
+    fontSize: 18,
+    fontWeight: "800",
+    color: "#0F172A",
   },
   subtitle: {
-    fontSize: isSmallDevice ? 13 : 14,
-    color: "#A0A0A0",
+    marginTop: 4,
+    fontSize: 13,
+    color: "#64748B",
   },
-  locationCard: {
-    backgroundColor: "#F8F9FA",
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: "#E8E8E8",
-  },
-  locationRow: {
+  distanceChip: {
     flexDirection: "row",
     alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    backgroundColor: "#FFF7E6",
+    borderRadius: 999,
   },
-  locationIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: "#FFF5E6",
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 12,
-  },
-  locationDetails: {
-    flex: 1,
-  },
-  locationLabel: {
-    fontSize: isSmallDevice ? 11 : 12,
-    color: "#A0A0A0",
-    marginBottom: 2,
-  },
-  locationAddress: {
-    fontSize: isSmallDevice ? 13 : 14,
-    fontWeight: "500",
-    color: "#003C52",
-  },
-  distanceContainer: {
-    alignItems: "flex-end",
-  },
-  distance: {
-    fontSize: isSmallDevice ? 18 : 20,
+  distanceText: {
+    fontSize: 12,
     fontWeight: "700",
-    color: "#003C52",
-  },
-  distanceUnit: {
-    fontSize: isSmallDevice ? 10 : 11,
-    color: "#A0A0A0",
+    color: "#92400E",
   },
   vehicleCard: {
-    backgroundColor: "#F8F9FA",
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 20,
     flexDirection: "row",
-    alignItems: "center",
+    gap: 14,
+    borderRadius: 18,
     borderWidth: 1,
-    borderColor: "#E8E8E8",
+    borderColor: "#E2E8F0",
+    padding: 14,
+    marginBottom: 16,
+    backgroundColor: "#FBFDFF",
   },
-  vehicleIconContainer: {
-    width: 56,
-    height: 56,
-    borderRadius: 12,
-    backgroundColor: "#FFFFFF",
-    justifyContent: "center",
+  vehicleIcon: {
+    width: 54,
+    height: 54,
+    borderRadius: 16,
+    backgroundColor: "#EAF4F6",
     alignItems: "center",
-    marginRight: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
+    justifyContent: "center",
+    overflow: "hidden",
   },
-  vehicleImage: {
-    width: 44,
-    height: 44,
+  avatar: {
+    width: 54,
+    height: 54,
   },
-  vehicleInfo: {
+  vehicleContent: {
     flex: 1,
+    justifyContent: "center",
   },
   vehicleNumber: {
-    fontSize: isSmallDevice ? 14 : 15,
-    fontWeight: "600",
-    color: "#003C52",
-    marginBottom: 2,
+    fontSize: 14,
+    fontWeight: "800",
+    color: "#0F172A",
   },
   vehicleType: {
-    fontSize: isSmallDevice ? 11 : 12,
-    color: "#A0A0A0",
+    marginTop: 2,
+    fontSize: 12,
+    color: "#64748B",
   },
-  driverContainer: {
+  driverRow: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FFFFFF",
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  driverAvatar: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    marginRight: 8,
+    gap: 6,
+    marginTop: 10,
   },
   driverName: {
-    fontSize: isSmallDevice ? 11 : 12,
-    fontWeight: "500",
-    color: "#003C52",
-    maxWidth: isSmallDevice ? 70 : 90,
-  },
-  buttonContainer: {
-    gap: 10,
-  },
-  messageButton: {
-    backgroundColor: "#003C52",
-    borderRadius: 12,
-    paddingVertical: Platform.OS === "ios" ? 16 : 14,
-    alignItems: "center",
-  },
-  messageButtonText: {
-    fontSize: isSmallDevice ? 15 : 16,
+    flex: 1,
+    fontSize: 13,
     fontWeight: "600",
-    color: "#FFFFFF",
+    color: "#0F4C5C",
   },
-  closeButton: {
-    backgroundColor: "#003C52",
-    borderRadius: 12,
-    paddingVertical: Platform.OS === "ios" ? 16 : 14,
+  actions: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  secondaryButton: {
+    flex: 1,
+    minHeight: 48,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#0F4C5C",
     alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#FFFFFF",
   },
-  closeButtonText: {
-    fontSize: isSmallDevice ? 15 : 16,
-    fontWeight: "600",
+  secondaryButtonText: {
+    color: "#0F4C5C",
+    fontWeight: "700",
+    fontSize: 14,
+  },
+  primaryButton: {
+    flex: 1,
+    minHeight: 48,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#0F4C5C",
+  },
+  primaryButtonText: {
     color: "#FFFFFF",
+    fontWeight: "800",
+    fontSize: 14,
   },
 });

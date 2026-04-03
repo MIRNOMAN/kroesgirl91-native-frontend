@@ -105,6 +105,37 @@ export type TOrder = {
   [key: string]: unknown;
 };
 
+export type TAgent = {
+  id: string;
+  tookanFleetId?: number | null;
+  name: string;
+  username?: string;
+  email?: string;
+  phone?: string;
+  fleetImage?: string | null;
+  fleetThumbImage?: string | null;
+  transportType?: string | null;
+  transportDesc?: string;
+  license?: string | null;
+  tags?: string[] | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  batteryLevel?: number | null;
+  isAvailable?: number | null;
+  status?: number | null;
+  timezone?: string | null;
+  deviceType?: number | null;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export type TAgentResponse = {
+  success: boolean;
+  data: TAgent[];
+  message?: string;
+  statusCode?: number;
+};
+
 export type TGetOrdersQuery = {
   date: string;
   job_type: TOrderType;

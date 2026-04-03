@@ -1,395 +1,206 @@
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-import {
-  Dimensions,
-  Image,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-const { width } = Dimensions.get("window");
-const isSmallDevice = width < 375;
-
-interface ProgressStep {
-  id: number;
-  label: string;
-  icon: string;
-  completed: boolean;
-}
-
-interface Driver {
-  id: string;
-  name: string;
-  driverId: string;
-  avatar: string;
-  phone: string;
-  rating: number;
-}
-
-interface OrderDetails {
-  orderDate: string;
-  deliveryDate: string;
-  pickupLocation: string;
-  deliveryLocation: string;
-  customer: string;
-  orderCost: string;
-  quantity: string;
-  weight: string;
-}
-
-interface DeliveryStatusCardProps {
-  driver: Driver;
-  progress: ProgressStep[];
-  orderDetails: OrderDetails;
-  paymentMethod: string;
-  onChoosePremier?: () => void;
-  onCallDriver?: () => void;
-  buttonText?: string;
-}
-
-const getStatusImage = (icon: string) => {
-  switch (icon) {
-    case "accepted":
-      return require("../../../assets/traking_image/traking_1.png");
-    case "picked":
-      return require("../../../assets/traking_image/traking_2.png");
-    case "transit":
-      return require("../../../assets/traking_image/traking_3.png");
-    case "outForDelivery":
-      return require("../../../assets/traking_image/traking_4.png");
-    case "delivered":
-      return require("../../../assets/traking_image/traking_5.png");
-    default:
-      return require("../../../assets/traking_image/traking_1.png");
-  }
+type DeliveryStatusCardProps = {
+  title: string;
+  subtitle: string;
+  dropoffLocation: string;
+  etaText: string;
+  priceText: string;
+  distanceText?: string;
+  onMessageDriver?: () => void;
+  onClose?: () => void;
 };
 
 export default function DeliveryStatusCard({
-  driver,
-  progress,
-  orderDetails,
-  paymentMethod,
-  onChoosePremier,
-  onCallDriver,
-  buttonText = "Choose Premier",
+  title,
+  subtitle,
+  dropoffLocation,
+  etaText,
+  priceText,
+  distanceText,
+  onMessageDriver,
+  onClose,
 }: DeliveryStatusCardProps) {
   return (
-    <ScrollView
-      style={{ flex: 1 }}
-      contentContainerStyle={{ paddingBottom: 30 }}
-      showsVerticalScrollIndicator={false}
-    >
-      <View style={styles.container}>
-        <Text style={styles.headerTitle}>Delivery Status</Text>
+    <View style={styles.card}>
+      <View style={styles.header}>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.title}>{title}</Text>
+          <Text style={styles.subtitle}>{subtitle}</Text>
+        </View>
 
-        <View style={styles.driverSection}>
-          <View style={styles.driverInfo}>
-            <Image
-              source={{ uri: driver.avatar }}
-              style={styles.driverAvatar}
-            />
-            <View style={styles.driverDetails}>
-              <Text style={styles.driverName}>{driver.name}</Text>
-              <Text style={styles.driverId}>{driver.driverId}</Text>
-            </View>
-          </View>
+        <View style={styles.priceBadge}>
+          <Text style={styles.priceText}>{priceText}</Text>
+        </View>
+      </View>
+
+      <View style={styles.locationRow}>
+        <View style={styles.locationIcon}>
+          <Ionicons name="location-outline" size={16} color="#F59E0B" />
+        </View>
+
+        <View style={styles.locationContent}>
+          <Text style={styles.locationLabel}>Dropoff Location</Text>
+          <Text style={styles.locationValue} numberOfLines={2}>
+            {dropoffLocation}
+          </Text>
+        </View>
+
+        <Text style={styles.locationAmount}>{distanceText || etaText}</Text>
+      </View>
+
+      <View style={styles.footerRow}>
+        <View>
+          <Text style={styles.footerLabel}>ETA</Text>
+          <Text style={styles.footerValue}>{etaText}</Text>
+        </View>
+
+        <View style={styles.footerActions}>
           <TouchableOpacity
-            style={styles.callButton}
-            onPress={onCallDriver}
-            activeOpacity={0.7}
+            style={styles.ghostButton}
+            onPress={onMessageDriver}
           >
-            <Ionicons name="chevron-forward" size={20} color="#FFFFFF" />
+            <Text style={styles.ghostButtonText}>Message Driver</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.primaryButton} onPress={onClose}>
+            <Text style={styles.primaryButtonText}>Close</Text>
           </TouchableOpacity>
         </View>
-
-        <View style={styles.progressContainer}>
-          <View style={styles.imagesRow}>
-            {progress.map((step) => (
-              <View key={step.id} style={styles.imageWrapper}>
-                <Image
-                  source={getStatusImage(step.icon)}
-                  style={[
-                    styles.statusImage,
-                    !step.completed && styles.statusImageInactive,
-                  ]}
-                  resizeMode="contain"
-                />
-              </View>
-            ))}
-          </View>
-
-          <View style={styles.dotsRow}>
-            {progress.map((step, index) => (
-              <View key={step.id} style={styles.dotWrapper}>
-                <View
-                  style={[
-                    styles.progressDot,
-                    {
-                      backgroundColor: step.completed ? "#FFB800" : "#E0E0E0",
-                    },
-                  ]}
-                >
-                  {step.completed && (
-                    <Ionicons name="checkmark" size={10} color="#FFFFFF" />
-                  )}
-                </View>
-                {index < progress.length - 1 && (
-                  <View
-                    style={[
-                      styles.progressLine,
-                      {
-                        backgroundColor: step.completed ? "#FFB800" : "#E0E0E0",
-                      },
-                    ]}
-                  />
-                )}
-              </View>
-            ))}
-          </View>
-
-          <View style={styles.labelsRow}>
-            {progress.map((step) => (
-              <Text
-                key={step.id}
-                style={[
-                  styles.progressLabel,
-                  { color: step.completed ? "#003C52" : "#A0A0A0" },
-                ]}
-                numberOfLines={2}
-              >
-                {step.label}
-              </Text>
-            ))}
-          </View>
-        </View>
-
-        <View style={styles.orderSection}>
-          <View style={styles.orderRow}>
-            <View style={styles.orderColumn}>
-              <Text style={styles.orderLabel}>{orderDetails.orderDate}</Text>
-              <Text style={styles.orderValue}>
-                {orderDetails.pickupLocation}
-              </Text>
-            </View>
-            <View style={styles.orderColumn}>
-              <Text style={styles.orderLabel}>{orderDetails.deliveryDate}</Text>
-              <Text style={styles.orderValue}>
-                {orderDetails.deliveryLocation}
-              </Text>
-            </View>
-          </View>
-
-          <View style={styles.orderRow}>
-            <View style={styles.orderColumn}>
-              <Text style={styles.orderLabel}>Customer</Text>
-              <Text style={styles.orderValue}>{orderDetails.customer}</Text>
-            </View>
-            <View style={styles.orderColumn}>
-              <Text style={styles.orderLabel}>Order Cost</Text>
-              <Text style={styles.orderValue}>{orderDetails.orderCost}</Text>
-            </View>
-          </View>
-
-          <View style={styles.orderRow}>
-            <View style={styles.orderColumn}>
-              <Text style={styles.orderLabel}>Quantity</Text>
-              <Text style={styles.orderValue}>{orderDetails.quantity}</Text>
-            </View>
-            <View style={styles.orderColumn}>
-              <Text style={styles.orderLabel}>Weight</Text>
-              <Text style={styles.orderValue}>{orderDetails.weight}</Text>
-            </View>
-          </View>
-        </View>
-
-        <TouchableOpacity style={styles.paymentSection} activeOpacity={0.7}>
-          <View style={styles.paymentInfo}>
-            <Ionicons name="cash-outline" size={20} color="#003C52" />
-            <Text style={styles.paymentText}>{paymentMethod}</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={20} color="#A0A0A0" />
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.premierButton}
-          onPress={onChoosePremier}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.premierButtonText}>{buttonText}</Text>
-        </TouchableOpacity>
       </View>
-    </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  card: {
     backgroundColor: "#FFFFFF",
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    paddingTop: 20,
-    paddingHorizontal: isSmallDevice ? 16 : 20,
-    paddingBottom: Platform.OS === "ios" ? 20 : 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 10,
-  },
-  headerTitle: {
-    fontSize: isSmallDevice ? 16 : 18,
-    fontWeight: "700",
-    color: "#003C52",
+    borderRadius: 24,
+    padding: 16,
+    marginHorizontal: 20,
     marginBottom: 16,
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.08,
+    shadowRadius: 22,
+    elevation: 4,
   },
-  driverSection: {
+  header: {
     flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 20,
+    alignItems: "flex-start",
+    gap: 12,
+    marginBottom: 14,
   },
-  driverInfo: {
+  title: {
+    fontSize: 18,
+    fontWeight: "800",
+    color: "#0F172A",
+  },
+  subtitle: {
+    marginTop: 4,
+    fontSize: 13,
+    color: "#64748B",
+  },
+  priceBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: "#E8F6F7",
+    borderRadius: 999,
+  },
+  priceText: {
+    color: "#0F4C5C",
+    fontSize: 13,
+    fontWeight: "800",
+  },
+  locationRow: {
     flexDirection: "row",
-    alignItems: "center",
-    flex: 1,
-  },
-  driverAvatar: {
-    width: isSmallDevice ? 44 : 50,
-    height: isSmallDevice ? 44 : 50,
-    borderRadius: isSmallDevice ? 22 : 25,
-    marginRight: 12,
-  },
-  driverDetails: {
-    flex: 1,
-  },
-  driverName: {
-    fontSize: isSmallDevice ? 14 : 16,
-    fontWeight: "600",
-    color: "#003C52",
-  },
-  driverId: {
-    fontSize: isSmallDevice ? 11 : 12,
-    color: "#A0A0A0",
-    marginTop: 2,
-  },
-  callButton: {
-    width: 36,
-    height: 36,
+    alignItems: "flex-start",
+    gap: 12,
+    padding: 14,
     borderRadius: 18,
-    backgroundColor: "#FFB800",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  progressContainer: {
-    marginBottom: 20,
-  },
-  imagesRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  imageWrapper: {
-    flex: 1,
-    alignItems: "center",
-  },
-  statusImage: {
-    width: isSmallDevice ? 32 : 40,
-    height: isSmallDevice ? 32 : 40,
-  },
-  statusImageInactive: {
-    opacity: 0.4,
-  },
-  dotsRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: isSmallDevice ? 8 : 12,
-    marginBottom: 8,
-  },
-  dotWrapper: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  progressDot: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 1,
-  },
-  progressLine: {
-    flex: 1,
-    height: 2,
-    marginLeft: -2,
-  },
-  labelsRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  progressLabel: {
-    flex: 1,
-    fontSize: isSmallDevice ? 9 : 10,
-    textAlign: "center",
-  },
-  orderSection: {
+    backgroundColor: "#F8FBFC",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
     marginBottom: 16,
   },
-  orderRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 12,
+  locationIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: "#FFF5E5",
+    alignItems: "center",
+    justifyContent: "center",
   },
-  orderColumn: {
+  locationContent: {
     flex: 1,
   },
-  orderLabel: {
-    fontSize: isSmallDevice ? 11 : 12,
-    color: "#A0A0A0",
-    marginBottom: 2,
-  },
-  orderValue: {
-    fontSize: isSmallDevice ? 13 : 14,
-    fontWeight: "500",
-    color: "#003C52",
-  },
-  paymentSection: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: 14,
-    borderTopWidth: 1,
-    borderTopColor: "#F0F0F0",
-    marginBottom: 16,
-  },
-  paymentInfo: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  paymentText: {
-    fontSize: isSmallDevice ? 14 : 15,
-    fontWeight: "500",
-    color: "#003C52",
-    marginLeft: 10,
-  },
-  premierButton: {
-    backgroundColor: "#003C52",
-    borderRadius: 12,
-    paddingVertical: Platform.OS === "ios" ? 16 : 14,
-    alignItems: "center",
-    marginBottom: Platform.OS === "ios" ? 0 : 50,
-    
-  },
-  premierButtonText: {
-    fontSize: isSmallDevice ? 15 : 16,
+  locationLabel: {
+    fontSize: 12,
+    color: "#64748B",
     fontWeight: "600",
+  },
+  locationValue: {
+    marginTop: 4,
+    fontSize: 14,
+    color: "#0F172A",
+    fontWeight: "700",
+  },
+  locationAmount: {
+    fontSize: 13,
+    fontWeight: "800",
+    color: "#0F4C5C",
+  },
+  footerRow: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+  footerLabel: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#64748B",
+    letterSpacing: 0.4,
+  },
+  footerValue: {
+    marginTop: 4,
+    fontSize: 15,
+    color: "#0F172A",
+    fontWeight: "800",
+  },
+  footerActions: {
+    flexDirection: "row",
+    gap: 10,
+    flex: 1,
+    justifyContent: "flex-end",
+  },
+  ghostButton: {
+    minHeight: 44,
+    paddingHorizontal: 14,
+    borderRadius: 13,
+    borderWidth: 1,
+    borderColor: "#0F4C5C",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  ghostButtonText: {
+    color: "#0F4C5C",
+    fontWeight: "700",
+    fontSize: 13,
+  },
+  primaryButton: {
+    minHeight: 44,
+    paddingHorizontal: 16,
+    borderRadius: 13,
+    backgroundColor: "#0F4C5C",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  primaryButtonText: {
     color: "#FFFFFF",
+    fontWeight: "800",
+    fontSize: 13,
   },
 });
