@@ -35,7 +35,7 @@ export default function Index() {
       <View style={styles.container}>
         <View style={styles.logoWrapper}>
           <Image
-            source={require("../assets/splashscreen/Group.png")}
+            source={require("../assets/splashscreen/SVG-01.png")}
             style={styles.logo}
             resizeMode="contain"
           />
@@ -66,8 +66,8 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   logo: {
-    width: 210,
-    height: 95,
+    width: 620,
+    height: 140,
   },
   loader: {
     marginBottom: 48,
