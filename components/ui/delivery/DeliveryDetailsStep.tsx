@@ -64,6 +64,7 @@ const TOOKAN_MAP_API_BASE_URL =
 interface DeliveryData {
   name: string;
   phoneNumber: string;
+  email: string;
   fullAddress: string;
   latitude?: number;
   longitude?: number;
@@ -191,6 +192,15 @@ const DeliveryDetails: React.FC<DeliveryDetailsProps> = ({
           onChangeText={(text) => onDataChange({ ...data, phoneNumber: text })}
           keyboardType="phone-pad"
           icon="call-outline"
+        />
+
+        <DeliveryInput
+          label="Email"
+          placeholder="Enter receiver email"
+          value={data.email}
+          onChangeText={(text) => onDataChange({ ...data, email: text })}
+          keyboardType="email-address"
+          icon="mail-outline"
         />
 
         <DeliveryInput

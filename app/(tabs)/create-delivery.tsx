@@ -1,5 +1,5 @@
 import * as Location from "expo-location";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import {
   Alert,
@@ -7,8 +7,6 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
-  Text,
-  TouchableOpacity,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -27,7 +25,6 @@ import {
 } from "../../components/ui/delivery";
 import createDeliveryData from "../../constants/createDeliveryData.json";
 import { useCreateDeliveryMutation } from "../../redux/api/createDelivery";
-import { useGetMeUserQuery } from "../../redux/api/userApi";
 
 type Step =
   | "pickup"
@@ -40,6 +37,7 @@ type Step =
 interface PickupData {
   fullName: string;
   phoneNumber: string;
+  email: string;
   fullAddress: string;
   latitude?: number;
   longitude?: number;
@@ -48,6 +46,7 @@ interface PickupData {
 interface DeliveryData {
   name: string;
   phoneNumber: string;
+  email: string;
   fullAddress: string;
   latitude?: number;
   longitude?: number;
@@ -61,55 +60,57 @@ interface PackageData {
   paymentMethod: "cash" | "bank" | null;
 }
 
-type OrderType = "PICKUP" | "DELIVERY";
-
 interface CreateOrderPayload {
-  type: OrderType;
   job_description: string;
-  job_delivery_datetime: string;
   price: number;
   quantity: number;
   weight: number;
   paymentMethod: "COD" | "BANK";
-  fullName: string;
-  phone: string;
-  email: string;
-  address: string;
-  latitude: number;
-  longitude: number;
-  specialInstructions: string;
   isAgreedToTerms: boolean;
+  pickup_name: string;
+  pickup_phone: string;
+  pickup_email: string;
+  pickup_address: string;
+  pickup_latitude: number;
+  pickup_longitude: number;
+  pickup_datetime: string;
+  delivery_name: string;
+  delivery_phone: string;
+  delivery_email: string;
+  delivery_address: string;
+  delivery_latitude: number;
+  delivery_longitude: number;
+  job_delivery_datetime: string;
+  specialInstructions: string;
 }
 
 type FormLocationData = PickupData | DeliveryData;
 
 export default function CreateDeliveryScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams<{ title?: string }>();
   const [currentStep, setCurrentStep] = useState(1);
   const [step, setStep] = useState<Step>("pickup");
   const [showConfirmed, setShowConfirmed] = useState(false);
-  const [orderType, setOrderType] = useState<OrderType>("PICKUP");
   const [bankImageUri, setBankImageUri] = useState<string | null>(null);
   // Prohibited items agreement state
   const [isAgreedToProhibited, setIsAgreedToProhibited] = useState(false);
 
   const [createDelivery, { isLoading: isCreatingDelivery }] =
     useCreateDeliveryMutation();
-  const { data: meUserResponse } = useGetMeUserQuery();
-
-  const meUser = meUserResponse?.data;
-  const meAddress = meUserResponse?.data?.address ?? "";
 
   // Form Data States
   const [pickupData, setPickupData] = useState<PickupData>({
     fullName: "",
     phoneNumber: "",
+    email: "",
     fullAddress: "",
   });
 
   const [deliveryData, setDeliveryData] = useState<DeliveryData>({
     name: "",
     phoneNumber: "",
+    email: "",
     fullAddress: "",
   });
 
@@ -122,19 +123,6 @@ export default function CreateDeliveryScreen() {
     weight: 0,
     paymentMethod: null,
   });
-
-  useEffect(() => {
-    if (!meUser) {
-      return;
-    }
-
-    setDeliveryData((prev) => ({
-      ...prev,
-      name: prev.name || meUser.fullName || "",
-      phoneNumber: prev.phoneNumber || meUser.phone || "",
-      fullAddress: prev.fullAddress || meAddress,
-    }));
-  }, [meAddress, meUser]);
 
   useEffect(() => {
     if (packageData.paymentMethod !== "bank" && bankImageUri) {
@@ -216,11 +204,16 @@ export default function CreateDeliveryScreen() {
   };
 
   const getHeaderTitle = (): string => {
+    const flowTitle =
+      typeof params.title === "string" && params.title.trim().length > 0
+        ? params.title
+        : "Create Delivery";
+
     switch (step) {
       case "pickup":
       case "delivery":
       case "package":
-        return "Create Delivery";
+        return flowTitle;
       case "ride":
         return "Choose a ride";
       case "payment":
@@ -228,7 +221,7 @@ export default function CreateDeliveryScreen() {
           ? "Bank transfer"
           : "Cash on delivery";
       default:
-        return "Create Delivery";
+        return flowTitle;
     }
   };
 
@@ -260,6 +253,7 @@ export default function CreateDeliveryScreen() {
     if (
       !pickupData.fullName.trim() ||
       !pickupData.phoneNumber.trim() ||
+      !pickupData.email.trim() ||
       !pickupData.fullAddress.trim()
     ) {
       Alert.alert("Required", "Please complete pickup details before next.");
@@ -274,6 +268,7 @@ export default function CreateDeliveryScreen() {
     if (
       !deliveryData.name.trim() ||
       !deliveryData.phoneNumber.trim() ||
+      !deliveryData.email.trim() ||
       !deliveryData.fullAddress.trim()
     ) {
       Alert.alert("Required", "Please complete delivery details before next.");
@@ -409,7 +404,7 @@ export default function CreateDeliveryScreen() {
       return;
     }
 
-    const sourceData = orderType === "PICKUP" ? pickupData : deliveryData;
+    const sourceData = pickupData;
     let bookingLocationData: FormLocationData = sourceData;
 
     if (!isLocationComplete(sourceData)) {
@@ -430,21 +425,12 @@ export default function CreateDeliveryScreen() {
           longitude: currentLocation.longitude,
         };
 
-        if (orderType === "PICKUP") {
-          setPickupData((prev) => ({
-            ...prev,
-            fullAddress: bookingLocationData.fullAddress,
-            latitude: bookingLocationData.latitude,
-            longitude: bookingLocationData.longitude,
-          }));
-        } else {
-          setDeliveryData((prev) => ({
-            ...prev,
-            fullAddress: bookingLocationData.fullAddress,
-            latitude: bookingLocationData.latitude,
-            longitude: bookingLocationData.longitude,
-          }));
-        }
+        setPickupData((prev) => ({
+          ...prev,
+          fullAddress: bookingLocationData.fullAddress,
+          latitude: bookingLocationData.latitude,
+          longitude: bookingLocationData.longitude,
+        }));
       } catch (error) {
         const isPermissionDenied =
           (error as Error)?.message === "LOCATION_PERMISSION_DENIED";
@@ -459,9 +445,7 @@ export default function CreateDeliveryScreen() {
     }
 
     const payload: CreateOrderPayload = {
-      type: orderType,
       job_description: packageData.description,
-      job_delivery_datetime: getJobDeliveryDateTime(),
       price:
         selectedRideOption?.price ??
         createDeliveryData.pricingDetails.deliveryFee +
@@ -469,15 +453,22 @@ export default function CreateDeliveryScreen() {
       quantity: packageData.quantity,
       weight: packageData.weight,
       paymentMethod: packageData.paymentMethod === "bank" ? "BANK" : "COD",
-      fullName:
-        orderType === "PICKUP" ? pickupData.fullName : deliveryData.name,
-      phone: bookingLocationData.phoneNumber,
-      email: meUser?.email || "",
-      address: bookingLocationData.fullAddress,
-      latitude: bookingLocationData.latitude ?? 0,
-      longitude: bookingLocationData.longitude ?? 0,
-      specialInstructions: packageData.instructions,
       isAgreedToTerms: isAgreedToProhibited,
+      pickup_name: pickupData.fullName,
+      pickup_phone: pickupData.phoneNumber,
+      pickup_email: pickupData.email,
+      pickup_address: pickupData.fullAddress,
+      pickup_latitude: pickupData.latitude ?? 0,
+      pickup_longitude: pickupData.longitude ?? 0,
+      pickup_datetime: new Date().toISOString(),
+      delivery_name: deliveryData.name,
+      delivery_phone: deliveryData.phoneNumber,
+      delivery_email: deliveryData.email,
+      delivery_address: deliveryData.fullAddress,
+      delivery_latitude: deliveryData.latitude ?? 0,
+      delivery_longitude: deliveryData.longitude ?? 0,
+      job_delivery_datetime: getJobDeliveryDateTime(),
+      specialInstructions: packageData.instructions,
     };
 
     console.log(payload);
@@ -630,43 +621,6 @@ export default function CreateDeliveryScreen() {
             />
           )}
 
-          <View style={styles.typeSelectorContainer}>
-            <TouchableOpacity
-              style={[
-                styles.typeButton,
-                orderType === "PICKUP" && styles.typeButtonSelected,
-              ]}
-              onPress={() => setOrderType("PICKUP")}
-              activeOpacity={0.8}
-            >
-              <Text
-                style={[
-                  styles.typeButtonText,
-                  orderType === "PICKUP" && styles.typeButtonTextSelected,
-                ]}
-              >
-                Pickup
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.typeButton,
-                orderType === "DELIVERY" && styles.typeButtonSelected,
-              ]}
-              onPress={() => setOrderType("DELIVERY")}
-              activeOpacity={0.8}
-            >
-              <Text
-                style={[
-                  styles.typeButtonText,
-                  orderType === "DELIVERY" && styles.typeButtonTextSelected,
-                ]}
-              >
-                Delivery
-              </Text>
-            </TouchableOpacity>
-          </View>
-
           {/* Step Content */}
           <ScrollView
             style={styles.scrollView}
@@ -709,31 +663,5 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingBottom: Platform.OS === "ios" ? 40 : 20,
-  },
-  typeSelectorContainer: {
-    flexDirection: "row",
-    marginHorizontal: 20,
-    marginBottom: 12,
-    borderRadius: 12,
-    backgroundColor: "#F7F7F7",
-    padding: 4,
-    gap: 8,
-  },
-  typeButton: {
-    flex: 1,
-    borderRadius: 10,
-    paddingVertical: 10,
-    alignItems: "center",
-  },
-  typeButtonSelected: {
-    backgroundColor: "#F5A623",
-  },
-  typeButtonText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#666666",
-  },
-  typeButtonTextSelected: {
-    color: "#FFFFFF",
   },
 });

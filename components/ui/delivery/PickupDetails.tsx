@@ -64,6 +64,7 @@ const TOOKAN_MAP_API_BASE_URL =
 interface PickupData {
   fullName: string;
   phoneNumber: string;
+  email: string;
   fullAddress: string;
   latitude?: number;
   longitude?: number;
@@ -177,16 +178,16 @@ const PickupDetails: React.FC<PickupDetailsProps> = ({
 
       <View style={styles.form}>
         <DeliveryInput
-          label="Full Name"
-          placeholder="Who should we contact?"
+          label="Store Name"
+          placeholder="Enter store name"
           value={data.fullName}
           onChangeText={(text) => onDataChange({ ...data, fullName: text })}
           icon="person-outline"
         />
 
         <DeliveryInput
-          label="Phone Number"
-          placeholder="+597 xx xxxx"
+          label="Store Phone Number"
+          placeholder="Enter store phone number"
           value={data.phoneNumber}
           onChangeText={(text) => onDataChange({ ...data, phoneNumber: text })}
           keyboardType="phone-pad"
@@ -194,8 +195,17 @@ const PickupDetails: React.FC<PickupDetailsProps> = ({
         />
 
         <DeliveryInput
-          label="Full Address"
-          placeholder="Search pickup address"
+          label="Store Email"
+          placeholder="Enter store email"
+          value={data.email}
+          onChangeText={(text) => onDataChange({ ...data, email: text })}
+          keyboardType="email-address"
+          icon="mail-outline"
+        />
+
+        <DeliveryInput
+          label="Store Address"
+          placeholder="Search store address"
           value={data.fullAddress}
           onChangeText={(text) => {
             onDataChange({ ...data, fullAddress: text });

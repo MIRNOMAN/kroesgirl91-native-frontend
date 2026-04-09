@@ -19,7 +19,7 @@ import {
 } from "../../components/ui/shipment";
 import { COLORS } from "../../constants/colors";
 import { useGetAllOrdersQuery } from "../../redux/api/createDelivery";
-import { TOrderStatus,  } from "../../types";
+import { TOrderStatus } from "../../types";
 
 const { width } = Dimensions.get("window");
 
@@ -31,8 +31,6 @@ type ShipmentStatus =
   | "CANCELLED";
 type StatusFilter = "ALL" | ShipmentStatus;
 
-
-
 const STATUS_FILTERS: StatusFilter[] = [
   "ALL",
   "PENDING",
@@ -42,7 +40,11 @@ const STATUS_FILTERS: StatusFilter[] = [
   "CANCELLED",
 ];
 
-const toTitleCase = (value: string) => {
+const toTitleCase = (value?: string | null) => {
+  if (!value || typeof value !== "string") {
+    return "N/A";
+  }
+
   return value
     .toLowerCase()
     .split("_")
@@ -63,10 +65,8 @@ const formatOrderDate = (date: string) => {
   });
 };
 
-
-
-const normalizeOrderStatus = (status: TOrderStatus): ShipmentStatus => {
-  const normalized = status.toUpperCase();
+const normalizeOrderStatus = (status?: TOrderStatus | null): ShipmentStatus => {
+  const normalized = String(status || "").toUpperCase();
 
   switch (normalized) {
     case "SUCCESSFUL":
@@ -94,13 +94,13 @@ export default function ShipmentScreen() {
   const [activeStatus, setActiveStatus] = useState<StatusFilter>("ALL");
 
   // Query params for API (remove date and job_type)
-const queryParams = useMemo(
-  () => [
-    { name: "page", value: currentPage },
-    { name: "limit", value: itemsPerPage }
-  ],
-  [currentPage]
-);
+  const queryParams = useMemo(
+    () => [
+      { name: "page", value: currentPage },
+      { name: "limit", value: itemsPerPage },
+    ],
+    [currentPage],
+  );
 
   // API call
   const {
@@ -131,24 +131,36 @@ const queryParams = useMemo(
     return allOrders.filter((order) =>
       activeStatus === "ALL"
         ? true
-        : normalizeOrderStatus(order.status as TOrderStatus) === activeStatus,
+        : normalizeOrderStatus(order?.status as TOrderStatus) === activeStatus,
     );
   }, [allOrders, activeStatus]);
 
   // Map to OrderCard data
   const orderCardData: Order[] = useMemo(
     () =>
-      filteredOrders.map((order) => ({
-        id: order.tookanJobId,
-        date: formatOrderDate(order.deliveryDate),
-        status: normalizeOrderStatus(order.status as TOrderStatus),
-        price: Number(order.price || 0),
-        shippingType: toTitleCase(order.orderType),
-        origin: toTitleCase(order.orderType),
-        destination: order.deliveryAddress || "N/A",
+      filteredOrders.map((order, index) => ({
+        id: String(order?.tookanJobId || order?.id || `order-${index}`),
+        date: formatOrderDate(order?.deliveryDate || order?.createdAt || ""),
+        status: normalizeOrderStatus(order?.status as TOrderStatus),
+        price: Number(order?.price || 0),
+        shippingType: toTitleCase(order?.orderType),
+        origin: toTitleCase(order?.orderType),
+        destination: order?.deliveryAddress || "N/A",
       })),
     [filteredOrders],
   );
+
+  const emptyStateMessage = useMemo(() => {
+    if (allOrders.length === 0) {
+      return "No shipment data found yet. Create a delivery to see it here.";
+    }
+
+    if (activeStatus !== "ALL") {
+      return `No ${toTitleCase(activeStatus)} shipments found on this page.`;
+    }
+
+    return "No shipments available right now.";
+  }, [activeStatus, allOrders.length]);
 
   const showInitialLoading =
     isLoading || (isFetching && allOrders.length === 0);
@@ -175,44 +187,44 @@ const queryParams = useMemo(
         }}
       />
 
-          {/* Pagination Controls */}
-          {meta && meta.totalPages > 1 && (
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "center",
-                alignItems: "center",
-                marginVertical: 16,
-                gap: 12,
-              }}
-            >
-              <Pressable
-                style={[
-                  styles.retryButton,
-                  { opacity: meta.hasPreviousPage ? 1 : 0.5 },
-                ]}
-                disabled={!meta.hasPreviousPage}
-                onPress={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              >
-                <Text style={styles.retryButtonText}>Previous</Text>
-              </Pressable>
-              <Text style={{ fontWeight: "600", color: COLORS.textPrimary }}>
-                Page {meta.currentPage} of {meta.totalPages}
-              </Text>
-              <Pressable
-                style={[
-                  styles.retryButton,
-                  { opacity: meta.hasNextPage ? 1 : 0.5 },
-                ]}
-                disabled={!meta.hasNextPage}
-                onPress={() =>
-                  setCurrentPage((p) => Math.min(meta.totalPages, p + 1))
-                }
-              >
-                <Text style={styles.retryButtonText}>Next</Text>
-              </Pressable>
-            </View>
-          )}
+      {/* Pagination Controls */}
+      {meta && meta.totalPages > 1 && (
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "center",
+            alignItems: "center",
+            marginVertical: 16,
+            gap: 12,
+          }}
+        >
+          <Pressable
+            style={[
+              styles.retryButton,
+              { opacity: meta.hasPreviousPage ? 1 : 0.5 },
+            ]}
+            disabled={!meta.hasPreviousPage}
+            onPress={() => setCurrentPage((p) => Math.max(1, p - 1))}
+          >
+            <Text style={styles.retryButtonText}>Previous</Text>
+          </Pressable>
+          <Text style={{ fontWeight: "600", color: COLORS.textPrimary }}>
+            Page {meta.currentPage} of {meta.totalPages}
+          </Text>
+          <Pressable
+            style={[
+              styles.retryButton,
+              { opacity: meta.hasNextPage ? 1 : 0.5 },
+            ]}
+            disabled={!meta.hasNextPage}
+            onPress={() =>
+              setCurrentPage((p) => Math.min(meta.totalPages, p + 1))
+            }
+          >
+            <Text style={styles.retryButtonText}>Next</Text>
+          </Pressable>
+        </View>
+      )}
 
       {showInitialLoading ? (
         <View style={styles.listContent}>
@@ -237,11 +249,10 @@ const queryParams = useMemo(
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
                 <Feather name="package" size={48} color="#ccc" />
-                <Text style={styles.emptyText}>No orders found</Text>
+                <Text style={styles.emptyText}>{emptyStateMessage}</Text>
               </View>
             }
           />
-      
         </>
       )}
     </SafeAreaView>

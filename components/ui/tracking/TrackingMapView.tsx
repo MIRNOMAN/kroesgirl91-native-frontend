@@ -10,6 +10,7 @@ type TrackingMapViewProps = {
   route?: Coordinate[];
   height?: number;
   focusCoordinate?: Coordinate | null;
+  controlsBottomOffset?: number;
 };
 
 const MAPPR_ACCESS_TOKEN =
@@ -29,6 +30,7 @@ const buildMapHtml = ({
   accessToken,
   mapStyle,
   focusCoordinate,
+  controlsBottomOffset,
 }: {
   center: Coordinate;
   points: TrackingMapPoint[];
@@ -36,6 +38,7 @@ const buildMapHtml = ({
   accessToken: string;
   mapStyle: string;
   focusCoordinate?: Coordinate | null;
+  controlsBottomOffset: number;
 }) => {
   const payload = JSON.stringify({
     center,
@@ -66,6 +69,18 @@ const buildMapHtml = ({
       #map {
         position: absolute;
         inset: 0;
+      }
+
+      .mapboxgl-ctrl-bottom-right,
+      .maplibregl-ctrl-bottom-right {
+        bottom: ${controlsBottomOffset}px;
+        right: 12px;
+      }
+
+      .mapboxgl-ctrl-bottom-left,
+      .maplibregl-ctrl-bottom-left {
+        bottom: ${controlsBottomOffset}px;
+        left: 12px;
       }
 
       .map-overlay-error {
@@ -278,6 +293,7 @@ export default function TrackingMapView({
   route = [],
   height = 420,
   focusCoordinate = null,
+  controlsBottomOffset = 20,
 }: TrackingMapViewProps) {
   const html = useMemo(
     () =>
@@ -288,8 +304,9 @@ export default function TrackingMapView({
         accessToken: MAPPR_ACCESS_TOKEN,
         mapStyle: MAPPR_STYLE,
         focusCoordinate,
+        controlsBottomOffset,
       }),
-    [center, points, route, focusCoordinate],
+    [center, points, route, focusCoordinate, controlsBottomOffset],
   );
 
   return (

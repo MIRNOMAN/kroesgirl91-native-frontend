@@ -2,19 +2,26 @@ import { TAgentResponse, TQueryParam } from "../../types";
 import { baseApi } from "./baseApi";
 
 type CreateDeliveryPayload = {
-  type: "PICKUP" | "DELIVERY";
   job_description: string;
-  job_delivery_datetime: string;
   price: number;
   quantity: number;
   weight: number;
-  paymentMethod: "CASH" | "COD" | "BANK";
-  fullName: string;
-  phone: string;
-  email: string;
-  address: string;
-  latitude: number;
-  longitude: number;
+  paymentMethod: "COD" | "BANK";
+  isAgreedToTerms: boolean;
+  pickup_name: string;
+  pickup_phone: string;
+  pickup_email: string;
+  pickup_address: string;
+  pickup_latitude: number;
+  pickup_longitude: number;
+  pickup_datetime: string;
+  delivery_name: string;
+  delivery_phone: string;
+  delivery_email: string;
+  delivery_address: string;
+  delivery_latitude: number;
+  delivery_longitude: number;
+  job_delivery_datetime: string;
   specialInstructions: string;
 };
 

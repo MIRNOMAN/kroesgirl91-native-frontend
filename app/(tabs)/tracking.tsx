@@ -246,7 +246,7 @@ export default function TrackingScreen() {
   const showSectionHeader = trackingState !== "tracking";
   const isTrackingMode = trackingState === "tracking";
   const mapHeight = isTrackingMode
-    ? Math.max(520, screenHeight - 90)
+    ? screenHeight
     : Math.max(360, screenHeight * 0.48);
 
   const [searchQuery, setSearchQuery] = useState(params.pickupAddress || "");
@@ -314,6 +314,7 @@ export default function TrackingScreen() {
                 route={route}
                 height={mapHeight}
                 focusCoordinate={focusCoordinate}
+                controlsBottomOffset={130}
               />
 
               <View style={styles.mapOverlayTop}>
@@ -370,6 +371,7 @@ export default function TrackingScreen() {
                 points={mapPoints}
                 route={route}
                 height={mapHeight}
+                controlsBottomOffset={108}
               />
 
               <View style={styles.mapOverlayTop}>
@@ -535,9 +537,10 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   mapShellFullscreen: {
+    flex: 1,
     marginHorizontal: 0,
     borderRadius: 0,
-    minHeight: "100%",
+    minHeight: 0,
     shadowOpacity: 0,
     shadowRadius: 0,
     elevation: 0,

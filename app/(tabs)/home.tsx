@@ -29,7 +29,7 @@ import { getGreeting } from "../../utils/getGreeting";
 const STATUS_STEPS = [
   { key: "ASSIGNED", label: "Accepted", image: "accepted" },
   { key: "STARTED", label: "Picked", image: "picked" },
-    {
+  {
     key: "ARRIVED",
     label: "Out for Delivery",
     image: "outfordelivery",
@@ -39,8 +39,6 @@ const STATUS_STEPS = [
   { key: "CANCELLED", label: "Delivered", image: "delivered" },
 ];
 
-
-
 // Map API status to step index
 const STATUS_INDEX_MAP: Record<string, number> = {
   PENDING: 0,
@@ -49,7 +47,7 @@ const STATUS_INDEX_MAP: Record<string, number> = {
   IN_TRANSIT: 2,
   OUT_FOR_DELIVERY: 3,
   DELIVERED: 4,
-    ASSIGNED: 0,
+  ASSIGNED: 0,
   STARTED: 1,
   ARRIVED: 2,
   SUCCESSFUL: 3,
@@ -81,6 +79,12 @@ export default function HomeScreen() {
   const router = useRouter();
   const orders = ordersResponse?.data.slice(0, 3) || [];
   const hasCurrentShipments = orders.length > 0;
+  const hasNonPendingShipment = orders.some(
+    (order: { status?: string }) =>
+      String(order?.status || "").toUpperCase() !== "PENDING",
+  );
+  const shouldShowCurrentShipmentCard =
+    hasCurrentShipments && hasNonPendingShipment;
 
   const handleServicePress = (serviceTitle: string) => {
     if (serviceTitle === "Business/Bulk") {
@@ -89,7 +93,10 @@ export default function HomeScreen() {
     }
 
     if (serviceTitle === "Store Pickup") {
-      router.push("/(tabs)/create-delivery");
+      router.push({
+        pathname: "/(tabs)/create-delivery",
+        params: { title: "Store Pickup" },
+      });
       return;
     }
 
@@ -129,20 +136,22 @@ export default function HomeScreen() {
           ))}
         </View>
 
-        <View>
-          <Text
-            style={{
-              fontSize: 22,
-              fontWeight: "700",
-              marginLeft: 20,
-              marginTop: 20,
-              marginBottom: 10,
-              color: "#333",
-            }}
-          >
-            Current Shipment
-          </Text>
-        </View>
+        {shouldShowCurrentShipmentCard ? (
+          <View>
+            <Text
+              style={{
+                fontSize: 22,
+                fontWeight: "700",
+                marginLeft: 20,
+                marginTop: 20,
+                marginBottom: 10,
+                color: "#333",
+              }}
+            >
+              Current Shipment
+            </Text>
+          </View>
+        ) : null}
 
         {/* Shipment Section With Background */}
         <ImageBackground
@@ -151,7 +160,7 @@ export default function HomeScreen() {
           imageStyle={styles.shipmentBackgroundImage}
         >
           {/* Current Shipment - Conditional Rendering */}
-          {hasCurrentShipments && (
+          {shouldShowCurrentShipmentCard && (
             <CurrentShipment
               recipientName={orders[0].deliveryName}
               trackingId={orders[0].tookanJobId || orders[0].id}
