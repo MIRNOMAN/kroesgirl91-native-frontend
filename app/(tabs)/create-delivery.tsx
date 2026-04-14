@@ -60,6 +60,24 @@ interface PackageData {
   paymentMethod: "cash" | "bank" | null;
 }
 
+interface RideFareOption {
+  id: string;
+  label: string;
+  price: number;
+}
+
+interface RideOption {
+  id: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  price: number;
+  currency: string;
+  priceLabel: string;
+  icon: string;
+  fareOptions?: RideFareOption[];
+}
+
 interface CreateOrderPayload {
   job_description: string;
   price: number;
@@ -115,6 +133,9 @@ export default function CreateDeliveryScreen() {
   });
 
   const [selectedRide, setSelectedRide] = useState<string | null>(null);
+  const [selectedRideFareOptionById, setSelectedRideFareOptionById] = useState<
+    Record<string, string>
+  >({});
 
   const [packageData, setPackageData] = useState<PackageData>({
     description: "",
@@ -132,7 +153,7 @@ export default function CreateDeliveryScreen() {
 
   const selectedRideOption = useMemo(
     () =>
-      createDeliveryData.rideOptions.find(
+      (createDeliveryData.rideOptions as RideOption[]).find(
         (option) => option.id === selectedRide,
       ),
     [selectedRide],
@@ -166,7 +187,7 @@ export default function CreateDeliveryScreen() {
     const sameDayWithBuffer = new Date(today);
     sameDayWithBuffer.setMinutes(sameDayWithBuffer.getMinutes() + 10);
 
-    return createDeliveryData.rideOptions.map((option) => {
+    return (createDeliveryData.rideOptions as RideOption[]).map((option) => {
       if (option.id === "same-day") {
         return {
           ...option,
@@ -184,6 +205,46 @@ export default function CreateDeliveryScreen() {
       return option;
     });
   })();
+
+  const selectedRidePrice = useMemo(() => {
+    const option = rideOptionsWithDynamicDates.find(
+      (item) => item.id === selectedRide,
+    );
+
+    if (!option) {
+      return undefined;
+    }
+
+    const selectedFareOptionId = selectedRideFareOptionById[option.id];
+    const selectedFareOption = option.fareOptions?.find(
+      (item) => item.id === selectedFareOptionId,
+    );
+
+    return selectedFareOption?.price ?? option.price;
+  }, [rideOptionsWithDynamicDates, selectedRide, selectedRideFareOptionById]);
+
+  const handleSelectRide = (rideId: string) => {
+    setSelectedRide(rideId);
+
+    const selectedOption = rideOptionsWithDynamicDates.find(
+      (option) => option.id === rideId,
+    );
+    const firstFareOption = selectedOption?.fareOptions?.[0];
+
+    if (firstFareOption) {
+      setSelectedRideFareOptionById((prev) => ({
+        ...prev,
+        [rideId]: prev[rideId] ?? firstFareOption.id,
+      }));
+    }
+  };
+
+  const handleSelectFareOption = (rideId: string, fareOptionId: string) => {
+    setSelectedRideFareOptionById((prev) => ({
+      ...prev,
+      [rideId]: fareOptionId,
+    }));
+  };
 
   const getJobDeliveryDateTime = (): string => {
     // Capture the exact current moment in time
@@ -282,6 +343,18 @@ export default function CreateDeliveryScreen() {
   const handleRideNext = () => {
     if (!selectedRide) {
       Alert.alert("Required", "Please select a ride option.");
+      return;
+    }
+
+    const selectedOption = rideOptionsWithDynamicDates.find(
+      (option) => option.id === selectedRide,
+    );
+    const hasFareOptions = Boolean(
+      selectedOption?.fareOptions && selectedOption.fareOptions.length > 0,
+    );
+
+    if (hasFareOptions && !selectedRideFareOptionById[selectedRide]) {
+      Alert.alert("Required", "Please select a ride distance option.");
       return;
     }
 
@@ -447,6 +520,7 @@ export default function CreateDeliveryScreen() {
     const payload: CreateOrderPayload = {
       job_description: packageData.description,
       price:
+        selectedRidePrice ??
         selectedRideOption?.price ??
         createDeliveryData.pricingDetails.deliveryFee +
           createDeliveryData.pricingDetails.serviceFee,
@@ -552,7 +626,13 @@ export default function CreateDeliveryScreen() {
           <ChooseRide
             rideOptions={rideOptionsWithDynamicDates}
             selectedRide={selectedRide}
-            onSelectRide={setSelectedRide}
+            selectedFareOptionId={
+              selectedRide
+                ? (selectedRideFareOptionById[selectedRide] ?? null)
+                : null
+            }
+            onSelectRide={handleSelectRide}
+            onSelectFareOption={handleSelectFareOption}
             onNext={handleRideNext}
           />
         );
@@ -583,6 +663,7 @@ export default function CreateDeliveryScreen() {
         return (
           <CashOnDelivery
             amount={
+              selectedRidePrice ??
               selectedRideOption?.price ??
               createDeliveryData.pricingDetails.deliveryFee +
                 createDeliveryData.pricingDetails.serviceFee

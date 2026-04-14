@@ -48,7 +48,24 @@
       "subtitle": "Ride Time: 28 min",
       "description": "Ultrafast, no-quality limits",
       "price": 200,
-      "currency": "$",
+      "fareOptions": [
+        {
+          "id": "same-day-0-4",
+          "label": "0KM to 4KM",
+          "price": 160
+        },
+        {
+          "id": "same-day-5-9",
+          "label": "5KM to 9KM",
+          "price": 180
+        },
+        {
+          "id": "same-day-10-12",
+          "label": "10KM to 12KM",
+          "price": 200
+        }
+      ],
+      "currency": "SRD$",
       "priceLabel": "Send",
       "icon": "bicycle"
     },
@@ -59,7 +76,24 @@
       "subtitle": "Ride Time: 24 hrs",
       "description": "Ultrafast, no-quality limits",
       "price": 200,
-      "currency": "$",
+      "fareOptions": [
+        {
+          "id": "next-day-0-4",
+          "label": "0KM to 4KM",
+          "price": 140
+        },
+        {
+          "id": "next-day-5-9",
+          "label": "5KM to 9KM",
+          "price": 160
+        },
+        {
+          "id": "next-day-10-12",
+          "label": "10KM to 12KM",
+          "price": 180
+        }
+      ],
+      "currency": "SRD$",
       "priceLabel": "Send",
       "icon": "time"
     }
@@ -132,7 +166,7 @@
   "pricingDetails": {
     "deliveryFee": 45.0,
     "serviceFee": 5.0,
-    "currency": "$"
+    "currency": "SRD$"
   },
   "bookingConfirmed": {
     "title": "Booking Confirmed!",
