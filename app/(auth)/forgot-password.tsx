@@ -2,6 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
+  Image,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
@@ -98,6 +99,14 @@ export default function ForgotPasswordScreen() {
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
           <View style={styles.container}>
             <View style={styles.content}>
+              <View style={styles.logoContainer}>
+                <Image
+                  source={require("../../assets/splashscreen/SVG-01.png")}
+                  style={styles.logo}
+                  resizeMode="contain"
+                />
+              </View>
+
               <AuthTitleBlock
                 title="Forget Password"
                 subtitle="Enter your email here. Give valid email to reset your password"
@@ -150,5 +159,12 @@ const styles = StyleSheet.create({
   },
   content: {
     gap: 16,
+  },
+  logoContainer: {
+    alignItems: "center",
+  },
+  logo: {
+     width: 530,
+    height: 100,
   },
 });

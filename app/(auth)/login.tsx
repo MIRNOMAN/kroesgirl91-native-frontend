@@ -1,6 +1,7 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
+  Image,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
@@ -32,8 +33,8 @@ type LoginErrorShape = {
 export default function LoginScreen() {
   const router = useRouter();
   const { signIn } = useAuth();
-  const [email, setEmail] = useState(__DEV__ ? "pro101@gmail.com" : "");
-  const [password, setPassword] = useState(__DEV__ ? "111111" : "");
+  const [email, setEmail] = useState(__DEV__ ? "" : "");
+  const [password, setPassword] = useState(__DEV__ ? "" : "");
   const [createUserLogin, { isLoading }] = useCreateUserLoginMutation();
 
   const getErrorMessage = (error: unknown) => {
@@ -106,6 +107,14 @@ export default function LoginScreen() {
           <View style={styles.container}>
             {/* ================= TOP CONTENT ================= */}
             <View style={styles.content}>
+              <View style={styles.logoContainer}>
+                <Image
+                  source={require("../../assets/splashscreen/SVG-01.png")}
+                  style={styles.logo}
+                  resizeMode="contain"
+                />
+              </View>
+
               <AuthTitleBlock
                 title="Sign In Account"
                 subtitle="Start your journey in playmate with fun, interactive lessons now"
@@ -225,6 +234,14 @@ const styles = StyleSheet.create({
   },
   content: {
     gap: 16,
+  },
+  logoContainer: {
+    alignItems: "center",
+    marginBottom: 4,
+  },
+  logo: {
+    width: 530,
+    height: 100,
   },
   form: {
     marginTop: 20,

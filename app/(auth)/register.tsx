@@ -2,6 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
+  Image,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
@@ -35,8 +36,7 @@ export default function RegisterScreen() {
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
 
-  const [createUserRegister, { isLoading }] =
-    useCreateUserRegisterMutation();
+  const [createUserRegister, { isLoading }] = useCreateUserRegisterMutation();
 
   // ✅ safer error handler
   const getErrorMessage = (error: any): string => {
@@ -102,18 +102,15 @@ export default function RegisterScreen() {
 
     try {
       const response = (await createUserRegister(
-        payload
+        payload,
       ).unwrap()) as RegisterResponse;
 
-      console.log(
-        "[REGISTER][OTP_CODE]",
-        response?.data?.otpResponse?.code
-      );
+      console.log("[REGISTER][OTP_CODE]", response?.data?.otpResponse?.code);
 
       toast.success(
         response?.data?.message ||
           response?.message ||
-          "Registration successful. Verify OTP."
+          "Registration successful. Verify OTP.",
       );
 
       await saveRegisterEmail(normalizedEmail);
@@ -133,6 +130,14 @@ export default function RegisterScreen() {
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View style={styles.container}>
             <View style={styles.content}>
+              <View style={styles.logoContainer}>
+                <Image
+                  source={require("../../assets/splashscreen/SVG-01.png")}
+                  style={styles.logo}
+                  resizeMode="contain"
+                />
+              </View>
+
               <AuthTitleBlock
                 title="Create An Account"
                 subtitle="Create your account to access unlimited payment options."
@@ -180,18 +185,14 @@ export default function RegisterScreen() {
                 By continuing, you confirm that you are 18+ and agree to our{" "}
                 <Text
                   style={styles.linkInline}
-                  onPress={() =>
-                    router.push(APP_ROUTES.termsConditions)
-                  }
+                  onPress={() => router.push(APP_ROUTES.termsConditions)}
                 >
                   Terms & Conditions
                 </Text>{" "}
                 and{" "}
                 <Text
                   style={styles.linkInline}
-                  onPress={() =>
-                    router.push(APP_ROUTES.privacyPolicy)
-                  }
+                  onPress={() => router.push(APP_ROUTES.privacyPolicy)}
                 >
                   Privacy Policy
                 </Text>
@@ -205,12 +206,8 @@ export default function RegisterScreen() {
               />
 
               <View style={styles.loginRow}>
-                <Text style={styles.loginText}>
-                  Already have an account?
-                </Text>
-                <Pressable
-                  onPress={() => router.push(APP_ROUTES.login)}
-                >
+                <Text style={styles.loginText}>Already have an account?</Text>
+                <Pressable onPress={() => router.push(APP_ROUTES.login)}>
                   <Text style={styles.loginLink}> Log In</Text>
                 </Pressable>
               </View>
@@ -233,6 +230,13 @@ const styles = StyleSheet.create({
   },
   content: {
     gap: 24,
+  },
+  logoContainer: {
+    alignItems: "center",
+  },
+  logo: {
+   width: 530,
+    height: 100,
   },
   form: {
     gap: 14,

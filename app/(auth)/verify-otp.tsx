@@ -115,6 +115,14 @@ export default function VerifyOtpScreen() {
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         <View style={styles.container}>
+          <View style={styles.topLogoContainer}>
+            <Image
+              source={require("../../assets/splashscreen/SVG-01.png")}
+              style={styles.topLogo}
+              contentFit="contain"
+            />
+          </View>
+
           {isVerified ? (
             <View style={styles.content}>
               <View style={styles.iconWrap}>
@@ -174,6 +182,14 @@ const styles = StyleSheet.create({
     paddingTop: 40,
     paddingBottom: 24,
     justifyContent: "space-between",
+  },
+  topLogoContainer: {
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  topLogo: {
+    width: 530,
+    height: 100,
   },
   content: {
     flex: 1,

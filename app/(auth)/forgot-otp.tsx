@@ -2,7 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import { useEffect, useState } from "react";
-import { Platform, StyleSheet, View } from "react-native";
+import { Image, Platform, StyleSheet, View } from "react-native";
 import { toast } from "sonner-native";
 import AuthButton from "../../components/ui/auth/AuthButton";
 import AuthTitleBlock from "../../components/ui/auth/AuthTitleBlock";
@@ -150,6 +150,14 @@ export default function ForgotOtpScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.content}>
+        <View style={styles.logoContainer}>
+          <Image
+            source={require("../../assets/splashscreen/SVG-01.png")}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+        </View>
+
         <AuthTitleBlock
           title="Apply Reset Code"
           subtitle="Please check your email. Give correct reset 4 digit code here."
@@ -190,6 +198,13 @@ const styles = StyleSheet.create({
   content: {
     gap: 24,
     alignItems: "center",
+  },
+  logoContainer: {
+    alignItems: "center",
+  },
+  logo: {
+     width: 530,
+    height: 100,
   },
   actions: {
     gap: 10,

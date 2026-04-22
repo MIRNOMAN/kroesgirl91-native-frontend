@@ -2,7 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import { useEffect, useState } from "react";
-import { Platform, StyleSheet, View } from "react-native";
+import { Image, Platform, StyleSheet, View } from "react-native";
 import { toast } from "sonner-native";
 import AuthButton from "../../components/ui/auth/AuthButton";
 import AuthLabeledInput from "../../components/ui/auth/AuthLabeledInput";
@@ -137,6 +137,14 @@ export default function ResetPasswordScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.content}>
+        <View style={styles.logoContainer}>
+          <Image
+            source={require("../../assets/splashscreen/SVG-01.png")}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+        </View>
+
         <AuthTitleBlock
           title="Reset Password"
           subtitle="Add your new password"
@@ -191,6 +199,13 @@ const styles = StyleSheet.create({
   },
   content: {
     gap: 36,
+  },
+  logoContainer: {
+    alignItems: "center",
+  },
+  logo: {
+    width: 530,
+    height: 100,
   },
   form: {
     gap: 20,

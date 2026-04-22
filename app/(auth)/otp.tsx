@@ -1,6 +1,7 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
+  Image,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
@@ -40,6 +41,14 @@ export default function OtpScreen() {
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
           <View style={styles.container}>
             <View style={styles.content}>
+              <View style={styles.logoContainer}>
+                <Image
+                  source={require("../../assets/splashscreen/SVG-01.png")}
+                  style={styles.logo}
+                  resizeMode="contain"
+                />
+              </View>
+
               <AuthTitleBlock
                 title="Apply Code Here"
                 subtitle="Please check your email. Give correct authentication code here."
@@ -80,6 +89,13 @@ const styles = StyleSheet.create({
   content: {
     gap: 28,
     alignItems: "center",
+  },
+  logoContainer: {
+    alignItems: "center",
+  },
+  logo: {
+   width: 530,
+    height: 100,
   },
   actions: {
     gap: 10,
