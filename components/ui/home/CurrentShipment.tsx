@@ -115,10 +115,10 @@ export default function CurrentShipment({
       </View>
 
       {/* Status Circles with Checkmarks */}
-      <View style={styles.trackingContainer}>
+      {/* <View style={styles.trackingContainer}>
         {statuses.map((statusItem, index) => (
           <React.Fragment key={index}>
-            {/* Outer Circle Wrapper */}
+           
             <View
               style={[
                 styles.outerCircle,
@@ -127,7 +127,7 @@ export default function CurrentShipment({
                   : styles.outerCircleInactive,
               ]}
             >
-              {/* Inner Circle */}
+             
               <View
                 style={[
                   styles.statusCircle,
@@ -146,7 +146,6 @@ export default function CurrentShipment({
               </View>
             </View>
 
-            {/* Connector dots - only between circles, not inside */}
             {index < statuses.length - 1 && (
               <View style={styles.connectorLine}>
                 {[...Array(4)].map((_, i) => (
@@ -164,7 +163,7 @@ export default function CurrentShipment({
             )}
           </React.Fragment>
         ))}
-      </View>
+      </View> */}
 
       <View style={styles.labelsContainer}>
         {statuses.map((statusItem, index) => (
@@ -359,6 +358,9 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 12,
+    marginLeft: 10,
+    marginRight: 10,
+  
     borderTopWidth: 1,
     borderTopColor: "#F0F0F0",
     paddingTop: 18,
