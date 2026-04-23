@@ -91,7 +91,7 @@ export default function CurrentShipment({
       </View>
 
       {/* Status Images Row */}
-      <View style={styles.imagesContainer}>
+      {/* <View style={styles.imagesContainer}>
         {statuses.map((statusItem, index) => (
           <View key={index}>
             {getStatusImage(statusItem.image) ? (
@@ -112,10 +112,10 @@ export default function CurrentShipment({
             )}
           </View>
         ))}
-      </View>
+      </View> */}
 
       {/* Status Circles with Checkmarks */}
-      {/* <View style={styles.trackingContainer}>
+      <View style={styles.trackingContainer}>
         {statuses.map((statusItem, index) => (
           <React.Fragment key={index}>
            
@@ -163,7 +163,7 @@ export default function CurrentShipment({
             )}
           </React.Fragment>
         ))}
-      </View> */}
+      </View>
 
       <View style={styles.labelsContainer}>
         {statuses.map((statusItem, index) => (
