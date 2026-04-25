@@ -159,55 +159,10 @@ export default function CreateDeliveryScreen() {
     [selectedRide],
   );
 
-  const formatRideDate = (date: Date, includeTime: boolean = false): string => {
-    const dateStr = date.toLocaleDateString("en-GB", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    });
-
-    if (includeTime) {
-      const timeStr = date.toLocaleTimeString("en-GB", {
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-      });
-      return `${dateStr} ${timeStr}`;
-    }
-
-    return dateStr;
-  };
-
-  const rideOptionsWithDynamicDates = (() => {
-    const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(today.getDate() + 1);
-
-    // Add 10 minutes to same-day delivery
-    const sameDayWithBuffer = new Date(today);
-    sameDayWithBuffer.setMinutes(sameDayWithBuffer.getMinutes() + 10);
-
-    return (createDeliveryData.rideOptions as RideOption[]).map((option) => {
-      if (option.id === "same-day") {
-        return {
-          ...option,
-          subtitle: `Date: ${formatRideDate(sameDayWithBuffer, true)}`,
-        };
-      }
-
-      if (option.id === "next-day") {
-        return {
-          ...option,
-          subtitle: `Date: ${formatRideDate(tomorrow)}`,
-        };
-      }
-
-      return option;
-    });
-  })();
+  const rideOptionsForDisplay = createDeliveryData.rideOptions as RideOption[];
 
   const selectedRidePrice = useMemo(() => {
-    const option = rideOptionsWithDynamicDates.find(
+    const option = rideOptionsForDisplay.find(
       (item) => item.id === selectedRide,
     );
 
@@ -221,12 +176,12 @@ export default function CreateDeliveryScreen() {
     );
 
     return selectedFareOption?.price ?? option.price;
-  }, [rideOptionsWithDynamicDates, selectedRide, selectedRideFareOptionById]);
+  }, [rideOptionsForDisplay, selectedRide, selectedRideFareOptionById]);
 
   const handleSelectRide = (rideId: string) => {
     setSelectedRide(rideId);
 
-    const selectedOption = rideOptionsWithDynamicDates.find(
+    const selectedOption = rideOptionsForDisplay.find(
       (option) => option.id === rideId,
     );
     const firstFareOption = selectedOption?.fareOptions?.[0];
@@ -346,7 +301,7 @@ export default function CreateDeliveryScreen() {
       return;
     }
 
-    const selectedOption = rideOptionsWithDynamicDates.find(
+    const selectedOption = rideOptionsForDisplay.find(
       (option) => option.id === selectedRide,
     );
     const hasFareOptions = Boolean(
@@ -624,7 +579,7 @@ export default function CreateDeliveryScreen() {
       case "ride":
         return (
           <ChooseRide
-            rideOptions={rideOptionsWithDynamicDates}
+            rideOptions={rideOptionsForDisplay}
             selectedRide={selectedRide}
             selectedFareOptionId={
               selectedRide

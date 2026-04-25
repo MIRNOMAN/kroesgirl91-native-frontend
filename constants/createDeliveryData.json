@@ -134,9 +134,9 @@
     "uploadSubtitle": "Upload a screenshot of your payment confirmation",
     "uploadHint": "Click to upload\nPNG, JPG up to 10MB",
     "bankDetails": {
-      "bankName": "Republic Bank",
-      "accountName": "KroesGirl Delivery",
-      "accountNumber": "1234567890",
+      "bankName": "De Surinaamsche Bank",
+      "accountName": "KroesGirl ",
+      "accountNumber": "11093145",
       "routingNumber": "098765432"
     }
   },

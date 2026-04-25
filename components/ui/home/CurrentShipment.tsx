@@ -44,22 +44,22 @@ export default function CurrentShipment({
   endDate,
   endLocation,
 }: CurrentShipmentProps) {
-  const getStatusImage = (imageName: string) => {
-    switch (imageName) {
-      case "accepted":
-        return require("../../../assets/traking_image/traking_1.png");
-      case "picked":
-        return require("../../../assets/traking_image/traking_2.png");
-      case "transit":
-        return require("../../../assets/traking_image/traking_3.png");
-      case "outfordelivery":
-        return require("../../../assets/traking_image/traking_4.png");
-      case "delivered":
-        return require("../../../assets/traking_image/traking_5.png");
-      default:
-        return null;
-    }
-  };
+  // const getStatusImage = (imageName: string) => {
+  //   switch (imageName) {
+  //     case "accepted":
+  //       return require("../../../assets/traking_image/traking_1.png");
+  //     case "picked":
+  //       return require("../../../assets/traking_image/traking_2.png");
+  //     case "transit":
+  //       return require("../../../assets/traking_image/traking_3.png");
+  //     case "outfordelivery":
+  //       return require("../../../assets/traking_image/traking_4.png");
+  //     case "delivered":
+  //       return require("../../../assets/traking_image/traking_5.png");
+  //     default:
+  //       return null;
+  //   }
+  // };
 
   function formatDateTime(dateStr?: string) {
   if (!dateStr) return '';

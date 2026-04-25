@@ -117,10 +117,10 @@ const BankTransfer: React.FC<BankTransferProps> = ({
             <Text style={styles.bankLabel}>Account Number</Text>
             <Text style={styles.bankValue}>{bankDetails.accountNumber}</Text>
           </View>
-          <View style={styles.bankRow}>
+          {/* <View style={styles.bankRow}>
             <Text style={styles.bankLabel}>Routing Number</Text>
             <Text style={styles.bankValue}>{bankDetails.routingNumber}</Text>
-          </View>
+          </View> */}
         </View>
       </View>
 

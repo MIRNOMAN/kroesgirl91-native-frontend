@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import React from "react";
+import React, { useMemo, useState } from "react";
 import {
   Dimensions,
   StyleSheet,
@@ -45,13 +45,15 @@ const ChooseRide: React.FC<ChooseRideProps> = ({
   onSelectFareOption,
   onNext,
 }) => {
-  const [openFareDropdownForRide, setOpenFareDropdownForRide] = React.useState<
+  const [openFareDropdownForRide, setOpenFareDropdownForRide] = useState<
     string | null
   >(null);
 
-  const selectedRideOption = rideOptions.find(
-    (item) => item.id === selectedRide,
+  const selectedRideOption = useMemo(
+    () => rideOptions.find((item) => item.id === selectedRide),
+    [rideOptions, selectedRide],
   );
+
   const requiresFareOption = Boolean(
     selectedRideOption?.fareOptions &&
     selectedRideOption.fareOptions.length > 0,
@@ -98,19 +100,32 @@ const ChooseRide: React.FC<ChooseRideProps> = ({
           );
           const isDropdownOpen = openFareDropdownForRide === option.id;
           const selectedOptionFare = option.fareOptions?.find(
-            (item) => item.id === selectedFareOptionId,
+            (fareOption) => fareOption.id === selectedFareOptionId,
           );
+          const displayedPrice = selectedOptionFare?.price ?? option.price;
 
           return (
             <View
               key={option.id}
-              style={[styles.rideCard, isSelected && styles.rideCardSelected]}
+              style={[
+                styles.rideCard,
+                isSelected && styles.rideCardSelected,
+                isDropdownOpen && styles.rideCardWithDropdown,
+              ]}
             >
               <TouchableOpacity
                 style={styles.rideCardPressable}
                 onPress={() => {
                   onSelectRide(option.id);
-                  setOpenFareDropdownForRide(null);
+
+                  if (!hasFareOptions) {
+                    setOpenFareDropdownForRide(null);
+                    return;
+                  }
+
+                  setOpenFareDropdownForRide((prev) =>
+                    prev === option.id ? null : option.id,
+                  );
                 }}
                 activeOpacity={0.7}
               >
@@ -122,78 +137,72 @@ const ChooseRide: React.FC<ChooseRideProps> = ({
                       color={isSelected ? "#F5A623" : "#1A3A4A"}
                     />
                   </View>
+
                   <View style={styles.rideDetails}>
                     <Text style={styles.rideTitle}>{option.title}</Text>
                     <Text style={styles.rideSubtitle}>{option.subtitle}</Text>
-                    {option.description && (
+                    {isSelected && selectedOptionFare ? (
+                      <Text style={styles.rideFareSummary}>
+                        {selectedOptionFare.label}
+                      </Text>
+                    ) : option.description ? (
                       <Text style={styles.rideDescription}>
                         {option.description}
                       </Text>
-                    )}
+                    ) : null}
                   </View>
                 </View>
 
-                <View style={styles.priceContainer}>
-                  <Text style={styles.priceText}>
-                    {formatPrice(selectedOptionFare?.price ?? option.price)}
-                  </Text>
-                  <Text style={styles.priceLabel}>SRD$</Text>
+                <View style={styles.rideMeta}>
+                  {isSelected ? (
+                    <View style={styles.priceContainer}>
+                      <Text style={styles.priceText}>
+                        {formatPrice(displayedPrice)}
+                      </Text>
+                      <Text style={styles.priceLabel}>SUR$</Text>
+                    </View>
+                  ) : null}
+
+                  <Ionicons
+                    name={isDropdownOpen ? "chevron-up" : "chevron-down"}
+                    size={20}
+                    color="#40444B"
+                  />
                 </View>
               </TouchableOpacity>
 
-              {isSelected && hasFareOptions && (
+              {isSelected && hasFareOptions && isDropdownOpen && (
                 <View style={styles.dropdownContainer}>
-                  <TouchableOpacity
-                    style={styles.dropdownTrigger}
-                    onPress={() =>
-                      setOpenFareDropdownForRide((prev) =>
-                        prev === option.id ? null : option.id,
-                      )
-                    }
-                    activeOpacity={0.8}
-                  >
-                    <Text style={styles.dropdownTriggerText}>
-                      {selectedOptionFare
-                        ? `${selectedOptionFare.label} = ${formatPrice(selectedOptionFare.price)} SUR$`
-                        : "Select distance range"}
-                    </Text>
-                    <Ionicons
-                      name={isDropdownOpen ? "chevron-up" : "chevron-down"}
-                      size={18}
-                      color="#4E5A61"
-                    />
-                  </TouchableOpacity>
+                  <View style={styles.dropdownMenu}>
+                    {option.fareOptions?.map((fareOption) => {
+                      const isFareOptionSelected =
+                        selectedFareOptionId === fareOption.id;
 
-                  {isDropdownOpen && (
-                    <View style={styles.dropdownMenu}>
-                      {option.fareOptions?.map((fareOption) => {
-                        const isFareOptionSelected =
-                          selectedFareOptionId === fareOption.id;
-
-                        return (
-                          <TouchableOpacity
-                            key={fareOption.id}
-                            style={styles.dropdownItem}
-                            onPress={() => {
-                              onSelectFareOption(option.id, fareOption.id);
-                              setOpenFareDropdownForRide(null);
-                            }}
-                            activeOpacity={0.7}
+                      return (
+                        <TouchableOpacity
+                          key={fareOption.id}
+                          style={styles.dropdownItem}
+                          onPress={() => {
+                            onSelectFareOption(option.id, fareOption.id);
+                            setOpenFareDropdownForRide(null);
+                          }}
+                          activeOpacity={0.7}
+                        >
+                          <Text
+                            style={[
+                              styles.dropdownItemText,
+                              isFareOptionSelected &&
+                                styles.dropdownItemTextSelected,
+                            ]}
                           >
-                            <Text
-                              style={[
-                                styles.dropdownItemText,
-                                isFareOptionSelected &&
-                                  styles.dropdownItemTextSelected,
-                              ]}
-                            >
-                              {`${fareOption.label} = ${formatPrice(fareOption.price)} Sur$`}
-                            </Text>
-                          </TouchableOpacity>
-                        );
-                      })}
-                    </View>
-                  )}
+                            {`${fareOption.label} = ${formatPrice(
+                              fareOption.price,
+                            )} Sur$`}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
                 </View>
               )}
             </View>
@@ -236,22 +245,36 @@ const styles = StyleSheet.create({
   },
   rideOptions: {
     flex: 1,
+    overflow: "visible",
   },
   rideCard: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 10,
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: "#DCDCDC",
-    padding: isSmallDevice ? 10 : 12,
+    padding: isSmallDevice ? 12 : 14,
     marginBottom: 12,
+    position: "relative",
   },
   rideCardPressable: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
   },
   rideCardSelected: {
     borderColor: "#F5A623",
     backgroundColor: "#FFF8EA",
+    shadowColor: "#000000",
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    shadowOffset: {
+      width: 0,
+      height: 6,
+    },
+    elevation: 2,
+  },
+  rideCardWithDropdown: {
+    zIndex: 2,
   },
   rideInfo: {
     flex: 1,
@@ -259,16 +282,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   rideIconContainer: {
-    width: isSmallDevice ? 70 : 74,
-    height: isSmallDevice ? 46 : 50,
-    borderRadius: 8,
-    backgroundColor: "#F6E8CA",
+    width: isSmallDevice ? 72 : 76,
+    height: isSmallDevice ? 50 : 54,
+    borderRadius: 12,
+    backgroundColor: "#FAE7C3",
     alignItems: "center",
     justifyContent: "center",
   },
   rideDetails: {
     flex: 1,
     marginLeft: 12,
+    paddingRight: 8,
   },
   rideTitle: {
     fontSize: isSmallDevice ? 15 : 16,
@@ -280,71 +304,77 @@ const styles = StyleSheet.create({
     color: "#787878",
     marginTop: 1,
   },
+  rideFareSummary: {
+    fontSize: isSmallDevice ? 10 : 11,
+    color: "#8B8B8B",
+    marginTop: 2,
+    textTransform: "uppercase",
+  },
   rideDescription: {
     fontSize: isSmallDevice ? 10 : 11,
     color: "#999999",
     marginTop: 1,
   },
-  priceContainer: {
+  rideMeta: {
     alignItems: "flex-end",
     justifyContent: "center",
-    minWidth: 48,
+    minWidth: 56,
+  },
+  priceContainer: {
+    alignItems: "flex-end",
+    marginBottom: 2,
   },
   priceText: {
-    fontSize: isSmallDevice ? 18 : 20,
+    fontSize: isSmallDevice ? 17 : 18,
     fontWeight: "700",
-    color: "#1B1B1B",
+    color: "#141414",
     lineHeight: isSmallDevice ? 18 : 20,
   },
   priceLabel: {
     fontSize: 11,
-    color: "#1B1B1B",
+    color: "#141414",
     fontWeight: "600",
+    marginTop: -1,
   },
   buttonContainer: {
     paddingBottom: isSmallDevice ? 16 : 24,
   },
   dropdownContainer: {
-    marginTop: 10,
-  },
-  dropdownTrigger: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    borderWidth: 1,
-    borderColor: "#E2E2E2",
-    borderRadius: 10,
-    backgroundColor: "#FFF3DB",
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-  },
-  dropdownTriggerText: {
-    flex: 1,
-    marginRight: 8,
-    fontSize: 13,
-    color: "#A16A00",
-    fontWeight: "600",
+    position: "relative",
   },
   dropdownMenu: {
-    marginTop: 6,
+    position: "absolute",
+    top: 8,
+    left: isSmallDevice ? 72 : 84,
+    right: 12,
     backgroundColor: "#FFFFFF",
-    borderRadius: 10,
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: "#E9E9E9",
+    borderColor: "#EEF0F2",
+    shadowColor: "#000000",
+    shadowOpacity: 0.14,
+    shadowRadius: 18,
+    shadowOffset: {
+      width: 0,
+      height: 10,
+    },
+    elevation: 8,
     overflow: "hidden",
   },
   dropdownItem: {
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#F3F3F3",
+    borderBottomColor: "#ECECEC",
   },
   dropdownItemText: {
-    fontSize: 13,
-    color: "#262626",
+    fontSize: 14,
+    color: "#414141",
+    fontWeight: "500",
+    textAlign: "center",
   },
   dropdownItemTextSelected: {
-    color: "#A16A00",
+    color: "#F5A623",
     fontWeight: "700",
   },
 });
