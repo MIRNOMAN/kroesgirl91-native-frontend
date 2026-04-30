@@ -20,16 +20,21 @@ const isSmallDevice = width < 375;
 interface BankTransferProps {
   bankDetails: {
     bankName: string;
-    accountName: string;
     accountNumber: string;
-    routingNumber: string;
-  };
+  }[];
   screenshotUri: string | null;
   onScreenshotChange: (uri: string | null) => void;
   isSubmitting?: boolean;
   onConfirm: () => void;
   isAgreedToProhibited: boolean;
   setIsAgreedToProhibited: (v: boolean) => void;
+  amount?: number;
+  distance?: string;
+  pricingBreakdown?: {
+    base_fare?: number;
+    distance_charge?: number;
+    service_fee?: number;
+  };
 }
 
 const BankTransfer: React.FC<BankTransferProps> = ({
@@ -40,6 +45,9 @@ const BankTransfer: React.FC<BankTransferProps> = ({
   onConfirm,
   isAgreedToProhibited,
   setIsAgreedToProhibited,
+  amount = 0,
+  distance = "0",
+  pricingBreakdown,
 }) => {
   const pickImage = async () => {
     const permissionResult =
@@ -77,8 +85,7 @@ const BankTransfer: React.FC<BankTransferProps> = ({
         <TouchableOpacity
           style={styles.uploadArea}
           onPress={pickImage}
-          activeOpacity={0.7}
-        >
+          activeOpacity={0.7}>
           {screenshotUri ? (
             <Image
               source={{ uri: screenshotUri }}
@@ -104,37 +111,93 @@ const BankTransfer: React.FC<BankTransferProps> = ({
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Bank transfer</Text>
 
-        <View style={styles.bankCard}>
-          <View style={styles.bankRow}>
-            <Text style={styles.bankLabel}>Bank Name</Text>
-            <Text style={styles.bankValue}>{bankDetails.bankName}</Text>
+        {bankDetails.map((bank, index) => (
+          <View key={index} style={styles.bankCard}>
+            <View>
+              <View style={styles.bankRow}>
+                <Text style={styles.bankLabel}>Bank Name</Text>
+                <Text style={styles.bankValue}>{bank.bankName}</Text>
+              </View>
+
+              <View style={styles.bankRow}>
+                <Text style={styles.bankLabel}>Account Name</Text>
+                <Text style={styles.bankValue}>{bank.bankName}</Text>
+              </View>
+
+              <View style={styles.bankRow}>
+                <Text style={styles.bankLabel}>Account Number</Text>
+                <Text style={styles.bankValue}>{bank.accountNumber}</Text>
+              </View>
+            </View>
           </View>
-          <View style={styles.bankRow}>
-            <Text style={styles.bankLabel}>Account Name</Text>
-            <Text style={styles.bankValue}>{bankDetails.accountName}</Text>
-          </View>
-          <View style={styles.bankRow}>
-            <Text style={styles.bankLabel}>Account Number</Text>
-            <Text style={styles.bankValue}>{bankDetails.accountNumber}</Text>
-          </View>
-          {/* <View style={styles.bankRow}>
-            <Text style={styles.bankLabel}>Routing Number</Text>
-            <Text style={styles.bankValue}>{bankDetails.routingNumber}</Text>
-          </View> */}
-        </View>
+        ))}
       </View>
+
+      {/* Pricing Details Section */}
+      {pricingBreakdown ? (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Pricing Details</Text>
+          <View style={styles.pricingCard}>
+            {pricingBreakdown.base_fare !== undefined && (
+              <View style={styles.pricingRow}>
+                <Text style={styles.pricingLabel}>Base Fare</Text>
+                <Text style={styles.pricingValue}>
+                  {pricingBreakdown.base_fare.toFixed(2)} SUR$
+                </Text>
+              </View>
+            )}
+
+            {pricingBreakdown.distance_charge !== undefined && (
+              <View style={styles.pricingRow}>
+                <Text style={styles.pricingLabel}>Distance Charge</Text>
+                <Text style={styles.pricingValue}>
+                  {pricingBreakdown.distance_charge.toFixed(2)} SUR$
+                </Text>
+              </View>
+            )}
+
+            {pricingBreakdown.service_fee !== undefined && (
+              <View style={styles.pricingRow}>
+                <Text style={styles.pricingLabel}>Service Fee</Text>
+                <Text style={styles.pricingValue}>
+                  {pricingBreakdown.service_fee.toFixed(2)} SUR$
+                </Text>
+              </View>
+            )}
+
+            <View style={styles.pricingDivider} />
+
+            <View style={styles.totalRow}>
+              <Text style={styles.totalLabel}>Total Amount</Text>
+              <Text style={styles.totalAmount}>{amount.toFixed(2)} SUR$</Text>
+            </View>
+          </View>
+        </View>
+      ) : (
+        <View style={styles.section}>
+          <View style={styles.totalCard}>
+            <View style={styles.totalRow}>
+              <Text style={styles.totalLabel}>Distance</Text>
+              <Text style={styles.totalValue}>{distance} km</Text>
+            </View>
+            <View style={styles.divider} />
+            <View style={styles.totalRow}>
+              <Text style={styles.totalLabel}>Total Amount</Text>
+              <Text style={styles.totalAmount}>{amount.toFixed(2)} SUR$</Text>
+            </View>
+          </View>
+        </View>
+      )}
 
       {/* Checkbox */}
       <Pressable
         style={styles.checkboxRow}
-        onPress={() => setIsAgreedToProhibited(!isAgreedToProhibited)}
-      >
+        onPress={() => setIsAgreedToProhibited(!isAgreedToProhibited)}>
         <View
           style={[
             styles.checkbox,
             isAgreedToProhibited && styles.checkboxChecked,
-          ]}
-        >
+          ]}>
           {isAgreedToProhibited && <Text style={styles.checkmark}>✓</Text>}
         </View>
         <Text style={styles.checkboxLabel}>
@@ -161,6 +224,7 @@ const styles = StyleSheet.create({
   },
   section: {
     marginBottom: isSmallDevice ? 20 : 24,
+    gap: 12,
   },
   sectionTitle: {
     fontSize: isSmallDevice ? 16 : 18,
@@ -271,6 +335,65 @@ const styles = StyleSheet.create({
     fontSize: isSmallDevice ? 13 : 14,
     fontWeight: "500",
     color: "#1A3A4A",
+  },
+  totalCard: {
+    backgroundColor: "#F8F9FA",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#E8E8E8",
+    padding: isSmallDevice ? 14 : 16,
+  },
+  totalRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 12,
+  },
+  totalLabel: {
+    fontSize: isSmallDevice ? 14 : 15,
+    color: "#666666",
+  },
+  totalValue: {
+    fontSize: isSmallDevice ? 14 : 15,
+    fontWeight: "500",
+    color: "#1A3A4A",
+  },
+  totalAmount: {
+    fontSize: isSmallDevice ? 16 : 18,
+    fontWeight: "700",
+    color: "#F5A623",
+  },
+  divider: {
+    height: 1,
+    backgroundColor: "#E8E8E8",
+    marginVertical: 8,
+  },
+  pricingCard: {
+    backgroundColor: "#F8F9FA",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#E8E8E8",
+    padding: isSmallDevice ? 14 : 16,
+  },
+  pricingRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 12,
+  },
+  pricingLabel: {
+    fontSize: isSmallDevice ? 13 : 14,
+    color: "#666666",
+  },
+  pricingValue: {
+    fontSize: isSmallDevice ? 13 : 14,
+    fontWeight: "500",
+    color: "#1A3A4A",
+  },
+  pricingDivider: {
+    height: 1,
+    backgroundColor: "#E8E8E8",
+    marginVertical: 8,
   },
   buttonContainer: {
     paddingBottom: isSmallDevice ? 20 : 30,

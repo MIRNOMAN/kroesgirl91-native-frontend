@@ -77,52 +77,6 @@ const PackageDetails: React.FC<PackageDetailsProps> = ({
           multiline
         />
 
-        {/* Weight Input */}
-        <View style={styles.weightContainer}>
-          <Text style={styles.label}>Weight (kg)</Text>
-          <View style={styles.weightInputRow}>
-            <Text style={styles.weightPlaceholder}>Set parcel Width</Text>
-            <View style={styles.weightControls}>
-              <TouchableOpacity
-                style={styles.weightButton}
-                onPress={decrementWeight}
-              >
-                <Ionicons name="remove" size={20} color="#1A3A4A" />
-              </TouchableOpacity>
-              <Text style={styles.weightValue}>{data.weight}</Text>
-              <TouchableOpacity
-                style={styles.weightButton}
-                onPress={incrementWeight}
-              >
-                <Ionicons name="add" size={20} color="#1A3A4A" />
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-
-        {/* Quantity Input */}
-        <View style={styles.weightContainer}>
-          <Text style={styles.label}>Quantity</Text>
-          <View style={styles.weightInputRow}>
-            <Text style={styles.weightPlaceholder}>Set parcel quantity</Text>
-            <View style={styles.weightControls}>
-              <TouchableOpacity
-                style={styles.weightButton}
-                onPress={decrementQuantity}
-              >
-                <Ionicons name="remove" size={20} color="#1A3A4A" />
-              </TouchableOpacity>
-              <Text style={styles.weightValue}>{data.quantity}</Text>
-              <TouchableOpacity
-                style={styles.weightButton}
-                onPress={incrementQuantity}
-              >
-                <Ionicons name="add" size={20} color="#1A3A4A" />
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-
         {/* Payment Method */}
         <View style={styles.paymentContainer}>
           <Text style={styles.label}>Payment Method</Text>
@@ -132,8 +86,7 @@ const PackageDetails: React.FC<PackageDetailsProps> = ({
                 styles.paymentCard,
                 data.paymentMethod === "cash" && styles.paymentCardSelected,
               ]}
-              onPress={() => onDataChange({ ...data, paymentMethod: "cash" })}
-            >
+              onPress={() => onDataChange({ ...data, paymentMethod: "cash" })}>
               <Ionicons
                 name="cash-outline"
                 size={24}
@@ -143,8 +96,7 @@ const PackageDetails: React.FC<PackageDetailsProps> = ({
                 style={[
                   styles.paymentText,
                   data.paymentMethod === "cash" && styles.paymentTextSelected,
-                ]}
-              >
+                ]}>
                 Cash on Delivery
               </Text>
             </TouchableOpacity>
@@ -154,8 +106,7 @@ const PackageDetails: React.FC<PackageDetailsProps> = ({
                 styles.paymentCard,
                 data.paymentMethod === "bank" && styles.paymentCardSelected,
               ]}
-              onPress={() => onDataChange({ ...data, paymentMethod: "bank" })}
-            >
+              onPress={() => onDataChange({ ...data, paymentMethod: "bank" })}>
               <Ionicons
                 name="card-outline"
                 size={24}
@@ -165,8 +116,7 @@ const PackageDetails: React.FC<PackageDetailsProps> = ({
                 style={[
                   styles.paymentText,
                   data.paymentMethod === "bank" && styles.paymentTextSelected,
-                ]}
-              >
+                ]}>
                 Bank transfer
               </Text>
             </TouchableOpacity>

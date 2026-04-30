@@ -111,8 +111,7 @@ const ChooseRide: React.FC<ChooseRideProps> = ({
                 styles.rideCard,
                 isSelected && styles.rideCardSelected,
                 isDropdownOpen && styles.rideCardWithDropdown,
-              ]}
-            >
+              ]}>
               <TouchableOpacity
                 style={styles.rideCardPressable}
                 onPress={() => {
@@ -127,8 +126,7 @@ const ChooseRide: React.FC<ChooseRideProps> = ({
                     prev === option.id ? null : option.id,
                   );
                 }}
-                activeOpacity={0.7}
-              >
+                activeOpacity={0.7}>
                 <View style={styles.rideInfo}>
                   <View style={styles.rideIconContainer}>
                     <Ionicons
@@ -162,12 +160,6 @@ const ChooseRide: React.FC<ChooseRideProps> = ({
                       <Text style={styles.priceLabel}>SUR$</Text>
                     </View>
                   ) : null}
-
-                  <Ionicons
-                    name={isDropdownOpen ? "chevron-up" : "chevron-down"}
-                    size={20}
-                    color="#40444B"
-                  />
                 </View>
               </TouchableOpacity>
 
@@ -186,15 +178,13 @@ const ChooseRide: React.FC<ChooseRideProps> = ({
                             onSelectFareOption(option.id, fareOption.id);
                             setOpenFareDropdownForRide(null);
                           }}
-                          activeOpacity={0.7}
-                        >
+                          activeOpacity={0.7}>
                           <Text
                             style={[
                               styles.dropdownItemText,
                               isFareOptionSelected &&
                                 styles.dropdownItemTextSelected,
-                            ]}
-                          >
+                            ]}>
                             {`${fareOption.label} = ${formatPrice(
                               fareOption.price,
                             )} Sur$`}

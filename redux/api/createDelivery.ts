@@ -3,9 +3,6 @@ import { baseApi } from "./baseApi";
 
 type CreateDeliveryPayload = {
   job_description: string;
-  price: number;
-  quantity: number;
-  weight: number;
   paymentMethod: "COD" | "BANK";
   isAgreedToTerms: boolean;
   pickup_name: string;
@@ -41,10 +38,32 @@ type CreateDeliveryResponse = {
   statusCode?: number;
   message?: string;
   data?: {
+    order_id?: string;
     message?: string;
-    [key: string]: unknown;
   };
 };
+
+interface PriceEstimateRequest {
+  pickup_latitude: number;
+  pickup_longitude: number;
+  delivery_latitude: number;
+  delivery_longitude: number;
+}
+
+interface PriceEstimateResponse {
+  success?: boolean;
+  statusCode?: number;
+  message?: string;
+  data?: {
+    distance_km: string;
+    total_price: number;
+    breakdown?: {
+      base_fare?: number;
+      distance_charge?: number;
+      service_fee?: number;
+    };
+  };
+}
 
 const createDeliveryApi = baseApi.injectEndpoints({
   overrideExisting: true,
@@ -96,6 +115,16 @@ const createDeliveryApi = baseApi.injectEndpoints({
       },
       providesTags: ["Deliveries"],
     }),
+    getEstimatedPrice: build.mutation<
+      PriceEstimateResponse,
+      PriceEstimateRequest
+    >({
+      query: (data) => ({
+        url: `/orders/fare-estimate`,
+        method: "POST",
+        body: data,
+      }),
+    }),
   }),
 });
 
@@ -103,4 +132,5 @@ export const {
   useCreateDeliveryMutation,
   useGetAllOrdersQuery,
   useGetAllAgentsQuery,
+  useGetEstimatedPriceMutation,
 } = createDeliveryApi;

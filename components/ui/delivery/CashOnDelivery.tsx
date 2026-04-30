@@ -40,6 +40,12 @@ interface CashOnDeliveryProps {
   onConfirm: () => void;
   isAgreedToProhibited: boolean;
   setIsAgreedToProhibited: (v: boolean) => void;
+  distance?: string;
+  pricingBreakdown?: {
+    base_fare?: number;
+    distance_charge?: number;
+    service_fee?: number;
+  };
 }
 
 const CashOnDelivery: React.FC<CashOnDeliveryProps> = ({
@@ -50,6 +56,8 @@ const CashOnDelivery: React.FC<CashOnDeliveryProps> = ({
   onConfirm,
   isAgreedToProhibited,
   setIsAgreedToProhibited,
+  distance = "0",
+  pricingBreakdown,
 }) => {
   const total = pricingDetails.deliveryFee + pricingDetails.serviceFee;
 
@@ -76,6 +84,14 @@ const CashOnDelivery: React.FC<CashOnDeliveryProps> = ({
             {pricingDetails.currency}
             {amount.toFixed(2)}
           </Text>
+        </View>
+      </View>
+
+      {/* Distance Display */}
+      <View style={styles.distanceContainer}>
+        <Text style={styles.distanceLabel}>Distance</Text>
+        <View style={styles.distanceValue}>
+          <Text style={styles.distanceText}>{distance} km</Text>
         </View>
       </View>
 
@@ -145,27 +161,55 @@ const CashOnDelivery: React.FC<CashOnDeliveryProps> = ({
       <View style={styles.pricingSection}>
         <Text style={styles.pricingTitle}>Pricing Details</Text>
 
-        <View style={styles.pricingRow}>
-          <Text style={styles.pricingLabel}>Delivery Fee</Text>
-          <Text style={styles.pricingValue}>
-            {pricingDetails.currency}
-            {pricingDetails.deliveryFee.toFixed(2)}
-          </Text>
-        </View>
+        {pricingBreakdown ? (
+          <>
+            {pricingBreakdown.base_fare !== undefined && (
+              <View style={styles.pricingRow}>
+                <Text style={styles.pricingLabel}>Base Fare</Text>
+                <Text style={styles.pricingValue}>
+                  {pricingDetails.currency}
+                  {pricingBreakdown.base_fare.toFixed(2)}
+                </Text>
+              </View>
+            )}
 
-        <View style={styles.pricingRow}>
-          <Text style={styles.pricingLabel}>Service Fee</Text>
-          <Text style={styles.pricingValue}>
-            {pricingDetails.currency}
-            {pricingDetails.serviceFee.toFixed(2)}
-          </Text>
-        </View>
+            {pricingBreakdown.distance_charge !== undefined && (
+              <View style={styles.pricingRow}>
+                <Text style={styles.pricingLabel}>Distance Charge</Text>
+                <Text style={styles.pricingValue}>
+                  {pricingDetails.currency}
+                  {pricingBreakdown.distance_charge.toFixed(2)}
+                </Text>
+              </View>
+            )}
+
+            {pricingBreakdown.service_fee !== undefined && (
+              <View style={styles.pricingRow}>
+                <Text style={styles.pricingLabel}>Service Fee</Text>
+                <Text style={styles.pricingValue}>
+                  {pricingDetails.currency}
+                  {pricingBreakdown.service_fee.toFixed(2)}
+                </Text>
+              </View>
+            )}
+          </>
+        ) : (
+          <>
+            <View style={styles.pricingRow}>
+              <Text style={styles.pricingLabel}>Delivery Fee</Text>
+              <Text style={styles.pricingValue}>
+                {pricingDetails.currency}
+                {amount.toFixed(2)}
+              </Text>
+            </View>
+          </>
+        )}
 
         <View style={[styles.pricingRow, styles.totalRow]}>
           <Text style={styles.totalLabel}>Total</Text>
           <Text style={styles.totalValue}>
             {pricingDetails.currency}
-            {total.toFixed(2)}
+            {amount.toFixed(2)}
           </Text>
         </View>
       </View>
@@ -174,14 +218,12 @@ const CashOnDelivery: React.FC<CashOnDeliveryProps> = ({
       {/* Checkbox */}
       <Pressable
         style={styles.checkboxRow}
-        onPress={() => setIsAgreedToProhibited(!isAgreedToProhibited)}
-      >
+        onPress={() => setIsAgreedToProhibited(!isAgreedToProhibited)}>
         <View
           style={[
             styles.checkbox,
             isAgreedToProhibited && styles.checkboxChecked,
-          ]}
-        >
+          ]}>
           {isAgreedToProhibited && <Text style={styles.checkmark}>✓</Text>}
         </View>
         <Text style={styles.checkboxLabel}>
@@ -395,6 +437,28 @@ const styles = StyleSheet.create({
     fontSize: isSmallDevice ? 16 : 18,
     fontWeight: "700",
     color: "#F5A623",
+  },
+  distanceContainer: {
+    marginBottom: isSmallDevice ? 16 : 20,
+  },
+  distanceLabel: {
+    fontSize: isSmallDevice ? 13 : 14,
+    color: "#666666",
+    marginBottom: 8,
+  },
+  distanceValue: {
+    backgroundColor: "#F8F9FA",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#E8E8E8",
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    alignItems: "flex-start",
+  },
+  distanceText: {
+    fontSize: isSmallDevice ? 16 : 18,
+    fontWeight: "600",
+    color: "#1A3A4A",
   },
   buttonContainer: {
     paddingBottom: isSmallDevice ? 20 : 30,

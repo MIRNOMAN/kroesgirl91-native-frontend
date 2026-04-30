@@ -13,7 +13,6 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { useGetAllAgentsQuery } from "@/redux/api/createDelivery";
 import type { TAgent } from "@/types";
 
 import {
@@ -130,8 +129,22 @@ const getActiveAgent = (
 export default function TrackingScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<TrackingParams>();
-  const { data: agentsResponse } = useGetAllAgentsQuery();
+  // const { data: agentsResponse } = useGetAllAgentsQuery();
+  const { data: agentsResponse } = {
+    data: [
+      {
+        id: "1",
+        name: "Robin (Driver Test)",
+        latitude: 23.8115,
+        longitude: 90.412,
+        phone: "01712345678",
+        transportDesc: "White Toyota Corolla",
+      },
+    ],
+  };
   const { height: screenHeight } = useWindowDimensions();
+
+  console.log({ agentsResponse });
 
   const trackingState = (params.state as TrackingState) ?? "tracking";
   const pickup = toCoordinate(
@@ -320,8 +333,7 @@ export default function TrackingScreen() {
               <View style={styles.mapOverlayTop}>
                 <Pressable
                   style={styles.mapBackButton}
-                  onPress={() => router.back()}
-                >
+                  onPress={() => router.back()}>
                   <Ionicons name="chevron-back" size={20} color="#0F172A" />
                 </Pressable>
 
@@ -344,14 +356,12 @@ export default function TrackingScreen() {
           <ScrollView
             style={styles.scroll}
             contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={false}
-          >
+            showsVerticalScrollIndicator={false}>
             {showSectionHeader ? (
               <View style={styles.mapHeadingWrap}>
                 <Pressable
                   style={styles.backButton}
-                  onPress={() => router.back()}
-                >
+                  onPress={() => router.back()}>
                   <Ionicons name="chevron-back" size={20} color="#0F172A" />
                 </Pressable>
 
@@ -378,8 +388,7 @@ export default function TrackingScreen() {
                 {!showSectionHeader ? (
                   <Pressable
                     style={styles.mapBackButton}
-                    onPress={() => router.back()}
-                  >
+                    onPress={() => router.back()}>
                     <Ionicons name="chevron-back" size={20} color="#0F172A" />
                   </Pressable>
                 ) : null}

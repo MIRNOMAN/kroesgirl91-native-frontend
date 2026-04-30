@@ -328,7 +328,8 @@ export default function TrackingMapView({
 const styles = StyleSheet.create({
   container: {
     overflow: "hidden",
-    borderRadius: 28,
+    borderRadius: 0,
+    transform: [{ scale: 1.1 }],
     backgroundColor: "#EEF4F6",
   },
   webView: {

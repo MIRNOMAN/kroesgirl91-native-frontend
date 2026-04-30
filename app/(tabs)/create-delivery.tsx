@@ -24,7 +24,10 @@ import {
   StepIndicator,
 } from "../../components/ui/delivery";
 import createDeliveryData from "../../constants/createDeliveryData.json";
-import { useCreateDeliveryMutation } from "../../redux/api/createDelivery";
+import {
+  useCreateDeliveryMutation,
+  useGetEstimatedPriceMutation,
+} from "../../redux/api/createDelivery";
 
 type Step =
   | "pickup"
@@ -80,9 +83,6 @@ interface RideOption {
 
 interface CreateOrderPayload {
   job_description: string;
-  price: number;
-  quantity: number;
-  weight: number;
   paymentMethod: "COD" | "BANK";
   isAgreedToTerms: boolean;
   pickup_name: string;
@@ -116,6 +116,14 @@ export default function CreateDeliveryScreen() {
 
   const [createDelivery, { isLoading: isCreatingDelivery }] =
     useCreateDeliveryMutation();
+  const [getEstimatedPrice, { isLoading: isLoadingPrice }] =
+    useGetEstimatedPriceMutation();
+
+  // Estimated Price State
+  const [estimatedPriceData, setEstimatedPriceData] = useState<{
+    distance_km: string;
+    total_price: number;
+  } | null>(null);
 
   // Form Data States
   const [pickupData, setPickupData] = useState<PickupData>({
@@ -151,6 +159,44 @@ export default function CreateDeliveryScreen() {
     }
   }, [bankImageUri, packageData.paymentMethod]);
 
+  // Fetch estimated price when navigating to ride step with both locations
+  useEffect(() => {
+    const fetchEstimatedPrice = async () => {
+      const isPickupComplete =
+        pickupData.fullAddress.trim() &&
+        Number.isFinite(pickupData.latitude) &&
+        Number.isFinite(pickupData.longitude);
+      const isDeliveryComplete =
+        deliveryData.fullAddress.trim() &&
+        Number.isFinite(deliveryData.latitude) &&
+        Number.isFinite(deliveryData.longitude);
+
+      if (step === "ride" && isPickupComplete && isDeliveryComplete) {
+        try {
+          const response = await getEstimatedPrice({
+            pickup_latitude: pickupData.latitude!,
+            pickup_longitude: pickupData.longitude!,
+            delivery_latitude: deliveryData.latitude!,
+            delivery_longitude: deliveryData.longitude!,
+          }).unwrap();
+
+          if (response?.data) {
+            setEstimatedPriceData(response.data);
+            // Auto-select same-day ride
+            if (!selectedRide) {
+              handleSelectRide("same-day");
+            }
+          }
+        } catch (error) {
+          console.error("Failed to fetch estimated price:", error);
+          toast.error("Failed to fetch price estimate. Please try again.");
+        }
+      }
+    };
+
+    fetchEstimatedPrice();
+  }, [step, pickupData, deliveryData]);
+
   const selectedRideOption = useMemo(
     () =>
       (createDeliveryData.rideOptions as RideOption[]).find(
@@ -159,7 +205,22 @@ export default function CreateDeliveryScreen() {
     [selectedRide],
   );
 
-  const rideOptionsForDisplay = createDeliveryData.rideOptions as RideOption[];
+  const rideOptionsForDisplay = useMemo(() => {
+    const baseOptions = (createDeliveryData.rideOptions as RideOption[]).filter(
+      (option) => option.id === "same-day",
+    );
+
+    if (estimatedPriceData && step === "ride") {
+      return baseOptions.map((option) => ({
+        ...option,
+        price: estimatedPriceData.total_price,
+        subtitle: `${estimatedPriceData.distance_km} km`,
+        fareOptions: undefined,
+      }));
+    }
+
+    return baseOptions;
+  }, [estimatedPriceData, step]);
 
   const selectedRidePrice = useMemo(() => {
     const option = rideOptionsForDisplay.find(
@@ -323,16 +384,6 @@ export default function CreateDeliveryScreen() {
       return;
     }
 
-    if (packageData.weight <= 0) {
-      Alert.alert("Required", "Package weight should be greater than 0.");
-      return;
-    }
-
-    if (packageData.quantity <= 0) {
-      Alert.alert("Required", "Quantity should be greater than 0.");
-      return;
-    }
-
     if (!packageData.paymentMethod) {
       Alert.alert("Required", "Please select a payment method.");
       return;
@@ -474,13 +525,6 @@ export default function CreateDeliveryScreen() {
 
     const payload: CreateOrderPayload = {
       job_description: packageData.description,
-      price:
-        selectedRidePrice ??
-        selectedRideOption?.price ??
-        createDeliveryData.pricingDetails.deliveryFee +
-          createDeliveryData.pricingDetails.serviceFee,
-      quantity: packageData.quantity,
-      weight: packageData.weight,
       paymentMethod: packageData.paymentMethod === "bank" ? "BANK" : "COD",
       isAgreedToTerms: isAgreedToProhibited,
       pickup_name: pickupData.fullName,
@@ -612,23 +656,21 @@ export default function CreateDeliveryScreen() {
               onConfirm={handleConfirmBooking}
               isAgreedToProhibited={isAgreedToProhibited}
               setIsAgreedToProhibited={setIsAgreedToProhibited}
+              amount={estimatedPriceData?.total_price ?? 0}
+              distance={estimatedPriceData?.distance_km ?? "0"}
             />
           );
         }
         return (
           <CashOnDelivery
-            amount={
-              selectedRidePrice ??
-              selectedRideOption?.price ??
-              createDeliveryData.pricingDetails.deliveryFee +
-                createDeliveryData.pricingDetails.serviceFee
-            }
+            amount={estimatedPriceData?.total_price ?? 0}
             shipmentSummary={getShipmentSummary()}
             pricingDetails={createDeliveryData.pricingDetails}
             isSubmitting={isCreatingDelivery}
             onConfirm={handleConfirmBooking}
             isAgreedToProhibited={isAgreedToProhibited}
             setIsAgreedToProhibited={setIsAgreedToProhibited}
+            distance={estimatedPriceData?.distance_km ?? "0"}
           />
         );
       default:
@@ -643,8 +685,7 @@ export default function CreateDeliveryScreen() {
       <KeyboardAvoidingView
         style={styles.keyboardView}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
-      >
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}>
         <View style={styles.container}>
           {/* Header */}
           <DeliveryHeader title={getHeaderTitle()} onBackPress={handleBack} />
@@ -662,8 +703,7 @@ export default function CreateDeliveryScreen() {
             style={styles.scrollView}
             contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-          >
+            keyboardShouldPersistTaps="handled">
             {renderStepContent()}
           </ScrollView>
         </View>

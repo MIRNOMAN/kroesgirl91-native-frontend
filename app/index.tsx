@@ -14,6 +14,7 @@ export default function Index() {
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
 
   useEffect(() => {
+    router.replace("/test");
     const timer = setTimeout(async () => {
       if (isAuthenticated) {
         router.replace(APP_ROUTES.home);
