@@ -72,10 +72,28 @@ export default function TabsLayout() {
         sceneStyle: {
           paddingBottom: Platform.OS === "ios" ? 110 : 0,
         },
-      })}
-    >
+      })}>
       <Tabs.Screen name="home" options={{ title: "Home" }} />
-      <Tabs.Screen name="tracking" options={{ title: "Track" }} />
+      <Tabs.Screen
+        name="tracking"
+        options={{
+          title: "Track",
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons
+              name={getTabIconName("tracking", focused)}
+              size={24}
+              color={color}
+            />
+          ),
+        }}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            e.preventDefault();
+
+            navigation.navigate("tracking" as never); // ✅ no params
+          },
+        })}
+      />
       <Tabs.Screen name="shipment" options={{ title: "Shipment" }} />
       <Tabs.Screen name="profile" options={{ title: "Profile" }} />
       <Tabs.Screen

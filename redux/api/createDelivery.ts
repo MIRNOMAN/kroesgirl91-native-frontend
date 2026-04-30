@@ -88,6 +88,13 @@ const createDeliveryApi = baseApi.injectEndpoints({
       },
       invalidatesTags: ["Deliveries"],
     }),
+    orderById: build.query({
+      query: (id) => ({
+        url: `/orders/${id}`,
+        method: "GET",
+      }),
+      providesTags: ["Deliveries"],
+    }),
     getAllOrders: build.query({
       query: (args) => {
         const params = new URLSearchParams();
@@ -132,5 +139,6 @@ export const {
   useCreateDeliveryMutation,
   useGetAllOrdersQuery,
   useGetAllAgentsQuery,
+  useOrderByIdQuery,
   useGetEstimatedPriceMutation,
 } = createDeliveryApi;

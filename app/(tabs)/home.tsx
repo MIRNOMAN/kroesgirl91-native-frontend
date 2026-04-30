@@ -146,8 +146,7 @@ export default function HomeScreen() {
                 marginTop: 20,
                 marginBottom: 10,
                 color: "#333",
-              }}
-            >
+              }}>
               Current Shipment
             </Text>
           </View>
@@ -157,8 +156,7 @@ export default function HomeScreen() {
         <ImageBackground
           source={backround}
           style={styles.shipmentSection}
-          imageStyle={styles.shipmentBackgroundImage}
-        >
+          imageStyle={styles.shipmentBackgroundImage}>
           {/* Current Shipment - Conditional Rendering */}
           {shouldShowCurrentShipmentCard && (
             <CurrentShipment
@@ -182,8 +180,7 @@ export default function HomeScreen() {
                 marginTop: 10,
                 marginBottom: 10,
                 color: "#333",
-              }}
-            >
+              }}>
               Current Shipment
             </Text>
           </View>
@@ -201,7 +198,12 @@ export default function HomeScreen() {
                 id={shipment.tookanJobId || shipment.id}
                 name={shipment.deliveryName || shipment.name}
                 status={shipment.status}
-                onPress={() => router.push("/(tabs)/tracking")}
+                onPress={() =>
+                  router.push({
+                    pathname: "/(tabs)/tracking",
+                    params: { ordersId: shipment.id },
+                  })
+                }
               />
             ),
           )}

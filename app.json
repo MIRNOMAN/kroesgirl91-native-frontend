@@ -9,7 +9,15 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true
+        },
+        "NSLocationWhenInUseUsageDescription": "This app needs access to your location to show you on the map.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "This app needs access to your location to show you on the map."
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -18,6 +26,7 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
+      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"],
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.casonclifton.kroesgirl91"
@@ -27,6 +36,7 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      "@maplibre/maplibre-react-native",
       "expo-router",
       [
         "expo-splash-screen",

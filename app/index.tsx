@@ -14,7 +14,6 @@ export default function Index() {
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
 
   useEffect(() => {
-    router.replace("/test");
     const timer = setTimeout(async () => {
       if (isAuthenticated) {
         router.replace(APP_ROUTES.home);
@@ -32,7 +31,7 @@ export default function Index() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor="#003C51" />
+      <StatusBar barStyle="light-content" />
       <View style={styles.container}>
         <View style={styles.logoWrapper}>
           <Image

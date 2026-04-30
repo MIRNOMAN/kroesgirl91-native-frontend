@@ -571,7 +571,7 @@ export default function CreateDeliveryScreen() {
 
   const handleTrackShipment = () => {
     setShowConfirmed(false);
-    router.push("/(tabs)/tracking");
+    router.push("/(tabs)/tracking", {});
   };
 
   const handleBackToHome = () => {
