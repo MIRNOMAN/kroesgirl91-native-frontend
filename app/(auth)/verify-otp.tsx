@@ -117,7 +117,7 @@ export default function VerifyOtpScreen() {
         <View style={styles.container}>
           <View style={styles.topLogoContainer}>
             <Image
-              source={require("../../assets/splashscreen/SVG-01.png")}
+              source={require("../../assets/login/login_icons.png")}
               style={styles.topLogo}
               contentFit="contain"
             />

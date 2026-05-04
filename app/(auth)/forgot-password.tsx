@@ -101,7 +101,7 @@ export default function ForgotPasswordScreen() {
             <View style={styles.content}>
               <View style={styles.logoContainer}>
                 <Image
-                  source={require("../../assets/splashscreen/SVG-01.png")}
+                  source={require("../../assets/login/login_icons.png")}
                   style={styles.logo}
                   resizeMode="contain"
                 />
