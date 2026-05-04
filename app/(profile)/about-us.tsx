@@ -35,39 +35,44 @@ export default function AboutUsScreen() {
               style={styles.scrollView}
               contentContainerStyle={styles.scrollContent}
               showsVerticalScrollIndicator={false}
+              scrollEnabled={true}
+              nestedScrollEnabled={false}
             >
               {/* Content */}
               <View style={styles.content}>
-                <Text style={styles.sectionTitle}>Who We Are</Text>
+                <Text style={styles.sectionTitle}>
+                  About SwiftDrop Logistics
+                </Text>
                 <Text style={styles.paragraph}>
-                  We are a leading logistics and shipping company dedicated to
-                  providing fast, reliable, and affordable delivery services.
-                  Our mission is to connect people and businesses through
-                  seamless shipping solutions.
+                  SwiftDrop Logistics is a fast, reliable, and modern delivery
+                  service designed to make sending and receiving packages simple
+                  for everyone in Suriname. Whether you are an entrepreneur or a
+                  private individual, SwiftDrop connects you with reliable
+                  riders who deliver your shipments quickly and safely.
+                </Text>
+
+                <Text style={styles.sectionTitle}>What We Do</Text>
+                <Text style={styles.paragraph}>
+                  We specialize in same-day deliveries and help businesses reach
+                  their customers faster, while private individuals can easily
+                  send packages without any hassle. From documents and packages
+                  to retail orders – SwiftDrop ensures that every delivery is
+                  executed carefully and efficiently.
                 </Text>
 
                 <Text style={styles.sectionTitle}>Our Mission</Text>
                 <Text style={styles.paragraph}>
-                  To revolutionize the shipping industry by leveraging
-                  technology and innovation to deliver packages safely and on
-                  time, every time. We believe in transparency, reliability, and
-                  customer satisfaction.
+                  To simplify logistics by combining speed, transparency, and
+                  ease of use in a platform. We are committed to providing a
+                  seamless delivery experience for all our users.
                 </Text>
 
-                <Text style={styles.sectionTitle}>Our Values</Text>
-                <Text style={styles.paragraph}>
-                  • Customer First: Your satisfaction is our priority{"\n"}•
-                  Reliability: We deliver on our promises{"\n"}• Innovation:
-                  Constantly improving our services{"\n"}• Integrity: Honest and
-                  transparent business practices{"\n"}• Sustainability:
-                  Committed to eco-friendly operations
-                </Text>
-
-                <Text style={styles.sectionTitle}>Contact Us</Text>
-                <Text style={styles.paragraph}>
-                  Email: support@kroesgirl.com{"\n"}
-                  Phone: +1 800 123 4567{"\n"}
-                  Address: 123 Shipping Lane, Logistics City, LC 12345
+                <Text style={styles.sectionTitle}>Why Choose SwiftDrop</Text>
+                <Text style={styles.bulletList}>
+                  • Fast and reliable same-day deliveries{"\n"}• Professional
+                  and trustworthy riders{"\n"}• Transparent pricing and
+                  real-time tracking{"\n"}• Simple and user-friendly app{"\n"}•
+                  Secure payment processing
                 </Text>
               </View>
             </ScrollView>
@@ -93,6 +98,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 8,
     paddingBottom: 40,
+    flexGrow: 1,
   },
   content: {
     gap: 20,
@@ -105,6 +111,11 @@ const styles = StyleSheet.create({
   paragraph: {
     fontSize: 14,
     lineHeight: 22,
+    color: COLORS.textSecondary,
+  },
+  bulletList: {
+    fontSize: 14,
+    lineHeight: 24,
     color: COLORS.textSecondary,
   },
 });

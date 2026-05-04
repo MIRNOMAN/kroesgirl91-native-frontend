@@ -17,7 +17,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import backgroundImage from "../../assets/backround/Photoroom.png";
 import { COLORS } from "../../constants/colors";
 
-const WHATSAPP_NUMBER = "5970000000";
+const WHATSAPP_NUMBER = "5977568415";
 const WHATSAPP_MESSAGE = "Hi, I want to request a bulk/business delivery.";
 
 export default function BusinessBulkScreen() {
@@ -75,12 +75,10 @@ export default function BusinessBulkScreen() {
               { width: iconCardSize, height: iconCardSize },
             ]}
           >
-            <View
-          
-            >
+            <View>
               <Image
                 source={require("../../assets/Custom_icons/whatsappIcons.png")}
-                style={[ { width: iconSize, height: iconSize }]}
+                style={[{ width: iconSize, height: iconSize }]}
               />
             </View>
 
@@ -116,7 +114,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 19,
     paddingVertical: 22,
-   
   },
   backButton: {
     width: 36,

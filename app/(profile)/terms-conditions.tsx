@@ -29,62 +29,105 @@ export default function TermsConditionsScreen() {
               title="Terms & Conditions"
               showBackButton
               onBackPress={() => router.back()}
-              
             />
 
             <ScrollView
               style={styles.scrollView}
               contentContainerStyle={styles.scrollContent}
               showsVerticalScrollIndicator={false}
+              scrollEnabled={true}
+              nestedScrollEnabled={false}
             >
-              {/* Last Update */}
-              <View style={styles.updateInfo}>
-                <Text style={styles.updateLabel}>
-                  updated on Apr 9, 2024/ 30 min read
-                </Text>
-                <Text style={styles.updateDate}>
-                  Last Update: 19 March 2025
-                </Text>
-              </View>
-
               {/* Content */}
               <View style={styles.content}>
-                <Text style={styles.sectionTitle}>1. INTRODUCTION</Text>
+                <Text style={styles.sectionTitle}>1. Introduction</Text>
                 <Text style={styles.paragraph}>
-                  But I must explain to you how all this mistaken idea of
-                  denouncing pleasure and praising pain was born and I will give
-                  you a complete account of the system, and expound the actual
-                  teachings of the great explorer of the truth, the
-                  master-builder of human happiness. No one rejects, dislikes,
-                  or avoids pleasure itself, because it is pleasure, but because
-                  those who do not know how to pursue pleasure rationally
-                  encounter consequences that are extremely painful.
+                  These General Terms and Conditions apply to the use of the
+                  Swiftdrop app and services . By using Swiftdrop , you agree to
+                  these terms .
+                </Text>
+
+                <Text style={styles.sectionTitle}>2. Services</Text>
+                <Text style={styles.paragraph}>
+                  Swiftdrop Logistic offers on-demand delivery services by
+                  connecting users with independent delivery drivers ( “ riders
+                  ” ) .
+                </Text>
+
+                <Text style={styles.sectionTitle}>
+                  3. User Responsibilities
+                </Text>
+                <Text style={styles.paragraph}>You agree to :</Text>
+                <Text style={styles.listItem}>
+                  * Provide correct pickup and delivery information
+                </Text>
+                <Text style={styles.listItem}>* Pack shipments properly</Text>
+                <Text style={styles.listItem}>
+                  * Not ship prohibited or illegal goods
+                </Text>
+                <Text style={styles.listItem}>
+                  * Be available to coordinate pickup and delivery
+                </Text>
+
+                <Text style={styles.sectionTitle}>4. Prohibited Goods</Text>
+                <Text style={styles.paragraph}>
+                  It is not permitted to ship the following items :
+                </Text>
+                <Text style={styles.listItem}>* Illegal goods</Text>
+                <Text style={styles.listItem}>* Dangerous substances</Text>
+                <Text style={styles.listItem}>* Weapons or explosives</Text>
+                <Text style={styles.listItem}>
+                  * Perishable goods ( unless permitted later by Swiftdrop )
+                </Text>
+                <Text style={styles.listItem}>
+                  * Valuable goods without prior notification
                 </Text>
                 <Text style={styles.paragraph}>
-                  Nor again is there anyone who loves or pursues or desires to
-                  obtain pain of itself, because it is pain, but because
-                  occasionally circumstances occur in which toil and pain can
-                  procure him some great pleasure. To take a trivial example,
-                  which of us ever undertakes laborious physical exercise,
-                  except to obtain some advantage from it?
+                  Swiftdrop reserves the right to refuse shipments .
                 </Text>
+
+                <Text style={styles.sectionTitle}>5. Prices and Payments</Text>
                 <Text style={styles.paragraph}>
-                  But who has any right to find fault with a man who chooses to
-                  enjoy a pleasure that has no annoying consequences, or one who
-                  avoids a pain that produces no resultant pleasure? But I must
-                  explain to you how all this mistaken idea of denouncing
-                  pleasure and praising pain was born and I will give you a
-                  complete account of the system, and expound the actual
-                  teachings of the great explorer of the truth, the
-                  master-builder of human happiness.
+                  * Delivery costs are calculated based on distance and type of
+                  service * Payment must be made before or upon delivery (
+                  depending of the chosen method) * Costs are not refunded after
+                  successful delivery
                 </Text>
+
+                <Text style={styles.sectionTitle}>6. Cancellations</Text>
                 <Text style={styles.paragraph}>
-                  No one rejects, dislikes, or avoids pleasure itself, because
-                  it is pleasure, but because those who do not know how to
-                  pursue pleasure rationally encounter consequences that are
-                  extremely painful. Nor again is there anyone who loves or
-                  pursues or desires to obtain pain of itself, because it is
-                  pain.
+                  * Orders can be cancelled before a rider has been assigned *
+                  Cancellations after assignment are not possible and will incur
+                  costs
+                </Text>
+
+                <Text style={styles.sectionTitle}>7. Liability</Text>
+                <Text style={styles.paragraph}>
+                  Swiftdrop Logistic is not liable for:
+                </Text>
+                <Text style={styles.listItem}>
+                  * Delays due to traffic, weather conditions or other
+                  unforeseen situations
+                </Text>
+                <Text style={styles.listItem}>
+                  * Damage due to poor packaging
+                </Text>
+                <Text style={styles.listItem}>
+                  * Indirect or consequential damage Limited liability may apply
+                  in the event of demonstrable negligence .
+                </Text>
+
+                <Text style={styles.sectionTitle}>9. Account Termination</Text>
+                <Text style={styles.paragraph}>
+                  Swiftdrop reserves the right to suspend or terminate accounts
+                  in the event of abuse, fraud or violation of these terms and
+                  conditions.
+                </Text>
+
+                <Text style={styles.sectionTitle}>10. Changes</Text>
+                <Text style={styles.paragraph}>
+                  Swiftdrop Logistic may amend these terms and conditions at any
+                  time. By continuing to use the app, you agree to the changes.
                 </Text>
               </View>
             </ScrollView>
@@ -110,6 +153,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 8,
     paddingBottom: 40,
+    flexGrow: 1,
   },
   updateInfo: {
     marginBottom: 20,
@@ -138,5 +182,12 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     color: COLORS.textSecondary,
     textAlign: "justify",
+  },
+  listItem: {
+    fontSize: 15,
+    lineHeight: 22,
+    color: COLORS.textSecondary,
+    marginLeft: 8,
+    marginTop: 6,
   },
 });

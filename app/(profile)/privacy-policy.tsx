@@ -35,45 +35,107 @@ export default function PrivacyPolicyScreen() {
               style={styles.scrollView}
               contentContainerStyle={styles.scrollContent}
               showsVerticalScrollIndicator={false}
+              scrollEnabled={true}
+              nestedScrollEnabled={false}
             >
-              {/* Last Update */}
+              {/* Last Update
               <View style={styles.updateInfo}>
-                <Text style={styles.updateDate}>
-                  Last Update: 19 March 2025
-                </Text>
-              </View>
+                <Text style={styles.updateDate}>Last Update: May 2026</Text>
+              </View> */}
 
               {/* Content */}
               <View style={styles.content}>
-                <Text style={styles.paragraph}>
-                  But I must explain to you how all this mistaken idea of
-                  denouncing pleasure and praising pain was born and I will give
-                  you a complete account of the system, and expound the actual
-                  teachings of the great explorer of the truth, the
-                  master-builder of human happiness. No one rejects, dislikes,
-                  or avoids pleasure itself, because it is pleasure, but because
-                  those who do not know how to pursue pleasure rationally
-                  encounter consequences that are extremely painful.
-                </Text>
-                <Text style={styles.paragraph}>
-                  Itself, because it is pain, but because occasionally
-                  circumstances occur in which toil and pain can procure him
-                  some great pleasure. To take a trivial example, which of us
-                  ever undertakes laborious physical exercise, except to obtain
-                  some advantage from it? But who has any right to find fault
-                  with a man who chooses to enjoy a pleasure that has no
-                  annoying consequences, or one who avoids a pain that produces
-                  no resultant pleasure. But I must explain to you how all this
-                  mistaken idea of denouncing
-                </Text>
-                <Text style={styles.paragraph}>
-                  pleasure and praising pain was born and I will give you a
-                  complete account of the system, and expound the actual
-                  teachings of the great explorer of the truth, the
-                  master-builder of human happiness. No one rejects, dislikes,
-                  or avoids pleasure itself, because it is pleasure, but because
-                  those who do not know how to pursue pleasure
-                </Text>
+                <View>
+                  <Text style={styles.sectionHeading}>1. Data we collect</Text>
+                  <Text style={styles.paragraph}>
+                    We may collect the following data:
+                  </Text>
+                  <Text style={styles.bulletPoint}>
+                    • Name, phone number, and email address
+                  </Text>
+                  <Text style={styles.bulletPoint}>
+                    • Pickup and delivery addresses
+                  </Text>
+                  <Text style={styles.bulletPoint}>
+                    • Payment details (securely processed)
+                  </Text>
+                  <Text style={styles.bulletPoint}>• Use of the app</Text>
+                </View>
+
+                <View>
+                  <Text style={styles.sectionHeading}>2. Use of data</Text>
+                  <Text style={styles.paragraph}>We use your data to:</Text>
+                  <Text style={styles.bulletPoint}>• Carry out deliveries</Text>
+                  <Text style={styles.bulletPoint}>
+                    • Communicate order updates
+                  </Text>
+                  <Text style={styles.bulletPoint}>• Improve our services</Text>
+                  <Text style={styles.bulletPoint}>
+                    • Provide customer service
+                  </Text>
+                </View>
+
+                <View>
+                  <Text style={styles.sectionHeading}>3. Sharing of data</Text>
+                  <Text style={styles.paragraph}>
+                    We may share limited data with:
+                  </Text>
+                  <Text style={styles.bulletPoint}>
+                    • Riders (for carrying out deliveries)
+                  </Text>
+                  <Text style={styles.bulletPoint}>
+                    • Payment service providers
+                  </Text>
+                  <Text style={styles.paragraph}>
+                    We do not sell your data to third parties.
+                  </Text>
+                </View>
+
+                <View>
+                  <Text style={styles.sectionHeading}>4. Security</Text>
+                  <Text style={styles.paragraph}>
+                    We take reasonable measures to protect your data, but no
+                    system is completely secure.
+                  </Text>
+                </View>
+
+                <View>
+                  <Text style={styles.sectionHeading}>5. Retention period</Text>
+                  <Text style={styles.paragraph}>
+                    We retain data only for as long as necessary for operational
+                    and legal purposes.
+                  </Text>
+                </View>
+
+                <View>
+                  <Text style={styles.sectionHeading}>6. Your rights</Text>
+                  <Text style={styles.paragraph}>You have the right to:</Text>
+                  <Text style={styles.bulletPoint}>
+                    • Request access to your data
+                  </Text>
+                  <Text style={styles.bulletPoint}>• Request corrections</Text>
+                  <Text style={styles.bulletPoint}>
+                    • Request deletion of your account
+                  </Text>
+                </View>
+
+                <View>
+                  <Text style={styles.sectionHeading}>
+                    7. Cookies and tracking
+                  </Text>
+                  <Text style={styles.paragraph}>
+                    The app may use basic tracking technologies to improve user
+                    experience.
+                  </Text>
+                </View>
+
+                <View>
+                  <Text style={styles.sectionHeading}>8. Changes</Text>
+                  <Text style={styles.paragraph}>
+                    We may amend this privacy policy. By continuing to use
+                    SwiftDrop, you agree to the changes.
+                  </Text>
+                </View>
               </View>
             </ScrollView>
           </View>
@@ -98,6 +160,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 8,
     paddingBottom: 40,
+    flexGrow: 1,
   },
   updateInfo: {
     marginBottom: 20,
@@ -110,10 +173,29 @@ const styles = StyleSheet.create({
   content: {
     gap: 16,
   },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: COLORS.textPrimary,
+    marginBottom: 16,
+  },
+  sectionHeading: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: COLORS.textPrimary,
+    marginBottom: 8,
+  },
   paragraph: {
     fontSize: 15,
     lineHeight: 22,
     color: COLORS.textSecondary,
     textAlign: "justify",
+  },
+  bulletPoint: {
+    fontSize: 15,
+    lineHeight: 22,
+    color: COLORS.textSecondary,
+    marginLeft: 8,
+    marginBottom: 4,
   },
 });
