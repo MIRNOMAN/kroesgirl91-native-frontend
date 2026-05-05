@@ -16,6 +16,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import backgroundImage from "../../assets/backround/Photoroom.png";
 import { COLORS } from "../../constants/colors";
+import { triggerMetaWhatsAppEvent } from "../../services/metaWhatsapp.service";
 
 const WHATSAPP_NUMBER = "5977568415";
 const WHATSAPP_MESSAGE = "Hi, I want to request a bulk/business delivery.";
@@ -30,6 +31,13 @@ export default function BusinessBulkScreen() {
 
   const openWhatsApp = async () => {
     try {
+      // Fire tracking event without blocking user navigation to WhatsApp.
+      void triggerMetaWhatsAppEvent({
+        phone: WHATSAPP_NUMBER,
+        message: WHATSAPP_MESSAGE,
+        sourceScreen: "business-bulk",
+      });
+
       const encodedMessage = encodeURIComponent(WHATSAPP_MESSAGE);
       const appUrl = `whatsapp://send?phone=${WHATSAPP_NUMBER}&text=${encodedMessage}`;
       const webUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;

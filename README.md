@@ -48,3 +48,20 @@ Join our community of developers creating universal apps.
 
 - [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
 - [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+
+## WhatsApp Meta Function Integration
+
+The Business/Bulk WhatsApp button now supports firing a Meta function event before opening WhatsApp.
+
+Add these environment variables to your `.env` file:
+
+```bash
+EXPO_PUBLIC_META_WHATSAPP_FUNCTION_URL=https://your-function-url
+EXPO_PUBLIC_META_WHATSAPP_FUNCTION_KEY=your-function-token
+```
+
+Notes:
+
+- `EXPO_PUBLIC_META_WHATSAPP_FUNCTION_URL` is required to enable the integration.
+- `EXPO_PUBLIC_META_WHATSAPP_FUNCTION_KEY` is optional and sent as `Authorization: Bearer <key>`.
+- If the Meta function call fails, the app still opens WhatsApp as usual.
