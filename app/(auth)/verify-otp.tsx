@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -112,63 +113,68 @@ export default function VerifyOtpScreen() {
     <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.authBg }}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-      >
-        <View style={styles.container}>
-          <View style={styles.topLogoContainer}>
-            <Image
-              source={require("../../assets/login/login_icons.png")}
-              style={styles.topLogo}
-              contentFit="contain"
-            />
-          </View>
-
-          {isVerified ? (
-            <View style={styles.content}>
-              <View style={styles.iconWrap}>
-                <Image
-                  source={require("../../assets/register/register.png")}
-                  style={styles.badgeImage}
-                  contentFit="contain"
-                />
-              </View>
-
-              <Text style={styles.title}>Successfully Registered</Text>
-              <Text style={styles.subtitle}>
-                Your account has been registered successfully, now let&apos;s
-                enjoy Car features!
-              </Text>
-            </View>
-          ) : (
-            <View style={styles.content}>
-              <Text style={styles.title}>Verify Your Account</Text>
-              <Text style={styles.subtitle}>
-                Enter the 4 digit OTP code sent to your registered email.
-              </Text>
-              <OtpCodeInput
-                value={otpValue}
-                onChange={setOtpValue}
-                length={4}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentInsetAdjustmentBehavior="automatic"
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{ flexGrow: 1 }}>
+          <View style={styles.container}>
+            <View style={styles.topLogoContainer}>
+              <Image
+                source={require("../../assets/login/login_icons.png")}
+                style={styles.topLogo}
+                contentFit="contain"
               />
             </View>
-          )}
 
-          <AuthButton
-            title={
-              isVerified
-                ? "Go to Agreement"
-                : isLoading
-                  ? "Verifying..."
-                  : "Verify OTP"
-            }
-            onPress={
-              isVerified
-                ? () => router.replace(APP_ROUTES.aggrement)
-                : handleVerifyOtp
-            }
-            disabled={isLoading}
-          />
-        </View>
+            {isVerified ? (
+              <View style={styles.content}>
+                <View style={styles.iconWrap}>
+                  <Image
+                    source={require("../../assets/register/register.png")}
+                    style={styles.badgeImage}
+                    contentFit="contain"
+                  />
+                </View>
+
+                <Text style={styles.title}>Successfully Registered</Text>
+                <Text style={styles.subtitle}>
+                  Your account has been registered successfully, now let&apos;s
+                  enjoy Car features!
+                </Text>
+              </View>
+            ) : (
+              <View style={styles.content}>
+                <Text style={styles.title}>Verify Your Account</Text>
+                <Text style={styles.subtitle}>
+                  Enter the 4 digit OTP code sent to your registered email.
+                </Text>
+                <OtpCodeInput
+                  value={otpValue}
+                  onChange={setOtpValue}
+                  length={4}
+                />
+              </View>
+            )}
+
+            <AuthButton
+              title={
+                isVerified
+                  ? "Go to Agreement"
+                  : isLoading
+                    ? "Verifying..."
+                    : "Verify OTP"
+              }
+              onPress={
+                isVerified
+                  ? () => router.replace(APP_ROUTES.aggrement)
+                  : handleVerifyOtp
+              }
+              disabled={isLoading}
+            />
+          </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -196,6 +202,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 16,
+    marginBottom: 20,
   },
   iconWrap: {
     width: 160,

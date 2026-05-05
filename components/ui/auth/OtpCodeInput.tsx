@@ -20,8 +20,11 @@ export default function OtpCodeInput({
     <View style={styles.wrapper}>
       <Pressable
         style={styles.boxes}
-        onPress={() => hiddenInputRef.current?.focus()}
-      >
+        onPress={() => {
+          setTimeout(() => {
+            hiddenInputRef.current?.focus();
+          }, 50);
+        }}>
         {digits.map((digit, index) => (
           <View key={index} style={styles.box}>
             <Text style={styles.digit}>{digit}</Text>

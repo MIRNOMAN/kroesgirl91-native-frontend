@@ -33,6 +33,7 @@ const RouteMap: React.FC<RouteMapProps> = ({
   const [mapCenter, setMapCenter] = useState<Coordinate | null>(null);
   const [userLocation, setUserLocation] = useState<Coordinate | null>(null);
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
+  const [isPermissionPending, setIsPermissionPending] = useState(false);
 
   const hasRouteMode = !!start && !!end;
   const hasAgentsMode = agents.length > 0 && !hasRouteMode;
@@ -41,6 +42,7 @@ const RouteMap: React.FC<RouteMapProps> = ({
   // GET CURRENT LOCATION
   // =========================
   const goToMyLocation = async () => {
+    setIsPermissionPending(true);
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
 
@@ -49,8 +51,6 @@ const RouteMap: React.FC<RouteMapProps> = ({
         toast.error("Location permission denied");
         return;
       }
-
-      setHasPermission(true);
 
       const location = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.High,
@@ -63,10 +63,14 @@ const RouteMap: React.FC<RouteMapProps> = ({
 
       setUserLocation(coords);
       setMapCenter(coords);
+
+      setHasPermission(true);
     } catch (err) {
       console.log(err);
       setHasPermission(false);
       toast.error("Unable to fetch location");
+    } finally {
+      setIsPermissionPending(false);
     }
   };
 
@@ -186,27 +190,47 @@ const RouteMap: React.FC<RouteMapProps> = ({
       </Map>
 
       {/* ================= FLOAT BUTTON ================= */}
-      <Pressable
-        onPress={goToMyLocation}
-        style={{
-          position: "absolute",
-          right: 16,
-          bottom: 120,
-          width: 50,
-          height: 50,
-          borderRadius: 25,
-          backgroundColor: "#111", // dark theme
-          alignItems: "center",
-          justifyContent: "center",
+      {isPermissionPending ? (
+        <View
+          style={{
+            position: "absolute",
+            right: 16,
+            bottom: 120,
+            width: 50,
+            height: 50,
+            borderRadius: 25,
+            backgroundColor: "#111", // dark theme
+            alignItems: "center",
+            justifyContent: "center",
+          }}>
+          <Text style={{ fontSize: 20, color: "#fff" }}>⏳</Text>
+        </View>
+      ) : (
+        hasPermission &&
+        userLocation && (
+          <Pressable
+            onPress={goToMyLocation}
+            style={{
+              position: "absolute",
+              right: 16,
+              bottom: 120,
+              width: 50,
+              height: 50,
+              borderRadius: 25,
+              backgroundColor: "#111", // dark theme
+              alignItems: "center",
+              justifyContent: "center",
 
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.3,
-          shadowRadius: 6,
-          elevation: 8,
-        }}>
-        <Text style={{ fontSize: 20, color: "#fff" }}>📍</Text>
-      </Pressable>
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.3,
+              shadowRadius: 6,
+              elevation: 8,
+            }}>
+            <Text style={{ fontSize: 20, color: "#fff" }}>📍</Text>
+          </Pressable>
+        )
+      )}
     </View>
   );
 };

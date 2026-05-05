@@ -6,6 +6,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableWithoutFeedback,
@@ -33,8 +34,10 @@ type LoginErrorShape = {
 export default function LoginScreen() {
   const router = useRouter();
   const { signIn } = useAuth();
-  const [email, setEmail] = useState(__DEV__ ? "" : "");
-  const [password, setPassword] = useState(__DEV__ ? "" : "");
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
   const [createUserLogin, { isLoading }] = useCreateUserLoginMutation();
 
   const getErrorMessage = (error: unknown) => {
@@ -51,14 +54,7 @@ export default function LoginScreen() {
     const normalizedEmail = email.trim().toLowerCase();
     const trimmedPassword = password.trim();
 
-    console.log("[LOGIN][REQUEST]", {
-      emailInput: email,
-      normalizedEmail,
-      passwordLength: trimmedPassword.length,
-    });
-
     if (!normalizedEmail || !trimmedPassword) {
-      console.log("[LOGIN][VALIDATION_FAILED] Missing email or password");
       toast.warning("Email and password are required");
       return;
     }
@@ -69,16 +65,7 @@ export default function LoginScreen() {
         password: trimmedPassword,
       }).unwrap()) as LoginResponse;
 
-      console.log("[LOGIN][RESPONSE]", {
-        success: response?.success,
-        statusCode: response?.statusCode,
-        message: response?.message,
-        hasAccessToken: Boolean(response?.data?.accessToken),
-        userEmail: response?.data?.user?.email,
-      });
-
       if (!response?.success || !response?.data?.accessToken) {
-        console.log("[LOGIN][INVALID_RESPONSE]", response);
         toast.error("Login failed. Invalid server response.");
         return;
       }
@@ -91,132 +78,126 @@ export default function LoginScreen() {
       toast.success(response.data.message || response.message);
       router.replace(APP_ROUTES.home);
     } catch (error) {
-      console.error("[LOGIN][ERROR_RAW]", error);
-      console.log("[LOGIN][ERROR_PARSED]", getErrorMessage(error));
       toast.error(getErrorMessage(error));
     }
   };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.authBg }}>
+      {/* ✅ KEY FIX: KeyboardAvoidingView OUTSIDE ScrollView */}
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-      >
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-          <View style={styles.container}>
-            {/* ================= TOP CONTENT ================= */}
-            <View style={styles.content}>
-              <View style={styles.logoContainer}>
-                <Image
-                  source={require("../../assets/login/login_icons.png")}
-                  style={styles.logo}
-                  resizeMode="contain"
+        behavior={Platform.OS === "ios" ? "padding" : "height"}>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ flexGrow: 1 }}
+            keyboardShouldPersistTaps="handled">
+            <View style={styles.container}>
+              {/* ================= TOP CONTENT ================= */}
+              <View style={styles.content}>
+                <View style={styles.logoContainer}>
+                  <Image
+                    source={require("../../assets/login/login_icons.png")}
+                    style={styles.logo}
+                    resizeMode="contain"
+                  />
+                </View>
+
+                <AuthTitleBlock
+                  title="Sign In Account"
+                  subtitle="Start your journey in playmate with fun, interactive lessons now"
+                  titleSize={31}
+                  subtitleSize={15}
+                  subtitleMaxWidth={300}
                 />
+
+                <View style={styles.form}>
+                  <AuthLabeledInput
+                    label="Email"
+                    placeholder="Enter Email Here"
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    value={email}
+                    onChangeText={setEmail}
+                    autoCorrect={false}
+                    compact
+                  />
+
+                  <AuthLabeledInput
+                    label="Password"
+                    placeholder="Enter Password Here"
+                    secureTextEntry
+                    showPasswordToggle
+                    value={password}
+                    onChangeText={setPassword}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    compact
+                  />
+
+                  <View style={styles.forgotContainer}>
+                    <Pressable
+                      onPress={() => router.push(APP_ROUTES.forgotPassword)}
+                      style={({ pressed }) => [{ opacity: pressed ? 0.6 : 1 }]}>
+                      <Text style={styles.forgotTextcss}>Forgot Password</Text>
+                    </Pressable>
+                  </View>
+                </View>
               </View>
 
-              <AuthTitleBlock
-                title="Sign In Account"
-                subtitle="Start your journey in playmate with fun, interactive lessons now"
-                titleSize={31}
-                subtitleSize={15}
-                subtitleMaxWidth={300}
-              />
+              {/* ================= BOTTOM SECTION ================= */}
+              <View style={styles.bottomSection}>
+                <Text style={styles.termsText}>
+                  By continuing, you confirm that you are 18 years or older and
+                  agree to our{" "}
+                  <Text
+                    style={styles.linkInline}
+                    onPress={() => router.push(APP_ROUTES.termsConditions)}>
+                    Terms & Conditions
+                  </Text>{" "}
+                  and{" "}
+                  <Text
+                    style={styles.linkInline}
+                    onPress={() => router.push(APP_ROUTES.privacyPolicy)}>
+                    Privacy Policy.
+                  </Text>
+                </Text>
 
-              <View style={styles.form}>
-                <AuthLabeledInput
-                  label="Email"
-                  placeholder="Enter Email Here"
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  value={email}
-                  onChangeText={setEmail}
-                  autoCorrect={false}
-                  compact
-                />
+                <Pressable
+                  className="btn-primary"
+                  onPress={handleLogin}
+                  disabled={isLoading}
+                  style={({ pressed }) => [
+                    { opacity: pressed || isLoading ? 0.7 : 1 },
+                  ]}>
+                  <Text className="btn-text">
+                    {isLoading ? "Signing In..." : "Sign In"}
+                  </Text>
+                </Pressable>
 
-                <AuthLabeledInput
-                  label="Password"
-                  placeholder="Enter Password Here"
-                  secureTextEntry
-                  showPasswordToggle
-                  value={password}
-                  onChangeText={setPassword}
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  compact
-                />
+                <View style={styles.signupRow}>
+                  <Text style={styles.signupText}>
+                    Don&apos;t have an account?
+                  </Text>
 
-                <View style={styles.forgotContainer}>
                   <Pressable
-                    onPress={() => router.push(APP_ROUTES.forgotPassword)}
-                    style={({ pressed }) => [{ opacity: pressed ? 0.6 : 1 }]}
-                  >
-                    <Text style={styles.forgotTextcss}>Forgot Password</Text>
+                    onPress={() => router.push(APP_ROUTES.register)}
+                    style={({ pressed }) => [
+                      styles.forgotWrap,
+                      {
+                        opacity: pressed ? 0.6 : 1,
+                        backgroundColor: pressed
+                          ? COLORS.onboardingPrimary
+                          : "rgba(0,0,0,0.05)",
+                      },
+                    ]}>
+                    <Text style={styles.forgotText}> Sign Up</Text>
                   </Pressable>
                 </View>
               </View>
             </View>
-
-            {/* ================= BOTTOM SECTION ================= */}
-            <View style={styles.bottomSection}>
-              <Text style={styles.termsText}>
-                By continuing, you confirm that you are 18 years or older and
-                agree to our{" "}
-                <Text
-                  style={styles.linkInline}
-                  accessibilityRole="link"
-                  onPress={() => router.push(APP_ROUTES.termsConditions)}
-                >
-                  Terms & Conditions
-                </Text>{" "}
-                and{" "}
-                <Text
-                  style={styles.linkInline}
-                  accessibilityRole="link"
-                  onPress={() => router.push(APP_ROUTES.privacyPolicy)}
-                >
-                  Privacy Policy.
-                </Text>
-              </Text>
-
-              <Pressable
-                className="btn-primary"
-                onPress={handleLogin}
-                disabled={isLoading}
-                style={({ pressed }) => [
-                  {
-                    opacity: pressed || isLoading ? 0.7 : 1,
-                  },
-                ]}
-              >
-                <Text className="btn-text">
-                  {isLoading ? "Signing In..." : "Sign In"}
-                </Text>
-              </Pressable>
-
-              <View style={styles.signupRow}>
-                <Text style={styles.signupText}>
-                  Don&apos;t have an account?
-                </Text>
-
-                <Pressable
-                  onPress={() => router.push(APP_ROUTES.register)}
-                  style={({ pressed }) => [
-                    styles.forgotWrap,
-                    {
-                      opacity: pressed ? 0.6 : 1,
-                      backgroundColor: pressed
-                        ? COLORS.onboardingPrimary
-                        : "rgba(0,0,0,0.05)", // default bg
-                    },
-                  ]}
-                >
-                  <Text style={styles.forgotText}> Sign Up</Text>
-                </Pressable>
-              </View>
-            </View>
-          </View>
+          </ScrollView>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -252,22 +233,19 @@ const styles = StyleSheet.create({
   },
   forgotText: {
     fontSize: 14,
-    color: COLORS.authAccent,
     fontWeight: "500",
   },
   forgotTextcss: {
     fontSize: 14,
-
     fontWeight: "500",
   },
-
-  /* ===== Bottom Section ===== */
   bottomSection: {
     gap: 16,
   },
   forgotContainer: {
     width: "100%",
     alignItems: "flex-end",
+    marginBottom: 10,
   },
   termsText: {
     fontSize: 13,
@@ -279,8 +257,6 @@ const styles = StyleSheet.create({
     color: COLORS.authAccent,
     fontWeight: "600",
   },
-
-  /* ===== Signup Row ===== */
   signupRow: {
     flexDirection: "row",
     justifyContent: "center",
@@ -290,17 +266,5 @@ const styles = StyleSheet.create({
   signupText: {
     fontSize: 13,
     color: COLORS.textSecondary,
-  },
-  signupLinkContainer: {
-    marginLeft: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  signupLink: {
-    fontSize: 13,
-    color: COLORS.authAccent,
-    fontWeight: "700",
-    textDecorationLine: "underline",
   },
 });

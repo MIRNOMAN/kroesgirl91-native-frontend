@@ -94,16 +94,14 @@ export default function OnboardingScreen() {
           onPress={onBack}
           hitSlop={15}
           style={[styles.iconButton, activeIndex === 0 && styles.hiddenButton]}
-          disabled={activeIndex === 0}
-        >
+          disabled={activeIndex === 0}>
           <Ionicons name="arrow-back" size={20} color={COLORS.textPrimary} />
         </Pressable>
 
         <Pressable
           onPress={finishOnboarding}
           hitSlop={15}
-          style={styles.skipButton}
-        >
+          style={styles.skipButton}>
           <Text style={styles.skipText}>Skip</Text>
         </Pressable>
       </View>
@@ -142,8 +140,7 @@ export default function OnboardingScreen() {
             styles.nextButton,
             activeIndex === ONBOARDING_DATA.length - 1 &&
               styles.getStartedButton,
-          ]}
-        >
+          ]}>
           {activeIndex < ONBOARDING_DATA.length - 1 ? (
             <Ionicons name="arrow-forward" size={22} color={COLORS.white} />
           ) : (
@@ -182,6 +179,7 @@ const styles = StyleSheet.create({
   skipButton: {
     paddingVertical: 8,
     paddingHorizontal: 12,
+    zIndex: 50,
   },
   skipText: {
     color: COLORS.textSecondary,

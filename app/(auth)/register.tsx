@@ -7,6 +7,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableWithoutFeedback,
@@ -87,9 +88,13 @@ export default function RegisterScreen() {
       return;
     }
 
-    // ✅ optional phone validation (BD format simple)
-    if (trimmedPhone && !/^(\+8801|01)[3-9]\d{8}$/.test(trimmedPhone)) {
-      toast.warning("Enter a valid phone number");
+    // 1. Optional '+' at the start
+    // 2. Digits, spaces, hyphens, and parentheses
+    // 3. A minimum of 7 digits (to prevent junk like "123")
+    const phoneRegex = /^\+?[\d\s\-()]{7,15}$/;
+
+    if (trimmedPhone && !phoneRegex.test(trimmedPhone)) {
+      toast.warning("Enter a valid international phone number");
       return;
     }
 
@@ -104,6 +109,8 @@ export default function RegisterScreen() {
       const response = (await createUserRegister(
         payload,
       ).unwrap()) as RegisterResponse;
+
+      console.log({ payload });
 
       console.log("[REGISTER][OTP_CODE]", response?.data?.otpResponse?.code);
 
@@ -123,97 +130,101 @@ export default function RegisterScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.authBg }}>
+      {/* ✅ FIX: KeyboardAvoidingView moved to top level */}
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-      >
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <View style={styles.container}>
-            <View style={styles.content}>
-              <View style={styles.logoContainer}>
-                <Image
-                  source={require("../../assets/login/login_icons.png")}
-                  style={styles.logo}
-                  resizeMode="contain"
+        behavior={Platform.OS === "ios" ? "padding" : "height"}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentInsetAdjustmentBehavior="automatic"
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{ flexGrow: 1 }}>
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View style={styles.container}>
+              <View style={styles.content}>
+                <View style={styles.logoContainer}>
+                  <Image
+                    source={require("../../assets/login/login_icons.png")}
+                    style={styles.logo}
+                    resizeMode="contain"
+                  />
+                </View>
+
+                <AuthTitleBlock
+                  title="Create An Account"
+                  subtitle="Create your account to access unlimited payment options."
                 />
+
+                <View style={styles.form}>
+                  <AuthLabeledInput
+                    label="Full Name"
+                    placeholder="Enter Full Name"
+                    value={fullName}
+                    onChangeText={setFullName}
+                    autoCapitalize="words"
+                  />
+
+                  <AuthLabeledInput
+                    label="Email"
+                    placeholder="Enter Email"
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    value={email}
+                    onChangeText={setEmail}
+                  />
+
+                  <AuthLabeledInput
+                    label="Phone Number"
+                    placeholder="Enter Phone Number"
+                    keyboardType="phone-pad"
+                    value={phone}
+                    onChangeText={setPhone}
+                  />
+
+                  <AuthLabeledInput
+                    label="Password"
+                    placeholder="Enter Password"
+                    secureTextEntry
+                    showPasswordToggle
+                    value={password}
+                    onChangeText={setPassword}
+                  />
+                </View>
               </View>
 
-              <AuthTitleBlock
-                title="Create An Account"
-                subtitle="Create your account to access unlimited payment options."
-              />
-
-              <View style={styles.form}>
-                <AuthLabeledInput
-                  label="Full Name"
-                  placeholder="Enter Full Name"
-                  value={fullName}
-                  onChangeText={setFullName}
-                  autoCapitalize="words"
-                />
-
-                <AuthLabeledInput
-                  label="Email"
-                  placeholder="Enter Email"
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  value={email}
-                  onChangeText={setEmail}
-                />
-
-                <AuthLabeledInput
-                  label="Phone Number"
-                  placeholder="Enter Phone Number"
-                  keyboardType="phone-pad"
-                  value={phone}
-                  onChangeText={setPhone}
-                />
-
-                <AuthLabeledInput
-                  label="Password"
-                  placeholder="Enter Password"
-                  secureTextEntry
-                  showPasswordToggle
-                  value={password}
-                  onChangeText={setPassword}
-                />
-              </View>
-            </View>
-
-            <View style={styles.bottomSection}>
-              <Text style={styles.termsText}>
-                By continuing, you confirm that you are 18+ and agree to our{" "}
-                <Text
-                  style={styles.linkInline}
-                  onPress={() => router.push(APP_ROUTES.termsConditions)}
-                >
-                  Terms & Conditions
-                </Text>{" "}
-                and{" "}
-                <Text
-                  style={styles.linkInline}
-                  onPress={() => router.push(APP_ROUTES.privacyPolicy)}
-                >
-                  Privacy Policy
+              <View style={styles.bottomSection}>
+                <Text style={styles.termsText}>
+                  By continuing, you confirm that you are 18+ and agree to our{" "}
+                  <Text
+                    style={styles.linkInline}
+                    onPress={() => router.push(APP_ROUTES.termsConditions)}>
+                    Terms & Conditions
+                  </Text>{" "}
+                  and{" "}
+                  <Text
+                    style={styles.linkInline}
+                    onPress={() => router.push(APP_ROUTES.privacyPolicy)}>
+                    Privacy Policy
+                  </Text>
+                  .
                 </Text>
-                .
-              </Text>
 
-              <AuthButton
-                title={isLoading ? "Signing Up..." : "Sign Up"}
-                onPress={handleRegister}
-                disabled={isLoading}
-              />
+                <AuthButton
+                  title={isLoading ? "Signing Up..." : "Sign Up"}
+                  onPress={handleRegister}
+                  disabled={isLoading}
+                />
 
-              <View style={styles.loginRow}>
-                <Text style={styles.loginText}>Already have an account?</Text>
-                <Pressable onPress={() => router.push(APP_ROUTES.login)}>
-                  <Text style={styles.loginLink}> Log In</Text>
-                </Pressable>
+                <View style={styles.loginRow}>
+                  <Text style={styles.loginText}>Already have an account?</Text>
+                  <Pressable onPress={() => router.push(APP_ROUTES.login)}>
+                    <Text style={styles.loginLink}> Log In</Text>
+                  </Pressable>
+                </View>
               </View>
             </View>
-          </View>
-        </TouchableWithoutFeedback>
+          </TouchableWithoutFeedback>
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -235,7 +246,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   logo: {
-   width: 530,
+    width: 530,
     height: 100,
   },
   form: {
@@ -243,6 +254,7 @@ const styles = StyleSheet.create({
   },
   bottomSection: {
     gap: 14,
+    marginTop: 8,
   },
   termsText: {
     fontSize: 12,

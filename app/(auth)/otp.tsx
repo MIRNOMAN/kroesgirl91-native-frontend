@@ -36,8 +36,7 @@ export default function OtpScreen() {
     <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.authBg }}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-      >
+        behavior={Platform.OS === "ios" ? "padding" : undefined}>
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
           <View style={styles.container}>
             <View style={styles.content}>
@@ -94,7 +93,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   logo: {
-   width: 530,
+    width: 530,
     height: 100,
   },
   actions: {
