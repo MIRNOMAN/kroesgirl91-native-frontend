@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { Feather } from "@expo/vector-icons";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Dimensions,
   FlatList,
@@ -23,20 +23,27 @@ import { TOrderStatus } from "../../types";
 
 const { width } = Dimensions.get("window");
 
+// Updated to match your Enum list
 type ShipmentStatus =
+  | "DRAFT"
   | "PENDING"
+  | "ASSIGNED"
   | "STARTED"
   | "ARRIVED"
   | "SUCCESSFUL"
+  | "FAILED"
   | "CANCELLED";
+
 type StatusFilter = "ALL" | ShipmentStatus;
 
 const STATUS_FILTERS: StatusFilter[] = [
   "ALL",
   "PENDING",
+  "ASSIGNED",
   "STARTED",
   "ARRIVED",
   "SUCCESSFUL",
+  "FAILED",
   "CANCELLED",
 ];
 
@@ -76,10 +83,16 @@ const normalizeOrderStatus = (status?: TOrderStatus | null): ShipmentStatus => {
     case "PENDING":
     case "ACKNOWLEDGED":
       return "PENDING";
+    case "DRAFT":
+      return "DRAFT";
+    case "ASSIGNED":
+      return "ASSIGNED";
     case "STARTED":
       return "STARTED";
     case "ARRIVED":
       return "ARRIVED";
+    case "FAILED":
+      return "FAILED";
     case "CANCELLED":
       return "CANCELLED";
     default:
@@ -88,21 +101,29 @@ const normalizeOrderStatus = (status?: TOrderStatus | null): ShipmentStatus => {
 };
 
 export default function ShipmentScreen() {
-  // Pagination state
   const [currentPage, setCurrentPage] = useState<number>(1);
   const itemsPerPage = 10;
   const [activeStatus, setActiveStatus] = useState<StatusFilter>("ALL");
 
-  // Query params for API (remove date and job_type)
-  const queryParams = useMemo(
-    () => [
-      { name: "page", value: currentPage },
-      { name: "limit", value: itemsPerPage },
-    ],
-    [currentPage],
-  );
+  // FIX: Reset to page 1 whenever the status filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeStatus]);
 
-  // API call
+  // FIX: Include activeStatus in queryParams to filter on Server, not Local
+  const queryParams = useMemo(() => {
+    const params: any = {
+      page: currentPage,
+      limit: itemsPerPage,
+    };
+
+    if (activeStatus !== "ALL") {
+      params.status = activeStatus;
+    }
+
+    return params;
+  }, [currentPage, activeStatus]);
+
   const {
     data: ordersResponse,
     isLoading,
@@ -111,7 +132,6 @@ export default function ShipmentScreen() {
     refetch,
   } = useGetAllOrdersQuery(queryParams);
 
-  // Type safety for API response
   type OrderApiResponse = {
     data: any[];
     meta?: {
@@ -123,22 +143,14 @@ export default function ShipmentScreen() {
       hasPreviousPage: boolean;
     };
   };
+
   const allOrders = (ordersResponse as OrderApiResponse)?.data ?? [];
   const meta = (ordersResponse as OrderApiResponse)?.meta;
 
-  // Filter by status
-  const filteredOrders = useMemo(() => {
-    return allOrders.filter((order) =>
-      activeStatus === "ALL"
-        ? true
-        : normalizeOrderStatus(order?.status as TOrderStatus) === activeStatus,
-    );
-  }, [allOrders, activeStatus]);
-
-  // Map to OrderCard data
+  // FIX: Map directly from allOrders (server response) instead of local filtering
   const orderCardData: Order[] = useMemo(
     () =>
-      filteredOrders.map((order, index) => ({
+      allOrders.map((order, index) => ({
         id: String(order?.tookanJobId || order?.id || `order-${index}`),
         date: formatOrderDate(order?.deliveryDate || order?.createdAt || ""),
         status: normalizeOrderStatus(order?.status as TOrderStatus),
@@ -147,18 +159,15 @@ export default function ShipmentScreen() {
         origin: toTitleCase(order?.orderType),
         destination: order?.deliveryAddress || "N/A",
       })),
-    [filteredOrders],
+    [allOrders],
   );
 
   const emptyStateMessage = useMemo(() => {
     if (allOrders.length === 0) {
-      return "No shipment data found yet. Create a delivery to see it here.";
+      return activeStatus === "ALL"
+        ? "No shipment data found yet. Create a delivery to see it here."
+        : `No ${toTitleCase(activeStatus)} shipments found.`;
     }
-
-    if (activeStatus !== "ALL") {
-      return `No ${toTitleCase(activeStatus)} shipments found on this page.`;
-    }
-
     return "No shipments available right now.";
   }, [activeStatus, allOrders.length]);
 
@@ -166,49 +175,41 @@ export default function ShipmentScreen() {
     isLoading || (isFetching && allOrders.length === 0);
 
   return (
-    <SafeAreaView style={styles.container} edges={["top"]}>
+    <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>My Orders</Text>
       </View>
 
-      <FilterTabs
-        tabs={STATUS_FILTERS.map((status) =>
-          status === "ALL" ? "All" : toTitleCase(status),
-        )}
-        activeTab={activeStatus === "ALL" ? "All" : toTitleCase(activeStatus)}
-        onTabChange={(tab) => {
-          const selected = STATUS_FILTERS.find(
-            (status) =>
-              (status === "ALL" ? "All" : toTitleCase(status)) === tab,
-          );
-          if (selected) {
-            setActiveStatus(selected);
-          }
-        }}
-      />
-
-      {/* Pagination Controls */}
-      {meta && meta.totalPages > 1 && (
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "center",
-            alignItems: "center",
-            marginVertical: 16,
-            gap: 12,
+      <View>
+        <FilterTabs
+          tabs={STATUS_FILTERS.map((status) =>
+            status === "ALL" ? "All" : toTitleCase(status),
+          )}
+          activeTab={activeStatus === "ALL" ? "All" : toTitleCase(activeStatus)}
+          onTabChange={(tab) => {
+            const selected = STATUS_FILTERS.find(
+              (status) =>
+                (status === "ALL" ? "All" : toTitleCase(status)) === tab,
+            );
+            if (selected) {
+              setActiveStatus(selected);
+            }
           }}
-        >
+        />
+      </View>
+
+      {meta && meta.totalPages > 1 && (
+        <View style={styles.paginationContainer}>
           <Pressable
             style={[
               styles.retryButton,
               { opacity: meta.hasPreviousPage ? 1 : 0.5 },
             ]}
-            disabled={!meta.hasPreviousPage}
-            onPress={() => setCurrentPage((p) => Math.max(1, p - 1))}
-          >
+            disabled={!meta.hasPreviousPage || isFetching}
+            onPress={() => setCurrentPage((p) => Math.max(1, p - 1))}>
             <Text style={styles.retryButtonText}>Previous</Text>
           </Pressable>
-          <Text style={{ fontWeight: "600", color: COLORS.textPrimary }}>
+          <Text style={styles.pageIndicator}>
             Page {meta.currentPage} of {meta.totalPages}
           </Text>
           <Pressable
@@ -216,11 +217,10 @@ export default function ShipmentScreen() {
               styles.retryButton,
               { opacity: meta.hasNextPage ? 1 : 0.5 },
             ]}
-            disabled={!meta.hasNextPage}
+            disabled={!meta.hasNextPage || isFetching}
             onPress={() =>
               setCurrentPage((p) => Math.min(meta.totalPages, p + 1))
-            }
-          >
+            }>
             <Text style={styles.retryButtonText}>Next</Text>
           </Pressable>
         </View>
@@ -239,21 +239,21 @@ export default function ShipmentScreen() {
           </Pressable>
         </View>
       ) : (
-        <>
-          <FlatList
-            data={orderCardData}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => <OrderCard order={item} />}
-            contentContainerStyle={styles.listContent}
-            showsVerticalScrollIndicator={false}
-            ListEmptyComponent={
-              <View style={styles.emptyContainer}>
-                <Feather name="package" size={48} color="#ccc" />
-                <Text style={styles.emptyText}>{emptyStateMessage}</Text>
-              </View>
-            }
-          />
-        </>
+        <FlatList
+          data={orderCardData}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => <OrderCard order={item} />}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+          refreshing={isFetching}
+          onRefresh={refetch}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Feather name="package" size={48} color="#ccc" />
+              <Text style={styles.emptyText}>{emptyStateMessage}</Text>
+            </View>
+          }
+        />
       )}
     </SafeAreaView>
   );
@@ -276,54 +276,6 @@ const styles = StyleSheet.create({
     color: COLORS.textPrimary,
     marginTop: 10,
   },
-  selectorBlock: {
-    marginBottom: 12,
-  },
-  selectorTitle: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: "#4B5563",
-    marginHorizontal: 20,
-    marginBottom: 12,
-  },
-  selectorList: {
-    paddingHorizontal: 20,
-    gap: 8,
-  },
-  datePickerButton: {
-    marginHorizontal: 20,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#D1D5DB",
-    backgroundColor: "#F9FAFB",
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  datePickerText: {
-    fontSize: 13,
-    color: "#1F2937",
-    fontWeight: "600",
-  },
-  selectorChip: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 18,
-    backgroundColor: "#F3F4F6",
-  },
-  selectorChipActive: {
-    backgroundColor: "#1A3A4A",
-  },
-  selectorChipText: {
-    fontSize: 12,
-    fontWeight: "500",
-    color: "#4B5563",
-  },
-  selectorChipTextActive: {
-    color: "#FFFFFF",
-  },
   listContent: {
     paddingHorizontal: 20,
     paddingBottom: 100,
@@ -338,6 +290,8 @@ const styles = StyleSheet.create({
     color: "#999",
     marginTop: 12,
     marginBottom: 12,
+    textAlign: "center",
+    paddingHorizontal: 40,
   },
   retryButton: {
     paddingHorizontal: 16,
@@ -348,5 +302,16 @@ const styles = StyleSheet.create({
   retryButtonText: {
     color: "#FFFFFF",
     fontWeight: "600",
+  },
+  paginationContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginVertical: 16,
+    gap: 12,
+  },
+  pageIndicator: {
+    fontWeight: "600",
+    color: COLORS.textPrimary,
   },
 });

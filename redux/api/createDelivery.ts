@@ -1,4 +1,4 @@
-import { TAgentResponse, TQueryParam } from "../../types";
+import { TAgentResponse } from "../../types";
 import { baseApi } from "./baseApi";
 
 type CreateDeliveryPayload = {
@@ -57,6 +57,7 @@ interface PriceEstimateResponse {
   data?: {
     distance_km: string;
     total_price: number;
+    max_distance_km: number;
     breakdown?: {
       base_fare?: number;
       distance_charge?: number;
@@ -98,13 +99,17 @@ const createDeliveryApi = baseApi.injectEndpoints({
     getAllOrders: build.query({
       query: (args) => {
         const params = new URLSearchParams();
-        if (args.length > 0) {
-          args
-            .filter((arg: TQueryParam) => arg.value)
-            .forEach((arg: TQueryParam) =>
-              params.append(arg.name, String(arg.value)),
-            );
+
+        // Check if args exists and is an object
+        if (args && typeof args === "object") {
+          Object.entries(args).forEach(([key, value]) => {
+            // Only append if value is truthy (or specifically not null/undefined)
+            if (value !== undefined && value !== null && value !== "") {
+              params.append(key, String(value));
+            }
+          });
         }
+
         return {
           url: `/orders`,
           method: "GET",

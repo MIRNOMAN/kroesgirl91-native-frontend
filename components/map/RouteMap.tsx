@@ -1,4 +1,5 @@
 import { Map, MapMarker, MapRoute } from "@/components/ui/map";
+import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import * as Location from "expo-location";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
@@ -126,16 +127,68 @@ const RouteMap: React.FC<RouteMapProps> = ({
 
         {hasRouteMode && start && (
           <MapMarker coordinate={start}>
-            <View className="w-8 h-8 bg-green-500 rounded-full items-center justify-center border-2 border-white">
-              <Text className="text-white text-xs font-bold">A</Text>
+            <View className="items-center">
+              {/* The Icon Container */}
+              <View
+                style={{
+                  width: 36,
+                  height: 36,
+                  backgroundColor: "#10B981", // Modern Emerald/Green
+                  borderRadius: 10,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderWidth: 2,
+                  borderColor: "#fff",
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.2,
+                  shadowRadius: 4,
+                  elevation: 5,
+                }}>
+                <Ionicons name="location" size={20} color="white" />
+              </View>
+
+              {/* Optional: Small triangle pointer at the bottom to make it look like a pin */}
+              <View
+                style={{
+                  width: 0,
+                  height: 0,
+                  backgroundColor: "transparent",
+                  borderStyle: "solid",
+                  borderLeftWidth: 6,
+                  borderRightWidth: 6,
+                  borderBottomWidth: 8,
+                  borderLeftColor: "transparent",
+                  borderRightColor: "transparent",
+                  borderBottomColor: "white",
+                  transform: [{ rotate: "180deg" }],
+                  marginTop: -2,
+                }}
+              />
             </View>
           </MapMarker>
         )}
 
         {hasRouteMode && end && (
           <MapMarker coordinate={end}>
-            <View className="w-8 h-8 bg-red-500 rounded-full items-center justify-center border-2 border-white">
-              <Text className="text-white text-xs font-bold">B</Text>
+            <View
+              style={{
+                width: 36,
+                height: 36,
+                backgroundColor: "#F97316", // A nice "parcel" orange
+                borderRadius: 12,
+                alignItems: "center",
+                justifyContent: "center",
+                borderWidth: 2,
+                borderColor: "#fff",
+                // Adding a shadow to make it pop off the map
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.25,
+                shadowRadius: 3.84,
+                elevation: 5,
+              }}>
+              <Ionicons name="cube" size={18} color="white" />
             </View>
           </MapMarker>
         )}

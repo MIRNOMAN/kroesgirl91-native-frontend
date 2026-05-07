@@ -18,7 +18,7 @@ import backgroundImage from "../../assets/backround/Photoroom.png";
 import { COLORS } from "../../constants/colors";
 import { triggerMetaWhatsAppEvent } from "../../services/metaWhatsapp.service";
 
-const WHATSAPP_NUMBER = "5977568415";
+const WHATSAPP_NUMBER = "+5977568415";
 const WHATSAPP_MESSAGE = "Hi, I want to request a bulk/business delivery.";
 
 export default function BusinessBulkScreen() {
@@ -58,8 +58,7 @@ export default function BusinessBulkScreen() {
           <Pressable
             style={styles.backButton}
             onPress={() => router.back()}
-            hitSlop={10}
-          >
+            hitSlop={10}>
             <Ionicons
               name="chevron-back"
               size={22}
@@ -75,14 +74,12 @@ export default function BusinessBulkScreen() {
           source={backgroundImage}
           style={styles.content}
           imageStyle={styles.backgroundImage}
-          resizeMode="cover"
-        >
+          resizeMode="cover">
           <View
             style={[
               styles.iconCard,
               { width: iconCardSize, height: iconCardSize },
-            ]}
-          >
+            ]}>
             <View>
               <Image
                 source={require("../../assets/Custom_icons/whatsappIcons.png")}

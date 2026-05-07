@@ -18,6 +18,7 @@ interface DeliveryInputProps {
   value: string;
   onChangeText: (text: string) => void;
   onFocus?: () => void;
+  onPress?: () => void;
   keyboardType?: "default" | "phone-pad" | "numeric" | "email-address";
   icon?: keyof typeof Ionicons.glyphMap;
   isLocationInput?: boolean;
@@ -38,6 +39,7 @@ const DeliveryInput: React.FC<DeliveryInputProps> = ({
   onLocationPress,
   multiline = false,
   editable = true,
+  onPress,
 }) => {
   return (
     <View style={styles.container}>
@@ -58,6 +60,7 @@ const DeliveryInput: React.FC<DeliveryInputProps> = ({
             isLocationInput && styles.inputWithLocation,
             multiline && styles.multilineInput,
           ]}
+          onPress={onPress}
           placeholder={placeholder}
           placeholderTextColor="#AAAAAA"
           value={value}
@@ -70,8 +73,7 @@ const DeliveryInput: React.FC<DeliveryInputProps> = ({
         {isLocationInput && (
           <TouchableOpacity
             style={styles.locationButton}
-            onPress={onLocationPress}
-          >
+            onPress={onLocationPress}>
             <Ionicons name="location" size={20} color="#F5A623" />
           </TouchableOpacity>
         )}

@@ -18,6 +18,8 @@ interface RideOption {
   subtitle: string;
   description: string;
   price: number;
+  distance_km: string;
+  max_distance_km: number;
   fareOptions?: {
     id: string;
     label: string;
@@ -35,6 +37,7 @@ interface ChooseRideProps {
   onSelectRide: (rideId: string) => void;
   onSelectFareOption: (rideId: string, fareOptionId: string) => void;
   onNext: () => void;
+  isLoading: boolean;
 }
 
 const ChooseRide: React.FC<ChooseRideProps> = ({
@@ -44,6 +47,7 @@ const ChooseRide: React.FC<ChooseRideProps> = ({
   onSelectRide,
   onSelectFareOption,
   onNext,
+  isLoading,
 }) => {
   const [openFareDropdownForRide, setOpenFareDropdownForRide] = useState<
     string | null
@@ -58,15 +62,33 @@ const ChooseRide: React.FC<ChooseRideProps> = ({
     selectedRideOption?.fareOptions &&
     selectedRideOption.fareOptions.length > 0,
   );
-  const canProceed =
-    Boolean(selectedRide) &&
-    (!requiresFareOption || Boolean(selectedFareOptionId));
 
-  const formatPrice = (price: number) => {
-    if (!Number.isFinite(price)) {
-      return "0";
+  const distanceInfo = useMemo(() => {
+    if (!selectedRideOption) return null;
+
+    const distance = parseFloat(selectedRideOption.distance_km || "0");
+    const max = selectedRideOption.max_distance_km;
+
+    if (distance > max) {
+      return {
+        exceeded: true,
+        exceededBy: (distance - max).toFixed(2),
+        distance,
+        max,
+      };
     }
 
+    return {
+      exceeded: false,
+      distance,
+      max,
+    };
+  }, [selectedRideOption]);
+
+  const canProceed = true;
+
+  const formatPrice = (price: number) => {
+    if (!Number.isFinite(price)) return "0";
     return `${price}`;
   };
 
@@ -87,121 +109,177 @@ const ChooseRide: React.FC<ChooseRideProps> = ({
     <View style={styles.container}>
       <View style={styles.headerRow}>
         <Text style={styles.title}>Choose a ride</Text>
-        <View style={styles.closeIconButton}>
-          <Ionicons name="close" size={14} color="#606060" />
+      </View>
+
+      {/* 🔥 LOADING STATE */}
+      {isLoading ? (
+        <View style={styles.rideOptions}>
+          {[1, 2, 3, 4].map((_, i) => (
+            <SkeletonCard key={i} />
+          ))}
         </View>
-      </View>
-
-      <View style={styles.rideOptions}>
-        {rideOptions.map((option) => {
-          const isSelected = selectedRide === option.id;
-          const hasFareOptions = Boolean(
-            option.fareOptions && option.fareOptions.length > 0,
-          );
-          const isDropdownOpen = openFareDropdownForRide === option.id;
-          const selectedOptionFare = option.fareOptions?.find(
-            (fareOption) => fareOption.id === selectedFareOptionId,
-          );
-          const displayedPrice = selectedOptionFare?.price ?? option.price;
-
-          return (
+      ) : (
+        <>
+          {/* 🔥 Warning */}
+          {distanceInfo?.exceeded && (
             <View
-              key={option.id}
-              style={[
-                styles.rideCard,
-                isSelected && styles.rideCardSelected,
-                isDropdownOpen && styles.rideCardWithDropdown,
-              ]}>
-              <TouchableOpacity
-                style={styles.rideCardPressable}
-                onPress={() => {
-                  onSelectRide(option.id);
-
-                  if (!hasFareOptions) {
-                    setOpenFareDropdownForRide(null);
-                    return;
-                  }
-
-                  setOpenFareDropdownForRide((prev) =>
-                    prev === option.id ? null : option.id,
-                  );
-                }}
-                activeOpacity={0.7}>
-                <View style={styles.rideInfo}>
-                  <View style={styles.rideIconContainer}>
-                    <Ionicons
-                      name={getIconName(option.icon)}
-                      size={24}
-                      color={isSelected ? "#F5A623" : "#1A3A4A"}
-                    />
-                  </View>
-
-                  <View style={styles.rideDetails}>
-                    <Text style={styles.rideTitle}>{option.title}</Text>
-                    <Text style={styles.rideSubtitle}>{option.subtitle}</Text>
-                    {isSelected && selectedOptionFare ? (
-                      <Text style={styles.rideFareSummary}>
-                        {selectedOptionFare.label}
-                      </Text>
-                    ) : option.description ? (
-                      <Text style={styles.rideDescription}>
-                        {option.description}
-                      </Text>
-                    ) : null}
-                  </View>
-                </View>
-
-                <View style={styles.rideMeta}>
-                  {isSelected ? (
-                    <View style={styles.priceContainer}>
-                      <Text style={styles.priceText}>
-                        {formatPrice(displayedPrice)}
-                      </Text>
-                      <Text style={styles.priceLabel}>SUR$</Text>
-                    </View>
-                  ) : null}
-                </View>
-              </TouchableOpacity>
-
-              {isSelected && hasFareOptions && isDropdownOpen && (
-                <View style={styles.dropdownContainer}>
-                  <View style={styles.dropdownMenu}>
-                    {option.fareOptions?.map((fareOption) => {
-                      const isFareOptionSelected =
-                        selectedFareOptionId === fareOption.id;
-
-                      return (
-                        <TouchableOpacity
-                          key={fareOption.id}
-                          style={styles.dropdownItem}
-                          onPress={() => {
-                            onSelectFareOption(option.id, fareOption.id);
-                            setOpenFareDropdownForRide(null);
-                          }}
-                          activeOpacity={0.7}>
-                          <Text
-                            style={[
-                              styles.dropdownItemText,
-                              isFareOptionSelected &&
-                                styles.dropdownItemTextSelected,
-                            ]}>
-                            {`${fareOption.label} = ${formatPrice(
-                              fareOption.price,
-                            )} Sur$`}
-                          </Text>
-                        </TouchableOpacity>
-                      );
-                    })}
-                  </View>
-                </View>
-              )}
+              style={{
+                backgroundColor: "#FFE5E5",
+                padding: 10,
+                borderRadius: 8,
+                marginBottom: 12,
+              }}>
+              <Text
+                style={{
+                  color: "#D8000C",
+                  fontSize: 13,
+                  textAlign: "center",
+                }}>
+                Distance exceeded by {distanceInfo.exceededBy} km. Max allowed
+                is {distanceInfo.max} km.
+              </Text>
             </View>
-          );
-        })}
-      </View>
+          )}
+
+          <View style={styles.rideOptions}>
+            {rideOptions.map((option) => {
+              const isSelected = selectedRide === option.id;
+              const hasFareOptions = Boolean(
+                option.fareOptions && option.fareOptions.length > 0,
+              );
+              const isDropdownOpen = openFareDropdownForRide === option.id;
+
+              const distance = parseFloat(option.distance_km || "0");
+              const isExceeded = distance > option.max_distance_km;
+
+              const selectedOptionFare = option.fareOptions?.find(
+                (fareOption) => fareOption.id === selectedFareOptionId,
+              );
+
+              const displayedPrice = selectedOptionFare?.price ?? option.price;
+
+              return (
+                <View
+                  key={option.id}
+                  style={[
+                    styles.rideCard,
+                    isSelected && styles.rideCardSelected,
+                    isDropdownOpen && styles.rideCardWithDropdown,
+                    isExceeded && { opacity: 0.5 },
+                  ]}>
+                  <TouchableOpacity
+                    style={styles.rideCardPressable}
+                    disabled={isExceeded}
+                    onPress={() => {
+                      if (isExceeded) return;
+
+                      onSelectRide(option.id);
+
+                      if (!hasFareOptions) {
+                        setOpenFareDropdownForRide(null);
+                        return;
+                      }
+
+                      setOpenFareDropdownForRide((prev) =>
+                        prev === option.id ? null : option.id,
+                      );
+                    }}
+                    activeOpacity={0.7}>
+                    <View style={styles.rideInfo}>
+                      <View style={styles.rideIconContainer}>
+                        <Ionicons
+                          name={getIconName(option.icon)}
+                          size={24}
+                          color={isSelected ? "#F5A623" : "#1A3A4A"}
+                        />
+                      </View>
+
+                      <View style={styles.rideDetails}>
+                        <Text style={styles.rideTitle}>{option.title}</Text>
+                        <Text style={styles.rideSubtitle}>
+                          {option.subtitle}
+                        </Text>
+
+                        {isExceeded && (
+                          <Text
+                            style={{
+                              color: "#D8000C",
+                              fontSize: 11,
+                            }}>
+                            Exceeds max distance
+                          </Text>
+                        )}
+
+                        {isSelected && selectedOptionFare ? (
+                          <Text style={styles.rideFareSummary}>
+                            {selectedOptionFare.label}
+                          </Text>
+                        ) : option.description ? (
+                          <Text style={styles.rideDescription}>
+                            {option.description}
+                          </Text>
+                        ) : null}
+                      </View>
+                    </View>
+
+                    <View style={styles.rideMeta}>
+                      {isSelected ? (
+                        <View style={styles.priceContainer}>
+                          <Text style={styles.priceText}>
+                            {formatPrice(displayedPrice)}
+                          </Text>
+                          <Text style={styles.priceLabel}>SUR$</Text>
+                        </View>
+                      ) : null}
+                    </View>
+                  </TouchableOpacity>
+
+                  {isSelected && hasFareOptions && isDropdownOpen && (
+                    <View style={styles.dropdownContainer}>
+                      <View style={styles.dropdownMenu}>
+                        {option.fareOptions?.map((fareOption) => {
+                          const isFareOptionSelected =
+                            selectedFareOptionId === fareOption.id;
+
+                          return (
+                            <TouchableOpacity
+                              key={fareOption.id}
+                              style={styles.dropdownItem}
+                              onPress={() => {
+                                onSelectFareOption(option.id, fareOption.id);
+                                setOpenFareDropdownForRide(null);
+                              }}
+                              activeOpacity={0.7}>
+                              <Text
+                                style={[
+                                  styles.dropdownItemText,
+                                  isFareOptionSelected &&
+                                    styles.dropdownItemTextSelected,
+                                ]}>
+                                {`${fareOption.label} = ${formatPrice(
+                                  fareOption.price,
+                                )} Sur$`}
+                              </Text>
+                            </TouchableOpacity>
+                          );
+                        })}
+                      </View>
+                    </View>
+                  )}
+                </View>
+              );
+            })}
+          </View>
+        </>
+      )}
 
       <View style={styles.buttonContainer}>
-        <DeliveryButton title="Next" onPress={onNext} disabled={!canProceed} />
+        <DeliveryButton
+          title="Next"
+          onPress={onNext}
+          disabled={false}
+          loading={false}
+        />
       </View>
     </View>
   );
@@ -370,3 +448,48 @@ const styles = StyleSheet.create({
 });
 
 export default ChooseRide;
+
+const SkeletonCard = () => {
+  return (
+    <View style={styles.rideCard}>
+      <View style={styles.rideCardPressable}>
+        <View style={styles.rideInfo}>
+          <View
+            style={[styles.rideIconContainer, { backgroundColor: "#E5E7EB" }]}
+          />
+
+          <View style={styles.rideDetails}>
+            <View
+              style={{
+                height: 12,
+                width: "60%",
+                backgroundColor: "#E5E7EB",
+                borderRadius: 6,
+                marginBottom: 6,
+              }}
+            />
+            <View
+              style={{
+                height: 10,
+                width: "40%",
+                backgroundColor: "#E5E7EB",
+                borderRadius: 6,
+              }}
+            />
+          </View>
+        </View>
+
+        <View style={styles.rideMeta}>
+          <View
+            style={{
+              height: 14,
+              width: 40,
+              backgroundColor: "#E5E7EB",
+              borderRadius: 6,
+            }}
+          />
+        </View>
+      </View>
+    </View>
+  );
+};

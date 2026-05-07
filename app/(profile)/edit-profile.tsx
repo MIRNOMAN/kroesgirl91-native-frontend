@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
- 
   Keyboard,
   KeyboardAvoidingView,
   Platform,
@@ -13,7 +12,6 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  
   TouchableWithoutFeedback,
   View,
 } from "react-native";
@@ -33,8 +31,6 @@ export default function EditProfileScreen() {
 
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
-  // const [localImage, setLocalImage] = useState<string | null>(null);
-  // const [imageFile, setImageFile] = useState<any>(null);
 
   useEffect(() => {
     if (meData?.data) {
@@ -42,31 +38,6 @@ export default function EditProfileScreen() {
       setPhone(meData.data.phone ?? "");
     }
   }, [meData]);
-
-  // const handlePickImage = async () => {
-  //   const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-  //   if (status !== "granted") {
-  //     Alert.alert(
-  //       "Permission required",
-  //       "Please allow access to your photo library.",
-  //     );
-  //     return;
-  //   }
-  //   const result = await ImagePicker.launchImageLibraryAsync({
-  //     mediaTypes: ImagePicker.MediaTypeOptions.Images,
-  //     allowsEditing: true,
-  //     aspect: [1, 1],
-  //     quality: 0.8,
-  //   });
-  //   if (!result.canceled && result.assets.length > 0) {
-  //     const asset = result.assets[0];
-  //     setLocalImage(asset.uri);
-  //     const fileName = asset.uri.split("/").pop() ?? "profile.jpg";
-  //     const match = /\.(\w+)$/.exec(fileName);
-  //     const type = match ? `image/${match[1]}` : "image/jpeg";
-  //     setImageFile({ uri: asset.uri, name: fileName, type });
-  //   }
-  // };
 
   const handleSave = async () => {
     if (!fullName.trim()) {
@@ -76,7 +47,7 @@ export default function EditProfileScreen() {
     try {
       await updateMeUser({
         data: { fullName: fullName.trim(), phone: phone.trim() },
-        profile:  undefined,
+        profile: undefined,
       }).unwrap();
       Alert.alert("Success", "Profile updated successfully.", [
         { text: "OK", onPress: () => router.back() },
@@ -88,56 +59,32 @@ export default function EditProfileScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      <ProfileHeader
+        title="Edit Profile"
+        showBackButton
+        onBackPress={() => router.back()}
+      />
+
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-      >
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-          <View style={styles.container}>
-            {/* Header */}
-            <ProfileHeader
-              title="Edit Profile"
-              showBackButton
-              onBackPress={() => router.back()}
-            />
-
-            <ScrollView
-              style={styles.scrollView}
-              contentContainerStyle={styles.scrollContent}
-              showsVerticalScrollIndicator={false}
-              keyboardShouldPersistTaps="handled"
-            >
-              {/* Avatar */}
-              {/* <View style={styles.avatarContainer}>
-                <Image
-                  source={
-                    localImage
-                      ? { uri: localImage }
-                      : meData?.data?.profileImage
-                        ? { uri: meData.data.profileImage }
-                        : { uri: "https://i.pravatar.cc/150?img=11" }
-                  }
-                  style={styles.avatar}
-                />
-                <TouchableOpacity
-                  style={styles.editAvatarButton}
-                  onPress={handlePickImage}
-                >
-                  <Feather name="edit-3" size={16} color="#FFFFFF" />
-                </TouchableOpacity>
-              </View> */}
-
-              {/* Email (read-only) */}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}>
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled">
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View>
+              {/* Email Badge */}
               <View style={styles.emailBadge}>
                 <Feather name="mail" size={23} color="#FEB334" />
-                <Text style={styles.emailText} numberOfLines={2}>
+                <Text style={styles.emailText}>
                   {meData?.data?.email ?? "—"}
                 </Text>
               </View>
 
-              {/* Form */}
+              {/* Form Fields */}
               <View style={styles.form}>
-                {/* Full Name */}
                 <View style={styles.inputGroup}>
                   <Text style={styles.label}>Full Name</Text>
                   <View style={styles.inputWrapper}>
@@ -157,7 +104,6 @@ export default function EditProfileScreen() {
                   </View>
                 </View>
 
-                {/* Phone */}
                 <View style={styles.inputGroup}>
                   <Text style={styles.label}>Phone Number</Text>
                   <View style={styles.inputWrapper}>
@@ -178,27 +124,26 @@ export default function EditProfileScreen() {
                   </View>
                 </View>
               </View>
-            </ScrollView>
 
-            {/* Save Button */}
-            <View style={styles.bottomSection}>
-              <Pressable
-                style={[
-                  styles.saveButton,
-                  isUpdating && styles.saveButtonDisabled,
-                ]}
-                onPress={handleSave}
-                disabled={isUpdating || isFetching}
-              >
-                {isUpdating ? (
-                  <ActivityIndicator color="#FFFFFF" />
-                ) : (
-                  <Text style={styles.saveButtonText}>Save Changes</Text>
-                )}
-              </Pressable>
+              {/* SAVE BUTTON: Now inside the scroll flow */}
+              <View style={styles.bottomSection}>
+                <Pressable
+                  style={[
+                    styles.saveButton,
+                    (isUpdating || isFetching) && styles.saveButtonDisabled,
+                  ]}
+                  onPress={handleSave}
+                  disabled={isUpdating || isFetching}>
+                  {isUpdating ? (
+                    <ActivityIndicator color="#FFFFFF" />
+                  ) : (
+                    <Text style={styles.saveButtonText}>Save Changes</Text>
+                  )}
+                </Pressable>
+              </View>
             </View>
-          </View>
-        </TouchableWithoutFeedback>
+          </TouchableWithoutFeedback>
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

@@ -52,8 +52,7 @@ const DeliveryButton: React.FC<DeliveryButtonProps> = ({
       style={[getButtonStyle(), disabled && styles.disabledButton]}
       onPress={onPress}
       disabled={disabled || loading}
-      activeOpacity={0.8}
-    >
+      activeOpacity={0.8}>
       {loading ? (
         <ActivityIndicator
           color={variant === "outline" ? "#F5A623" : "#FFFFFF"}

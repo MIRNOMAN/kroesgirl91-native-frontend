@@ -75,7 +75,11 @@ const BACKGROUND_IMAGES = {
 } as const;
 
 export default function HomeScreen() {
-  const { data: ordersResponse } = useGetAllOrdersQuery({ page: 1, limit: 10 });
+  const { data: ordersResponse } = useGetAllOrdersQuery({
+    page: 1,
+    limit: 10,
+    status: "PENDING",
+  });
   const router = useRouter();
   const orders = ordersResponse?.data.slice(0, 3) || [];
   const hasCurrentShipments = orders.length > 0;
@@ -83,6 +87,7 @@ export default function HomeScreen() {
     (order: { status?: string }) =>
       String(order?.status || "").toUpperCase() !== "PENDING",
   );
+
   const shouldShowCurrentShipmentCard =
     hasCurrentShipments && hasNonPendingShipment;
 

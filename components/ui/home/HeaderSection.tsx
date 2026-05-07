@@ -1,5 +1,6 @@
 import { useGetMeUserQuery } from "@/redux/api/userApi";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { COLORS } from "../../../constants/colors";
@@ -9,6 +10,7 @@ interface HeaderSectionProps {
 }
 
 export default function HeaderSection({ greeting }: HeaderSectionProps) {
+  const router = useRouter();
   const { data, isLoading } = useGetMeUserQuery();
   return (
     <View style={styles.container}>
@@ -21,6 +23,9 @@ export default function HeaderSection({ greeting }: HeaderSectionProps) {
         </View>
       </View>
       <Ionicons
+        onPress={() => {
+          router.push("/notifications");
+        }}
         name="notifications-outline"
         size={24}
         color={COLORS.textPrimary}

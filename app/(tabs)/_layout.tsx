@@ -4,6 +4,7 @@ import { Platform } from "react-native";
 
 import { APP_ROUTES } from "@/constants/routes";
 import { useAppSelector } from "@/redux/store";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const getTabIconName = (
   routeName: string,
@@ -25,6 +26,7 @@ const getTabIconName = (
 
 export default function TabsLayout() {
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
+  const insets = useSafeAreaInsets();
 
   if (!isAuthenticated) {
     return <Redirect href={APP_ROUTES.login} />;
@@ -44,9 +46,9 @@ export default function TabsLayout() {
           paddingHorizontal: 10,
           marginHorizontal: 16,
           marginBottom: Platform.OS === "ios" ? 0 : 10,
-          borderRadius: 30,
+          borderRadius: 28,
           position: "absolute",
-          bottom: Platform.OS === "ios" ? 20 : 10,
+          bottom: Platform.OS === "ios" ? 20 : 0 + (insets.bottom || 0),
           left: 0,
           right: 0,
           elevation: 10,
@@ -58,14 +60,14 @@ export default function TabsLayout() {
         tabBarActiveTintColor: "#FFFFFF",
         tabBarInactiveTintColor: "#7A9BAD",
         tabBarLabelStyle: {
-          fontSize: 12,
+          fontSize: 10,
           fontWeight: "500",
           marginTop: 4,
         },
         tabBarIcon: ({ color, focused }) => (
           <Ionicons
             name={getTabIconName(route.name, focused)}
-            size={24}
+            size={20}
             color={color}
           />
         ),

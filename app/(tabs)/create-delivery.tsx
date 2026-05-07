@@ -123,6 +123,7 @@ export default function CreateDeliveryScreen() {
   const [estimatedPriceData, setEstimatedPriceData] = useState<{
     distance_km: string;
     total_price: number;
+    max_distance_km: number;
   } | null>(null);
 
   // Form Data States
@@ -210,34 +211,20 @@ export default function CreateDeliveryScreen() {
       (option) => option.id === "same-day",
     );
 
-    if (estimatedPriceData && step === "ride") {
-      return baseOptions.map((option) => ({
-        ...option,
-        price: estimatedPriceData.total_price,
-        subtitle: `${estimatedPriceData.distance_km} km`,
-        fareOptions: undefined,
-      }));
+    // 🚫 Don't show anything until API comes
+    if (!estimatedPriceData || step !== "ride") {
+      return [];
     }
 
-    return baseOptions;
+    return baseOptions.map((option) => ({
+      ...option,
+      price: estimatedPriceData.total_price,
+      subtitle: `${estimatedPriceData.distance_km} km`,
+      distance_km: estimatedPriceData.distance_km,
+      max_distance_km: estimatedPriceData.max_distance_km,
+      fareOptions: undefined,
+    }));
   }, [estimatedPriceData, step]);
-
-  const selectedRidePrice = useMemo(() => {
-    const option = rideOptionsForDisplay.find(
-      (item) => item.id === selectedRide,
-    );
-
-    if (!option) {
-      return undefined;
-    }
-
-    const selectedFareOptionId = selectedRideFareOptionById[option.id];
-    const selectedFareOption = option.fareOptions?.find(
-      (item) => item.id === selectedFareOptionId,
-    );
-
-    return selectedFareOption?.price ?? option.price;
-  }, [rideOptionsForDisplay, selectedRide, selectedRideFareOptionById]);
 
   const handleSelectRide = (rideId: string) => {
     setSelectedRide(rideId);
@@ -250,7 +237,7 @@ export default function CreateDeliveryScreen() {
     if (firstFareOption) {
       setSelectedRideFareOptionById((prev) => ({
         ...prev,
-        [rideId]: prev[rideId] ?? firstFareOption.id,
+        [rideId]: prev[rideId] ?? (firstFareOption as any).id,
       }));
     }
   };
@@ -330,7 +317,6 @@ export default function CreateDeliveryScreen() {
     if (
       !pickupData.fullName.trim() ||
       !pickupData.phoneNumber.trim() ||
-      !pickupData.email.trim() ||
       !pickupData.fullAddress.trim()
     ) {
       Alert.alert("Required", "Please complete pickup details before next.");
@@ -345,7 +331,6 @@ export default function CreateDeliveryScreen() {
     if (
       !deliveryData.name.trim() ||
       !deliveryData.phoneNumber.trim() ||
-      !deliveryData.email.trim() ||
       !deliveryData.fullAddress.trim()
     ) {
       Alert.alert("Required", "Please complete delivery details before next.");
@@ -365,8 +350,10 @@ export default function CreateDeliveryScreen() {
     const selectedOption = rideOptionsForDisplay.find(
       (option) => option.id === selectedRide,
     );
+
     const hasFareOptions = Boolean(
-      selectedOption?.fareOptions && selectedOption.fareOptions.length > 0,
+      selectedOption?.fareOptions &&
+      (selectedOption.fareOptions as any).length > 0,
     );
 
     if (hasFareOptions && !selectedRideFareOptionById[selectedRide]) {
@@ -623,7 +610,8 @@ export default function CreateDeliveryScreen() {
       case "ride":
         return (
           <ChooseRide
-            rideOptions={rideOptionsForDisplay}
+            isLoading={isCreatingDelivery || isLoadingPrice}
+            rideOptions={rideOptionsForDisplay as any}
             selectedRide={selectedRide}
             selectedFareOptionId={
               selectedRide

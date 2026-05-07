@@ -4,6 +4,7 @@ import {
   ActivityIndicator,
   Dimensions,
   FlatList,
+  KeyboardAvoidingView,
   Modal,
   Platform,
   StyleSheet,
@@ -117,13 +118,14 @@ const DeliveryDetails: React.FC<DeliveryDetailsProps> = ({
     try {
       const params = new URLSearchParams({
         text: query.trim(),
-        currentlatitude: String(data.latitude ?? 23.8103),
-        currentlongitude: String(data.longitude ?? 90.4125),
+        currentlatitude: String(data.latitude ?? 5.852), // Suriname coords
+        currentlongitude: String(data.longitude ?? -55.2038),
         skip_cache: "0",
         fm_token: TOOKAN_MAP_ACCESS_TOKEN,
         radius: "0",
         offering: "3",
         language: "en",
+        country: "SR", // 🔥 restrict to Suriname
       });
 
       const response = await fetch(
@@ -194,14 +196,14 @@ const DeliveryDetails: React.FC<DeliveryDetailsProps> = ({
           icon="call-outline"
         />
 
-        <DeliveryInput
+        {/* <DeliveryInput
           label="Email"
           placeholder="Enter receiver email"
           value={data.email}
           onChangeText={(text) => onDataChange({ ...data, email: text })}
           keyboardType="email-address"
           icon="mail-outline"
-        />
+        /> */}
 
         <DeliveryInput
           label="Full Address"
@@ -216,6 +218,7 @@ const DeliveryDetails: React.FC<DeliveryDetailsProps> = ({
             searchPlaces(text);
           }}
           onFocus={openLocationSearch}
+          onPress={openLocationSearch}
           icon="location-outline"
           isLocationInput
           onLocationPress={openLocationSearch}
@@ -231,62 +234,69 @@ const DeliveryDetails: React.FC<DeliveryDetailsProps> = ({
         visible={showLocationModal}
         animationType="slide"
         transparent={true}
-        onRequestClose={() => setShowLocationModal(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Search Location</Text>
-              <TouchableOpacity
-                style={styles.closeButton}
-                onPress={() => setShowLocationModal(false)}
-              >
-                <Ionicons name="close" size={24} color="#333333" />
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.searchContainer}>
-              <Ionicons name="search" size={20} color="#999999" />
-              <TextInput
-                style={styles.searchInput}
-                placeholder="Search for address..."
-                placeholderTextColor="#AAAAAA"
-                value={searchQuery}
-                onChangeText={(text) => {
-                  setSearchQuery(text);
-                  searchPlaces(text);
-                }}
-                autoFocus
-              />
-              {loading && <ActivityIndicator size="small" color="#F5A623" />}
-            </View>
-
-            <FlatList
-              data={predictions}
-              keyExtractor={(item) => item.id}
-              renderItem={({ item }) => (
+        onRequestClose={() => setShowLocationModal(false)}>
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Search Location</Text>
                 <TouchableOpacity
-                  style={styles.predictionItem}
-                  onPress={() => selectPlace(item)}
-                >
-                  <Ionicons name="location-outline" size={20} color="#F5A623" />
-                  <View style={styles.predictionText}>
-                    <Text style={styles.predictionMain}>{item.mainText}</Text>
-                    <Text style={styles.predictionSecondary}>
-                      {item.secondaryText}
-                    </Text>
-                  </View>
+                  style={styles.closeButton}
+                  onPress={() => setShowLocationModal(false)}>
+                  <Ionicons name="close" size={24} color="#333333" />
                 </TouchableOpacity>
-              )}
-              ListEmptyComponent={
-                searchQuery.length >= 3 && !loading ? (
-                  <Text style={styles.noResults}>No results found</Text>
-                ) : null
-              }
-              style={styles.predictionsList}
-            />
+              </View>
+
+              <View style={styles.searchContainer}>
+                <Ionicons name="search" size={20} color="#999999" />
+                <TextInput
+                  style={styles.searchInput}
+                  placeholder="Search for address..."
+                  placeholderTextColor="#AAAAAA"
+                  value={searchQuery}
+                  onChangeText={(text) => {
+                    setSearchQuery(text);
+                    searchPlaces(text);
+                  }}
+                  autoFocus
+                />
+                {loading && <ActivityIndicator size="small" color="#F5A623" />}
+              </View>
+
+              <FlatList
+                data={predictions}
+                keyExtractor={(item) => item.id}
+                keyboardShouldPersistTaps="handled"
+                contentContainerStyle={{ paddingBottom: 40 }}
+                renderItem={({ item }) => (
+                  <TouchableOpacity
+                    style={styles.predictionItem}
+                    onPress={() => selectPlace(item)}>
+                    <Ionicons
+                      name="location-outline"
+                      size={20}
+                      color="#F5A623"
+                    />
+                    <View style={styles.predictionText}>
+                      <Text style={styles.predictionMain}>{item.mainText}</Text>
+                      <Text style={styles.predictionSecondary}>
+                        {item.secondaryText}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                )}
+                ListEmptyComponent={
+                  searchQuery.length >= 3 && !loading ? (
+                    <Text style={styles.noResults}>No results found</Text>
+                  ) : null
+                }
+                style={styles.predictionsList}
+              />
+            </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
     </View>
   );
@@ -318,14 +328,19 @@ const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "flex-end",
+    justifyContent: "center", // ✅ changed from flex-end
   },
+
   modalContent: {
+    flex: 1, // ✅ important
+    marginTop: 40, // keeps bottom-sheet look
     backgroundColor: "#FFFFFF",
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    maxHeight: height * 0.8,
-    paddingBottom: 30,
+  },
+
+  predictionsList: {
+    flex: 1, // ✅ instead of maxHeight
   },
   modalHeader: {
     flexDirection: "row",
@@ -362,9 +377,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: "#333333",
   },
-  predictionsList: {
-    maxHeight: height * 0.5,
-  },
+
   predictionItem: {
     flexDirection: "row",
     alignItems: "center",

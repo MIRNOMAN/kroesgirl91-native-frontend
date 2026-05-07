@@ -1,6 +1,6 @@
 import { FontAwesome, Fontisto, Ionicons } from "@expo/vector-icons";
 import React from "react";
-import {  StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { COLORS } from "../../../constants/colors";
 
 interface ProfileCardProps {
@@ -15,7 +15,7 @@ export default function ProfileCard({
   name,
   email,
   phone,
-  
+
   onEditPress,
 }: ProfileCardProps) {
   return (
@@ -67,6 +67,9 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 12,
     right: 12,
+    zIndex: 5,
+    padding: 6,
+    borderRadius: 4,
   },
 
   profileInfo: {
