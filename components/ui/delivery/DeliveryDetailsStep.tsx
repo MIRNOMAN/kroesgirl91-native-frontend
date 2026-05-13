@@ -1,66 +1,12 @@
-import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
-import {
-  ActivityIndicator,
-  Dimensions,
-  FlatList,
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Dimensions, StyleSheet, Text, View } from "react-native";
+
+import GooglePlacesSearch from "@/components/map/LocationSearchModal";
 import DeliveryButton from "./DeliveryButton";
 import DeliveryInput from "./DeliveryInput";
 
-const { width, height } = Dimensions.get("window");
+const { width } = Dimensions.get("window");
 const isSmallDevice = width < 375;
-
-const TOOKAN_MAP_DEFAULT_KEY =
-  process.env.EXPO_PUBLIC_TOOKAN_MAP_KEY ??
-  process.env.EXPO_PUBLIC_MAPPR_KEY ??
-  "bc2706f0-28d7-11f1-a301-ede322482ab2";
-const TOOKAN_MAP_WEB_KEY =
-  process.env.EXPO_PUBLIC_TOOKAN_MAP_WEB_KEY ??
-  process.env.EXPO_PUBLIC_MAPPR_WEB_KEY ??
-  TOOKAN_MAP_DEFAULT_KEY;
-const TOOKAN_MAP_ANDROID_KEY =
-  process.env.EXPO_PUBLIC_TOOKAN_MAP_ANDROID_KEY ??
-  process.env.EXPO_PUBLIC_MAPPR_ANDROID_KEY ??
-  TOOKAN_MAP_DEFAULT_KEY;
-const TOOKAN_MAP_IOS_KEY =
-  process.env.EXPO_PUBLIC_TOOKAN_MAP_IOS_KEY ??
-  process.env.EXPO_PUBLIC_MAPPR_IOS_KEY ??
-  TOOKAN_MAP_DEFAULT_KEY;
-const TOOKAN_MAP_SERVER_KEY =
-  process.env.EXPO_PUBLIC_TOOKAN_MAP_SERVER_KEY ??
-  process.env.EXPO_PUBLIC_MAPPR_SERVER_KEY ??
-  TOOKAN_MAP_DEFAULT_KEY;
-const TOOKAN_MAP_FORM_KEY =
-  process.env.EXPO_PUBLIC_TOOKAN_MAP_FORM_KEY ??
-  process.env.EXPO_PUBLIC_MAPPR_FORM_KEY ??
-  TOOKAN_MAP_DEFAULT_KEY;
-
-const getTookanMapKey = () => {
-  if (Platform.OS === "android") {
-    return TOOKAN_MAP_ANDROID_KEY || TOOKAN_MAP_SERVER_KEY;
-  }
-
-  if (Platform.OS === "ios") {
-    return TOOKAN_MAP_IOS_KEY || TOOKAN_MAP_SERVER_KEY;
-  }
-
-  return TOOKAN_MAP_WEB_KEY || TOOKAN_MAP_FORM_KEY || TOOKAN_MAP_SERVER_KEY;
-};
-
-const TOOKAN_MAP_ACCESS_TOKEN = getTookanMapKey();
-const TOOKAN_MAP_API_BASE_URL =
-  process.env.EXPO_PUBLIC_TOOKAN_MAP_API_BASE_URL ||
-  process.env.EXPO_PUBLIC_MAPPR_API_BASE_URL ||
-  "https://maps.flightmap.io/api";
 
 interface DeliveryData {
   name: string;
@@ -96,69 +42,9 @@ const DeliveryDetails: React.FC<DeliveryDetailsProps> = ({
   onNext,
 }) => {
   const [showLocationModal, setShowLocationModal] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [predictions, setPredictions] = useState<PlacePrediction[]>([]);
-  const [loading, setLoading] = useState(false);
 
   const openLocationSearch = () => {
     setShowLocationModal(true);
-    setSearchQuery(data.fullAddress);
-    if (data.fullAddress.trim().length >= 3) {
-      searchPlaces(data.fullAddress);
-    }
-  };
-
-  const searchPlaces = async (query: string) => {
-    if (query.length < 3) {
-      setPredictions([]);
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const params = new URLSearchParams({
-        text: query.trim(),
-        currentlatitude: String(data.latitude ?? 5.852), // Suriname coords
-        currentlongitude: String(data.longitude ?? -55.2038),
-        skip_cache: "0",
-        fm_token: TOOKAN_MAP_ACCESS_TOKEN,
-        radius: "0",
-        offering: "3",
-        language: "en",
-        country: "SR", // 🔥 restrict to Suriname
-      });
-
-      const response = await fetch(
-        `${TOOKAN_MAP_API_BASE_URL}/search?${params.toString()}`,
-      );
-      const result = await response.json();
-
-      const mappedPredictions: PlacePrediction[] = Array.isArray(result?.data)
-        ? result.data
-            .map((item: any, index: number) => ({
-              id: String(item.id || item.name || index),
-              description: item.address || item.name || "",
-              mainText: item.name || item.address || "",
-              secondaryText: item.address || "",
-              latitude:
-                typeof item.lat === "number"
-                  ? item.lat
-                  : Number(item.position?.lat),
-              longitude:
-                typeof item.lng === "number"
-                  ? item.lng
-                  : Number(item.position?.lng),
-            }))
-            .filter((item: PlacePrediction) => item.description)
-        : [];
-
-      setPredictions(mappedPredictions);
-    } catch (error) {
-      console.error("Error searching Tookan map places:", error);
-      setPredictions([]);
-    } finally {
-      setLoading(false);
-    }
   };
 
   const selectPlace = (place: PlacePrediction) => {
@@ -168,9 +54,6 @@ const DeliveryDetails: React.FC<DeliveryDetailsProps> = ({
       latitude: place.latitude,
       longitude: place.longitude,
     });
-    setShowLocationModal(false);
-    setSearchQuery("");
-    setPredictions([]);
   };
 
   return (
@@ -196,27 +79,11 @@ const DeliveryDetails: React.FC<DeliveryDetailsProps> = ({
           icon="call-outline"
         />
 
-        {/* <DeliveryInput
-          label="Email"
-          placeholder="Enter receiver email"
-          value={data.email}
-          onChangeText={(text) => onDataChange({ ...data, email: text })}
-          keyboardType="email-address"
-          icon="mail-outline"
-        /> */}
-
         <DeliveryInput
           label="Full Address"
-          placeholder="Who should we contact?"
+          placeholder="Search address"
           value={data.fullAddress}
-          onChangeText={(text) => {
-            onDataChange({ ...data, fullAddress: text });
-            setSearchQuery(text);
-            if (!showLocationModal) {
-              setShowLocationModal(true);
-            }
-            searchPlaces(text);
-          }}
+          onChangeText={(text) => onDataChange({ ...data, fullAddress: text })}
           onFocus={openLocationSearch}
           onPress={openLocationSearch}
           icon="location-outline"
@@ -229,78 +96,24 @@ const DeliveryDetails: React.FC<DeliveryDetailsProps> = ({
         <DeliveryButton title="Next" onPress={onNext} />
       </View>
 
-      {/* Location Search Modal */}
-      <Modal
+      {/* ✅ NEW GOOGLE PLACES MODAL */}
+      <GooglePlacesSearch
         visible={showLocationModal}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setShowLocationModal(false)}>
-        <KeyboardAvoidingView
-          style={{ flex: 1 }}
-          behavior={Platform.OS === "ios" ? "padding" : "height"}>
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>Search Location</Text>
-                <TouchableOpacity
-                  style={styles.closeButton}
-                  onPress={() => setShowLocationModal(false)}>
-                  <Ionicons name="close" size={24} color="#333333" />
-                </TouchableOpacity>
-              </View>
-
-              <View style={styles.searchContainer}>
-                <Ionicons name="search" size={20} color="#999999" />
-                <TextInput
-                  style={styles.searchInput}
-                  placeholder="Search for address..."
-                  placeholderTextColor="#AAAAAA"
-                  value={searchQuery}
-                  onChangeText={(text) => {
-                    setSearchQuery(text);
-                    searchPlaces(text);
-                  }}
-                  autoFocus
-                />
-                {loading && <ActivityIndicator size="small" color="#F5A623" />}
-              </View>
-
-              <FlatList
-                data={predictions}
-                keyExtractor={(item) => item.id}
-                keyboardShouldPersistTaps="handled"
-                contentContainerStyle={{ paddingBottom: 40 }}
-                renderItem={({ item }) => (
-                  <TouchableOpacity
-                    style={styles.predictionItem}
-                    onPress={() => selectPlace(item)}>
-                    <Ionicons
-                      name="location-outline"
-                      size={20}
-                      color="#F5A623"
-                    />
-                    <View style={styles.predictionText}>
-                      <Text style={styles.predictionMain}>{item.mainText}</Text>
-                      <Text style={styles.predictionSecondary}>
-                        {item.secondaryText}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-                )}
-                ListEmptyComponent={
-                  searchQuery.length >= 3 && !loading ? (
-                    <Text style={styles.noResults}>No results found</Text>
-                  ) : null
-                }
-                style={styles.predictionsList}
-              />
-            </View>
-          </View>
-        </KeyboardAvoidingView>
-      </Modal>
+        value={data.fullAddress}
+        countryCode="SR"
+        title="Search Location"
+        placeholder="Search for address..."
+        onClose={() => setShowLocationModal(false)}
+        onSelect={(place) => {
+          selectPlace(place);
+          setShowLocationModal(false);
+        }}
+      />
     </View>
   );
 };
+
+export default DeliveryDetails;
 
 const styles = StyleSheet.create({
   container: {
@@ -325,87 +138,4 @@ const styles = StyleSheet.create({
   buttonContainer: {
     paddingBottom: isSmallDevice ? 20 : 30,
   },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "center", // ✅ changed from flex-end
-  },
-
-  modalContent: {
-    flex: 1, // ✅ important
-    marginTop: 40, // keeps bottom-sheet look
-    backgroundColor: "#FFFFFF",
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-  },
-
-  predictionsList: {
-    flex: 1, // ✅ instead of maxHeight
-  },
-  modalHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#E8E8E8",
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#1A3A4A",
-  },
-  closeButton: {
-    padding: 4,
-  },
-  searchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#F8F9FA",
-    marginHorizontal: 20,
-    marginVertical: 16,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#E8E8E8",
-  },
-  searchInput: {
-    flex: 1,
-    paddingVertical: 14,
-    paddingHorizontal: 12,
-    fontSize: 15,
-    color: "#333333",
-  },
-
-  predictionItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: "#F0F0F0",
-  },
-  predictionText: {
-    flex: 1,
-    marginLeft: 12,
-  },
-  predictionMain: {
-    fontSize: 15,
-    fontWeight: "500",
-    color: "#333333",
-  },
-  predictionSecondary: {
-    fontSize: 13,
-    color: "#666666",
-    marginTop: 2,
-  },
-  noResults: {
-    textAlign: "center",
-    color: "#999999",
-    paddingVertical: 30,
-    fontSize: 14,
-  },
 });
-
-export default DeliveryDetails;

@@ -9,10 +9,12 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "jsEngine": "hermes",
-
     "ios": {
       "jsEngine": "jsc",
       "supportsTablet": true,
+      "config": {
+        "googleMapsApiKey": "AIzaSyDogt_n_mKUk46rQaxHgcBp9XXDKb_AkMY"
+      },
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSAppTransportSecurity": {
@@ -23,6 +25,11 @@
       }
     },
     "android": {
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyDogt_n_mKUk46rQaxHgcBp9XXDKb_AkMY"
+        }
+      },
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -39,6 +46,13 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      [
+        "expo-maps",
+        {
+          "requestLocationPermission": true,
+          "locationPermission": "Allow $(PRODUCT_NAME) to use your location"
+        }
+      ],
       "@maplibre/maplibre-react-native",
       "expo-router",
       "expo-notifications",
