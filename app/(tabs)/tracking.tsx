@@ -58,7 +58,7 @@ export default function TrackingScreen() {
 
   /**
    * =========================
-   * MODE (FIXED ✅)
+   * MODE
    * =========================
    */
   const isOrderMode = !!params.ordersId;
@@ -80,14 +80,47 @@ export default function TrackingScreen() {
    * ORDER DATA
    * =========================
    */
-  const { data: orderData } = useOrderByIdQuery(params.ordersId ?? "", {
-    skip: !isOrderMode,
+  const {
+    data: orderData,
+    isFetching,
+    isError,
+    isLoading,
+    error,
+  } = useOrderByIdQuery(params.ordersId ?? "", {
+    skip: !params.ordersId,
   });
 
-  const order = orderData?.data;
+  console.log({ isFetching, isError, isLoading, params });
+  console.log({ error });
+
+  /**
+   * =========================
+   * ERROR MESSAGE
+   * =========================
+   */
+  const errorMessage = useMemo(() => {
+    if (!isError || !error) return null;
+
+    if ("data" in error) {
+      const errData = error.data as {
+        message?: string;
+      };
+
+      return errData?.message || "Something went wrong";
+    }
+
+    return "Something went wrong";
+  }, [isError, error]);
+
+  // Guard: Only use data if we aren't fetching AND the ID matches our current URL
+  const order =
+    !isFetching && orderData?.data?.id === params.ordersId
+      ? orderData.data
+      : null;
 
   const pickup = useMemo(() => {
     if (!order?.pickupLatitude || !order?.pickupLongitude) return null;
+
     return {
       latitude: order.pickupLatitude,
       longitude: order.pickupLongitude,
@@ -96,6 +129,7 @@ export default function TrackingScreen() {
 
   const dropoff = useMemo(() => {
     if (!order?.deliveryLatitude || !order?.deliveryLongitude) return null;
+
     return {
       latitude: order.deliveryLatitude,
       longitude: order.deliveryLongitude,
@@ -131,6 +165,7 @@ export default function TrackingScreen() {
 
   const tripDistance = useMemo(() => {
     if (!pickup || !dropoff) return 0;
+
     return distanceKm(pickup, dropoff);
   }, [pickup, dropoff]);
 
@@ -144,14 +179,49 @@ export default function TrackingScreen() {
 
   /**
    * =========================
+   * ERROR VIEW
+   * =========================
+   */
+  if (isOrderMode && isError) {
+    return (
+      <SafeAreaView style={styles.safeArea} edges={["top"]}>
+        <View style={styles.loader}>
+          <Text style={styles.errorTitle}>Tracking Failed</Text>
+
+          <Text style={styles.errorText}>{errorMessage}</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  /**
+   * =========================
+   * LOADING (ORDER ONLY)
+   * =========================
+   */
+  /**
+   * =========================
    * LOADING (ORDER ONLY)
    * =========================
    */
   if (isOrderMode && (!pickup || !dropoff)) {
     return (
-      <View style={styles.loader}>
-        <Text>Loading tracking data...</Text>
-      </View>
+      <SafeAreaView style={styles.safeArea} edges={["top"]}>
+        <View style={styles.skeletonContainer}>
+          {/* Header Skeleton */}
+          <View style={styles.skeletonHeader}>
+            <View style={styles.skeletonTitleBlock}>
+              <View style={styles.skeletonTitle} />
+              <View style={styles.skeletonSubtitle} />
+            </View>
+
+            <View style={styles.skeletonChip} />
+          </View>
+
+          {/* Map Skeleton */}
+          <View style={styles.skeletonMap} />
+        </View>
+      </SafeAreaView>
     );
   }
 
@@ -168,6 +238,7 @@ export default function TrackingScreen() {
           <View style={styles.topRow}>
             <View style={styles.titleBlock}>
               <Text style={styles.screenTitle}>Tracking</Text>
+
               <Text style={styles.screenSubtitle}>{params.ordersId}</Text>
             </View>
 
@@ -189,7 +260,7 @@ export default function TrackingScreen() {
             key={resetKey}
             autoFetch
             start={[pickup.longitude, pickup.latitude]}
-            end={[dropoff.longitude, dropoff.latitude]}
+            end={[dropoff.longitude, pickup.latitude]}
           />
         ) : (
           <RouteMap key={resetKey} agents={agents} />
@@ -212,13 +283,35 @@ export default function TrackingScreen() {
  * =========================
  */
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: "#F4F8FA" },
-  container: { flex: 1, backgroundColor: "#F4F8FA" },
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#F4F8FA",
+  },
+
+  container: {
+    flex: 1,
+    backgroundColor: "#F4F8FA",
+  },
 
   loader: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    paddingHorizontal: 24,
+  },
+
+  errorTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#DC2626",
+    marginBottom: 10,
+  },
+
+  errorText: {
+    fontSize: 15,
+    color: "#475569",
+    textAlign: "center",
+    lineHeight: 22,
   },
 
   topRow: {
@@ -230,7 +323,9 @@ const styles = StyleSheet.create({
     gap: 12,
   },
 
-  titleBlock: { flex: 1 },
+  titleBlock: {
+    flex: 1,
+  },
 
   screenTitle: {
     fontSize: 24,
@@ -255,5 +350,58 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 12,
     fontWeight: "800",
+  },
+  /**
+   * =========================
+   * SKELETON
+   * =========================
+   */
+  skeletonContainer: {
+    flex: 1,
+    backgroundColor: "#F4F8FA",
+  },
+
+  skeletonHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 18,
+    paddingTop: 8,
+    paddingBottom: 10,
+    gap: 12,
+  },
+
+  skeletonTitleBlock: {
+    flex: 1,
+  },
+
+  skeletonTitle: {
+    width: 120,
+    height: 26,
+    borderRadius: 8,
+    backgroundColor: "#E2E8F0",
+  },
+
+  skeletonSubtitle: {
+    width: 180,
+    height: 14,
+    borderRadius: 6,
+    backgroundColor: "#E2E8F0",
+    marginTop: 10,
+  },
+
+  skeletonChip: {
+    width: 90,
+    height: 36,
+    borderRadius: 999,
+    backgroundColor: "#E2E8F0",
+  },
+
+  skeletonMap: {
+    flex: 1,
+    marginTop: 8,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    borderRadius: 24,
+    backgroundColor: "#E2E8F0",
   },
 });

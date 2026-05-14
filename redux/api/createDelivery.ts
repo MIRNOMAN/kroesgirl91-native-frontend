@@ -94,7 +94,7 @@ const createDeliveryApi = baseApi.injectEndpoints({
         url: `/orders/${id}`,
         method: "GET",
       }),
-      providesTags: ["Deliveries"],
+      providesTags: (result, error, id) => [{ type: "Deliveries", id }],
     }),
     getAllOrders: build.query({
       query: (args) => {

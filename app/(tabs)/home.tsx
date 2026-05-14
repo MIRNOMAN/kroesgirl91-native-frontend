@@ -1,4 +1,4 @@
-import { useRouter } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import React from "react";
 import {
   ImageBackground,
@@ -75,13 +75,13 @@ const BACKGROUND_IMAGES = {
 } as const;
 
 export default function HomeScreen() {
-  const { data: ordersResponse } = useGetAllOrdersQuery({
+  const { data: ordersResponse, isLoading } = useGetAllOrdersQuery({
     page: 1,
     limit: 10,
     status: "PENDING",
   });
   const router = useRouter();
-  const orders = ordersResponse?.data.slice(0, 3) || [];
+  const orders = ordersResponse?.data.slice(0, 5) || [];
   const hasCurrentShipments = orders.length > 0;
   const hasNonPendingShipment = orders.some(
     (order: { status?: string }) =>
@@ -176,7 +176,13 @@ export default function HomeScreen() {
             />
           )}
 
-          <View>
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+              paddingRight: 30,
+            }}>
             <Text
               style={{
                 fontSize: 22,
@@ -188,30 +194,44 @@ export default function HomeScreen() {
               }}>
               Current Shipment
             </Text>
+            <Link
+              href={"/shipment"}
+              style={{
+                color: "#3B82F6",
+                fontSize: 16,
+                fontWeight: "500",
+                touchAction: "manipulation",
+              }}>
+              View all
+            </Link>
           </View>
 
           {/* Shipment Items */}
-          {orders.map(
-            (
-              shipment: ShipmentItemProps & {
-                deliveryName?: string;
-                status?: string;
-              },
-            ) => (
-              <ShipmentItem
-                key={shipment.id}
-                id={shipment.tookanJobId || shipment.id}
-                name={shipment.deliveryName || shipment.name}
-                status={shipment.status}
-                onPress={() =>
-                  router.push({
-                    pathname: "/(tabs)/tracking",
-                    params: { ordersId: shipment.id },
-                  })
-                }
-              />
-            ),
-          )}
+          {/* Shipment Items */}
+          {isLoading
+            ? // Render a fixed number of skeletons while loading
+              [1, 2, 3, 4].map((key) => <ShipmentSkeleton key={key} />)
+            : orders.map(
+                (
+                  shipment: ShipmentItemProps & {
+                    deliveryName?: string;
+                    status?: string;
+                  },
+                ) => (
+                  <ShipmentItem
+                    key={shipment.id}
+                    id={shipment.tookanJobId || shipment.id}
+                    name={shipment.deliveryName || shipment.name}
+                    status={shipment.status}
+                    onPress={() => {
+                      router.push({
+                        pathname: "/(tabs)/tracking",
+                        params: { ordersId: shipment.id },
+                      });
+                    }}
+                  />
+                ),
+              )}
         </ImageBackground>
 
         <View style={styles.bottomSpacing} />
@@ -249,3 +269,27 @@ const styles = StyleSheet.create({
     resizeMode: "cover",
   },
 });
+
+const ShipmentSkeleton = () => (
+  <View style={{ padding: 16, borderBottomWidth: 1, borderColor: "#eee" }}>
+    {/* Mimic the Name/Title */}
+    <View
+      style={{
+        width: "60%",
+        height: 20,
+        backgroundColor: "#E1E9EE",
+        borderRadius: 4,
+        marginBottom: 8,
+      }}
+    />
+    {/* Mimic the Status/ID */}
+    <View
+      style={{
+        width: "40%",
+        height: 14,
+        backgroundColor: "#F2F8FC",
+        borderRadius: 4,
+      }}
+    />
+  </View>
+);

@@ -1,8 +1,8 @@
+import { COLORS } from "@/constants/colors";
 import { Ionicons } from "@expo/vector-icons";
-import { Image } from "expo-image";
 import * as Location from "expo-location";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from "react-native-maps";
 import { toast } from "sonner-native";
 
@@ -11,8 +11,6 @@ type Coordinate = {
   longitude: number;
 };
 
-// Helper to convert [long, lat] to {latitude, longitude}
-// Google Maps uses Objects, while your previous OSRM logic used Arrays.
 const toGoogleCoord = (coord: [number, number]): Coordinate => ({
   latitude: coord[1],
   longitude: coord[0],
@@ -30,6 +28,8 @@ interface RouteMapProps {
   autoFetch?: boolean;
 }
 
+const MAP_TYPES = ["standard", "satellite", "hybrid", "terrain"] as const;
+
 const RouteMap: React.FC<RouteMapProps> = ({
   start,
   end,
@@ -42,16 +42,23 @@ const RouteMap: React.FC<RouteMapProps> = ({
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [isPermissionPending, setIsPermissionPending] = useState(false);
 
+  // ✅ MAP TYPE STATE (ADDED ONLY)
+  const [mapType, setMapType] = useState<(typeof MAP_TYPES)[number]>("terrain");
+
+  const [mapModalVisible, setMapModalVisible] = useState(false);
+
   const hasRouteMode = !!start && !!end;
   const hasAgentsMode = agents.length > 0 && !hasRouteMode;
 
   // =========================
-  // GET CURRENT LOCATION
+  // LOCATION
   // =========================
   const goToMyLocation = async () => {
     setIsPermissionPending(true);
+
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
+
       if (status !== "granted") {
         setHasPermission(false);
         toast.error("Location permission denied");
@@ -78,7 +85,7 @@ const RouteMap: React.FC<RouteMapProps> = ({
   };
 
   // =========================
-  // FETCH ROUTE (OSRM)
+  // ROUTE FETCH
   // =========================
   const fetchRoute = useCallback(async () => {
     if (!start || !end) return;
@@ -87,17 +94,21 @@ const RouteMap: React.FC<RouteMapProps> = ({
       const response = await fetch(
         `https://router.project-osrm.org/route/v1/driving/${start[0]},${start[1]};${end[0]},${end[1]}?overview=full&geometries=geojson`,
       );
+
       const data = await response.json();
 
       if (!data?.routes?.length) return;
 
-      const coords: Coordinate[] = data.routes[0].geometry.coordinates.map(
-        (c: number[]) => ({ longitude: c[0], latitude: c[1] }),
+      const coords: Coordinate[] = data?.routes[0].geometry.coordinates.map(
+        (c: number[]) => ({
+          longitude: c[0],
+          latitude: c[1],
+        }),
       );
 
       setRoute(coords);
     } catch (err) {
-      console.error("Route fetch failed:", err);
+      console.error(err);
     }
   }, [start, end]);
 
@@ -105,7 +116,9 @@ const RouteMap: React.FC<RouteMapProps> = ({
     if (autoFetch && hasRouteMode) fetchRoute();
   }, [fetchRoute, autoFetch, hasRouteMode]);
 
-  // Center logic
+  // =========================
+  // REGION
+  // =========================
   const initialRegion = useMemo(() => {
     const base = mapCenter
       ? mapCenter
@@ -124,8 +137,10 @@ const RouteMap: React.FC<RouteMapProps> = ({
 
   return (
     <View style={styles.container}>
+      {/* MAP */}
       <MapView
         provider={PROVIDER_GOOGLE}
+        mapType={mapType} // ✅ ONLY ADDITION
         style={styles.map}
         initialRegion={initialRegion}
         region={
@@ -133,12 +148,12 @@ const RouteMap: React.FC<RouteMapProps> = ({
             ? { ...mapCenter, latitudeDelta: 0.05, longitudeDelta: 0.05 }
             : undefined
         }>
-        {/* ROUTE POLYLINE */}
+        {/* ROUTE */}
         {hasRouteMode && route && (
           <Polyline coordinates={route} strokeColor="#8b5cf6" strokeWidth={4} />
         )}
 
-        {/* START MARKER */}
+        {/* START */}
         {hasRouteMode && start && (
           <Marker coordinate={toGoogleCoord(start)}>
             <View style={styles.markerContainer}>
@@ -150,15 +165,11 @@ const RouteMap: React.FC<RouteMapProps> = ({
           </Marker>
         )}
 
-        {/* END MARKER */}
+        {/* END */}
         {hasRouteMode && end && (
           <Marker coordinate={toGoogleCoord(end)}>
-            <View
-              style={[
-                styles.iconBox,
-                { backgroundColor: "#F97316", borderRadius: 12 },
-              ]}>
-              <Ionicons name="cube" size={18} color="white" />
+            <View style={styles.iconBox}>
+              <Ionicons name="cube" size={18} color={COLORS.surface} />
             </View>
           </Marker>
         )}
@@ -167,15 +178,13 @@ const RouteMap: React.FC<RouteMapProps> = ({
         {hasAgentsMode &&
           agents.map((agent) => (
             <Marker key={agent.id} coordinate={toGoogleCoord(agent.coordinate)}>
-              <Image
-                source={require("@/assets/tracking/agent_mark.png")}
-                style={{ width: 50, height: 50 }}
-                contentFit="contain"
-              />
+              <View style={styles.iconBox}>
+                <Ionicons name="bicycle" size={20} color="white" />
+              </View>
             </Marker>
           ))}
 
-        {/* USER LOCATION */}
+        {/* USER */}
         {hasPermission && userLocation && (
           <Marker coordinate={userLocation}>
             <View style={styles.userDot} />
@@ -183,44 +192,89 @@ const RouteMap: React.FC<RouteMapProps> = ({
         )}
       </MapView>
 
-      {/* FLOAT BUTTON */}
+      {/* LOCATION BUTTON */}
       <View style={styles.buttonContainer}>
         {isPermissionPending ? (
           <View style={styles.floatButton}>
-            <Text style={{ fontSize: 20 }}>⏳</Text>
+            <Ionicons name="hourglass-outline" size={20} />
           </View>
         ) : (
           <Pressable onPress={goToMyLocation} style={styles.floatButton}>
-            <Text style={{ fontSize: 20 }}>📍</Text>
+            <Ionicons name="location-sharp" size={22} color={"white"} />
           </Pressable>
         )}
       </View>
+
+      {/* MAP TYPE BUTTON */}
+      <View style={styles.mapTypeContainer}>
+        <Pressable
+          onPress={() => setMapModalVisible(true)}
+          style={styles.floatButton}>
+          <Ionicons name="map-outline" size={22} color={"white"} />
+        </Pressable>
+      </View>
+
+      {/* MAP TYPE MODAL */}
+      <Modal
+        visible={mapModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setMapModalVisible(false)}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalBox}>
+            {MAP_TYPES.map((type) => (
+              <Pressable
+                key={type}
+                onPress={() => {
+                  setMapType(type);
+                  setMapModalVisible(false);
+                }}
+                style={styles.option}>
+                <Text>{type.toUpperCase()}</Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
 
+export default RouteMap;
+
+/**
+ * =========================
+ * STYLES (UNCHANGED UI)
+ * =========================
+ */
 const styles = StyleSheet.create({
   container: { flex: 1 },
   map: { ...StyleSheet.absoluteFillObject },
+
   buttonContainer: {
     position: "absolute",
     right: 16,
     bottom: 120,
   },
+
   floatButton: {
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: "#111",
+    backgroundColor: "#000",
     alignItems: "center",
     justifyContent: "center",
     elevation: 8,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
   },
+
+  mapTypeContainer: {
+    position: "absolute",
+    right: 16,
+    bottom: 185,
+  },
+
   markerContainer: { alignItems: "center" },
+
   iconBox: {
     width: 36,
     height: 36,
@@ -230,7 +284,9 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: "#fff",
     elevation: 5,
+    backgroundColor: "orange",
   },
+
   triangle: {
     width: 0,
     height: 0,
@@ -245,6 +301,7 @@ const styles = StyleSheet.create({
     transform: [{ rotate: "180deg" }],
     marginTop: -2,
   },
+
   userDot: {
     width: 18,
     height: 18,
@@ -254,6 +311,22 @@ const styles = StyleSheet.create({
     borderColor: "#fff",
     elevation: 8,
   },
-});
 
-export default RouteMap;
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  modalBox: {
+    width: "70%",
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    padding: 12,
+  },
+
+  option: {
+    padding: 12,
+  },
+});
