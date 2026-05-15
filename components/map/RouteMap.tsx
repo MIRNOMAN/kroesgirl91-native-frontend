@@ -196,7 +196,7 @@ const RouteMap: React.FC<RouteMapProps> = ({
       <View style={styles.buttonContainer}>
         {isPermissionPending ? (
           <View style={styles.floatButton}>
-            <Ionicons name="hourglass-outline" size={20} />
+            <Ionicons name="hourglass-outline" size={20} color={"white"} />
           </View>
         ) : (
           <Pressable onPress={goToMyLocation} style={styles.floatButton}>

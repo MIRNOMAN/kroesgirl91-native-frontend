@@ -2,6 +2,8 @@ import {
   useGetNotificationsQuery,
   useMarkAllNotificationsReadMutation,
 } from "@/redux/api/notificationApi";
+import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native"; // 1. Import Navigation
 import React from "react";
 import {
   ActivityIndicator,
@@ -36,6 +38,7 @@ const getTimeAgo = (date: string | Date) => {
 };
 
 const Notifications = () => {
+  const navigation = useNavigation(); // 2. Initialize Navigation
   const [page, setPage] = React.useState(1);
   const limit = 10;
 
@@ -49,26 +52,17 @@ const Notifications = () => {
 
   const notifications = data?.data?.data || [];
 
-  /* =========================
-     LOAD MORE (PAGINATION)
-  ========================= */
   const handleLoadMore = () => {
     if (!isFetching && notifications.length >= page * limit) {
       setPage((prev) => prev + 1);
     }
   };
 
-  /* =========================
-     REFRESH
-  ========================= */
   const handleRefresh = async () => {
     setPage(1);
     await refetch();
   };
 
-  /* =========================
-     MARK ALL READ
-  ========================= */
   const handleMarkAllRead = async () => {
     try {
       await markAllRead().unwrap();
@@ -78,9 +72,6 @@ const Notifications = () => {
     }
   };
 
-  /* =========================
-     LOADING STATE
-  ========================= */
   if (isLoading) {
     return (
       <View className="flex-1 items-center justify-center bg-gray-50">
@@ -91,9 +82,18 @@ const Notifications = () => {
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50 px-4 pt-2">
-      {/* HEADER */}
+      {/* HEADER WITH BACK BUTTON */}
       <View className="flex-row justify-between items-center mb-6">
-        <Text className="text-2xl font-bold text-gray-900">Notifications</Text>
+        <View className="flex-row items-center">
+          <Pressable
+            onPress={() => navigation.goBack()}
+            className="mr-3 p-1 -ml-1 active:opacity-50">
+            <Ionicons name="chevron-back" size={28} color="#111827" />
+          </Pressable>
+          <Text className="text-2xl font-bold text-gray-900">
+            Notifications
+          </Text>
+        </View>
 
         <Pressable
           onPress={handleMarkAllRead}
@@ -111,7 +111,6 @@ const Notifications = () => {
           <Text className="text-gray-400 text-base">No notifications yet</Text>
         </View>
       ) : (
-        /* LIST */
         <FlatList
           data={notifications}
           keyExtractor={(item) => item.id.toString()}
@@ -125,8 +124,7 @@ const Notifications = () => {
             isFetching ? <ActivityIndicator className="my-4" /> : null
           }
           renderItem={({ item }) => (
-            <View className="mb-3 p-4 rounded-2xl bg-white">
-              {/* TITLE */}
+            <View className="mb-3 p-4 rounded-2xl bg-white shadow-sm border border-gray-100">
               <Text
                 className={`text-base font-semibold ${
                   item.isRead ? "text-gray-500" : "text-gray-900"
@@ -134,17 +132,14 @@ const Notifications = () => {
                 {item.title}
               </Text>
 
-              {/* MESSAGE */}
               <Text className="text-gray-500 mt-1 leading-5">
                 {item.message}
               </Text>
 
-              {/* TIME AGO */}
               <Text className="text-xs text-gray-400 mt-3">
                 {getTimeAgo(item.createdAt)} ago
               </Text>
 
-              {/* UNREAD DOT */}
               {!item.isRead && (
                 <View className="absolute top-4 right-4 w-2 h-2 rounded-full bg-blue-500" />
               )}
