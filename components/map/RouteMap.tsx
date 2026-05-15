@@ -97,7 +97,7 @@ const RouteMap: React.FC<RouteMapProps> = ({
 
       const data = await response.json();
 
-      if (!data?.routes?.length) return;
+      if (!data?.routes?.length) return toast.error("No route found");
 
       const coords: Coordinate[] = data?.routes[0].geometry.coordinates.map(
         (c: number[]) => ({
@@ -112,9 +112,28 @@ const RouteMap: React.FC<RouteMapProps> = ({
     }
   }, [start, end]);
 
+  console.log({
+    start,
+    end,
+  });
+
   useEffect(() => {
     if (autoFetch && hasRouteMode) fetchRoute();
   }, [fetchRoute, autoFetch, hasRouteMode]);
+
+  const showRotes =
+    route && route.length > 0
+      ? [...route]
+      : [
+          {
+            latitude: start[1],
+            longitude: start[0],
+          },
+          {
+            latitude: end[1],
+            longitude: end[0],
+          },
+        ];
 
   // =========================
   // REGION
@@ -149,16 +168,9 @@ const RouteMap: React.FC<RouteMapProps> = ({
             : undefined
         }>
         {/* ROUTE */}
-        {hasRouteMode && route && (
+        {route && (
           <Polyline
-            coordinates={
-              route ?? [
-                {
-                  latitude: start[1],
-                  longitude: start[0],
-                },
-              ]
-            }
+            coordinates={showRotes}
             strokeColor="#8b5cf6"
             strokeWidth={4}
           />
