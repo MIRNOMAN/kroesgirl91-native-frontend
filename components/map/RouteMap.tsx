@@ -150,7 +150,18 @@ const RouteMap: React.FC<RouteMapProps> = ({
         }>
         {/* ROUTE */}
         {hasRouteMode && route && (
-          <Polyline coordinates={route} strokeColor="#8b5cf6" strokeWidth={4} />
+          <Polyline
+            coordinates={
+              route ?? [
+                {
+                  latitude: start[1],
+                  longitude: start[0],
+                },
+              ]
+            }
+            strokeColor="#8b5cf6"
+            strokeWidth={4}
+          />
         )}
 
         {/* START */}
