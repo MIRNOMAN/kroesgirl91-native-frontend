@@ -147,16 +147,21 @@ export default function ShipmentScreen() {
   const allOrders = (ordersResponse as OrderApiResponse)?.data ?? [];
   const meta = (ordersResponse as OrderApiResponse)?.meta;
 
+  console.log(allOrders[0]);
+
   // FIX: Map directly from allOrders (server response) instead of local filtering
   const orderCardData: Order[] = useMemo(
     () =>
       allOrders.map((order, index) => ({
-        id: String(order?.tookanJobId || order?.id || `order-${index}`),
+        id: String(order?.id || `${index}`),
         date: formatOrderDate(order?.deliveryDate || order?.createdAt || ""),
-        status: normalizeOrderStatus(order?.status as TOrderStatus),
-        price: Number(order?.price || 0),
-        shippingType: toTitleCase(order?.orderType),
-        origin: toTitleCase(order?.orderType),
+        status: normalizeOrderStatus(order?.status),
+        price: Number(order?.totalPrice ?? 0),
+
+        shippingType: toTitleCase(order?.paymentMethod),
+
+        origin: order?.pickupAddress || "N/A",
+
         destination: order?.deliveryAddress || "N/A",
       })),
     [allOrders],
