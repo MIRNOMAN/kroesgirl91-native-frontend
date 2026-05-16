@@ -122,9 +122,12 @@ const RouteMap: React.FC<RouteMapProps> = ({
   }, [fetchRoute, autoFetch, hasRouteMode]);
 
   const showRotes =
-    route && route.length > 0
+    (route && route.length > 0
       ? [...route]
-      : [
+      : // show if esit
+
+        start &&
+        end && [
           {
             latitude: start[1],
             longitude: start[0],
@@ -133,7 +136,7 @@ const RouteMap: React.FC<RouteMapProps> = ({
             latitude: end[1],
             longitude: end[0],
           },
-        ];
+        ]) ?? [];
 
   // =========================
   // REGION
