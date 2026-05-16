@@ -1,6 +1,14 @@
 import { TAgentResponse } from "../../types";
 import { baseApi } from "./baseApi";
 
+interface RouteCoordinatesRequest {
+  start: [number, number]; // [longitude, latitude]
+  end: [number, number]; // [longitude, latitude]
+}
+
+interface RouteCoordinatesResponse {
+  coordinates?: [number, number][];
+}
 type CreateDeliveryPayload = {
   job_description: string;
   paymentMethod: "COD" | "BANK";
@@ -137,6 +145,17 @@ const createDeliveryApi = baseApi.injectEndpoints({
         body: data,
       }),
     }),
+
+    getRouteCoordinates: build.mutation<
+      RouteCoordinatesResponse,
+      RouteCoordinatesRequest
+    >({
+      query: (data) => ({
+        url: `/orders/route-coordinates`,
+        method: "POST",
+        body: data,
+      }),
+    }),
   }),
 });
 
@@ -146,4 +165,5 @@ export const {
   useGetAllAgentsQuery,
   useOrderByIdQuery,
   useGetEstimatedPriceMutation,
+  useGetRouteCoordinatesMutation,
 } = createDeliveryApi;

@@ -1,4 +1,5 @@
 import { COLORS } from "@/constants/colors";
+import { useGetRouteCoordinatesMutation } from "@/redux/api/createDelivery";
 import { Ionicons } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import React, {
@@ -66,6 +67,8 @@ const RouteMap: React.FC<RouteMapProps> = ({
   const [mapType, setMapType] = useState<(typeof MAP_TYPES)[number]>("terrain");
   const [mapModalVisible, setMapModalVisible] = useState(false);
 
+  const [getRouteCoordinates] = useGetRouteCoordinatesMutation();
+
   // POPUP STATE
   const [popupVisible, setPopupVisible] = useState(false);
   const [popupData, setPopupData] = useState<{
@@ -129,29 +132,33 @@ const RouteMap: React.FC<RouteMapProps> = ({
     try {
       setLoadingRoute(true);
 
-      const response = await fetch(
-        `https://router.project-osrm.org/route/v1/driving/${start[0]},${start[1]};${end[0]},${end[1]}?overview=full&geometries=geojson`,
-      );
+      const response = await getRouteCoordinates({
+        start,
+        end,
+      }).unwrap();
 
-      const data = await response.json();
+      console.log(response.coordinates);
 
-      if (!data?.routes?.length) {
+      if (!response?.coordinates || response.coordinates.length === 0) {
         toast.error("No route found");
         return;
       }
 
-      const coords: Coordinate[] = data.routes[0].geometry.coordinates.map(
-        (c: number[]) => ({
-          longitude: c[0],
-          latitude: c[1],
-        }),
-      );
+      /**
+       * ⚠️ IMPORTANT:
+       * Your backend must return coordinates in OSRM-like format:
+       * data: {
+       *   coordinates: [[lng, lat], ...]
+       * }
+       */
+      const coords: Coordinate[] = response.coordinates.map((c: number[]) => ({
+        longitude: c[0],
+        latitude: c[1],
+      }));
 
       setRoute(coords);
       toast.success("Route fetched successfully");
 
-      // FIX: Added a tiny timeout delay so the map layout finishes rendering
-      // the polyline nodes before triggering fitToCoordinates.
       if (coords.length > 0) {
         setTimeout(() => {
           mapRef.current?.fitToCoordinates(coords, {
@@ -167,11 +174,11 @@ const RouteMap: React.FC<RouteMapProps> = ({
       }
     } catch (error) {
       console.log(error);
-      toast.error("Route fetch failed" + JSON.stringify(error));
+      toast.error("Failed to fetch route");
     } finally {
       setLoadingRoute(false);
     }
-  }, [start, end]);
+  }, [start, end, getRouteCoordinates]);
 
   useEffect(() => {
     if (autoFetch && hasRouteMode) {
