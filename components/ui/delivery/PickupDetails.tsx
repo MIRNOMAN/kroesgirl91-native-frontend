@@ -46,8 +46,8 @@ const PickupDetails: React.FC<PickupDetailsProps> = ({
 
       <View style={styles.form}>
         <DeliveryInput
-          label="Store Name"
-          placeholder="Enter store name"
+          label="Name"
+          placeholder="Enter name"
           value={data.fullName}
           onChangeText={(text) =>
             onDataChange({

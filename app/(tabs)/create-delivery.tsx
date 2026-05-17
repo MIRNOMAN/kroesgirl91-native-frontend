@@ -249,22 +249,28 @@ export default function CreateDeliveryScreen() {
     }));
   };
 
-  const getJobDeliveryDateTime = (): string => {
-    // Capture the exact current moment in time
+  const getJobDeliveryDateTime = (pickup: Date): string => {
     const now = new Date();
 
+    // ensure pickup itself is never in the past
+    const safePickup =
+      pickup.getTime() < now.getTime()
+        ? new Date(now.getTime() + 15 * 60 * 1000)
+        : pickup;
+
+    let delivery = new Date(safePickup);
+
     if (selectedRide === "same-day") {
-      // For same-day delivery, apply a 10-minute buffer from current time
-      now.setMinutes(now.getMinutes() + 10);
+      delivery = new Date(safePickup.getTime() + 60 * 60 * 1000);
+    } else if (selectedRide === "next-day") {
+      delivery = new Date(safePickup);
+      delivery.setDate(delivery.getDate() + 1);
+    } else {
+      // fallback safety buffer
+      delivery = new Date(safePickup.getTime() + 60 * 60 * 1000);
     }
 
-    if (selectedRide === "next-day") {
-      // For next-day delivery, increment date but keep the current time
-      now.setDate(now.getDate() + 1);
-    }
-
-    // Convert to ISO 8601 format (UTC timezone) - this is the accurate moment of booking
-    return now.toISOString();
+    return delivery.toISOString();
   };
 
   const getHeaderTitle = (): string => {
@@ -510,6 +516,14 @@ export default function CreateDeliveryScreen() {
       }
     }
 
+    const now = new Date();
+
+    const pickupDate =
+      new Date(Date.now() + 15 * 60 * 1000) < now
+        ? new Date(now.getTime() + 15 * 60 * 1000)
+        : new Date(Date.now() + 15 * 60 * 1000);
+    const deliveryDate = getJobDeliveryDateTime(pickupDate);
+
     const payload: CreateOrderPayload = {
       job_description: packageData.description,
       paymentMethod: packageData.paymentMethod === "bank" ? "BANK" : "COD",
@@ -520,18 +534,16 @@ export default function CreateDeliveryScreen() {
       pickup_address: pickupData.fullAddress,
       pickup_latitude: pickupData.latitude ?? 0,
       pickup_longitude: pickupData.longitude ?? 0,
-      pickup_datetime: new Date().toISOString(),
       delivery_name: deliveryData.name,
       delivery_phone: deliveryData.phoneNumber,
       delivery_email: deliveryData.email,
       delivery_address: deliveryData.fullAddress,
       delivery_latitude: deliveryData.latitude ?? 0,
       delivery_longitude: deliveryData.longitude ?? 0,
-      job_delivery_datetime: getJobDeliveryDateTime(),
+      pickup_datetime: pickupDate.toISOString(),
+      job_delivery_datetime: deliveryDate,
       specialInstructions: packageData.instructions,
     };
-
-    console.log(payload);
 
     try {
       const response = await createDelivery({
@@ -552,6 +564,7 @@ export default function CreateDeliveryScreen() {
       const message =
         (error as { data?: { message?: string } })?.data?.message ||
         "Failed to create delivery. Please try again.";
+      console.log({ error });
       Alert.alert("Request Failed", message);
     }
   };

@@ -1,16 +1,8 @@
-import { COLORS } from "@/constants/colors";
 import { useGetRouteCoordinatesMutation } from "@/redux/api/createDelivery";
 import { Ionicons } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import {
-  ActivityIndicator,
-  Modal,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
 import MapView, {
   Marker,
   Polyline,
@@ -52,17 +44,13 @@ const RouteMap: React.FC<RouteMapProps> = ({
 }) => {
   const mapRef = useRef<MapView>(null);
 
+  const [isMapReady, setIsMapReady] = useState(false);
+
   const defalutRoute: Coordinate[] =
     start && end
       ? [
-          {
-            latitude: start?.[1],
-            longitude: start?.[0],
-          },
-          {
-            latitude: end?.[1],
-            longitude: end?.[0],
-          },
+          { latitude: start?.[1], longitude: start?.[0] },
+          { latitude: end?.[1], longitude: end?.[0] },
         ]
       : [];
 
@@ -79,7 +67,6 @@ const RouteMap: React.FC<RouteMapProps> = ({
 
   const [getRouteCoordinates] = useGetRouteCoordinatesMutation();
 
-  // POPUP STATE
   const [popupVisible, setPopupVisible] = useState(false);
   const [popupData, setPopupData] = useState<{
     title: string;
@@ -99,8 +86,10 @@ const RouteMap: React.FC<RouteMapProps> = ({
       setIsCurrentLocationCentered(false);
       return;
     }
+
     try {
       setIsPermissionPending(true);
+
       const { status } = await Location.requestForegroundPermissionsAsync();
 
       if (status !== "granted") {
@@ -141,9 +130,30 @@ const RouteMap: React.FC<RouteMapProps> = ({
   };
 
   // =========================
-  // ROUTE FETCH
+  // FIT START/END (FIXED)
   // =========================
+  const fitStartEnd = () => {
+    if (!isMapReady) return;
+    if (!mapRef.current || !start || !end) return;
 
+    const coords = [toGoogleCoord(start), toGoogleCoord(end)];
+
+    requestAnimationFrame(() => {
+      mapRef.current?.fitToCoordinates(coords, {
+        edgePadding: {
+          top: 120,
+          right: 80,
+          bottom: 120,
+          left: 80,
+        },
+        animated: true,
+      });
+    });
+  };
+
+  // =========================
+  // ROUTE FETCH (FIXED)
+  // =========================
   const fetchRoute = async () => {
     if (!start || !end) return;
 
@@ -160,29 +170,16 @@ const RouteMap: React.FC<RouteMapProps> = ({
         return;
       }
 
-      /**
-       * ⚠️ IMPORTANT:
-       * Your backend must return coordinates in OSRM-like format:
-       * data: {
-       *   coordinates: [[lng, lat], ...]
-       * }
-       */
-      // const coords: Coordinate[] = response.coordinates.map((c: number[]) => ({
-      //   longitude: c[0],
-      //   latitude: c[1],
-      // }));
-
       const coords = response.coordinates.map((c) => ({
         longitude: c.longitude,
         latitude: c.latitude,
       }));
 
-      console.log(coords);
+      if (coords.length > 2) {
+        setRoute(coords);
+      }
 
-      setRoute(coords);
-      toast.success("Route fetched successfully");
-
-      if (coords.length > 0) {
+      if (coords.length > 0 && isMapReady) {
         setTimeout(() => {
           mapRef.current?.fitToCoordinates(coords, {
             edgePadding: {
@@ -196,7 +193,6 @@ const RouteMap: React.FC<RouteMapProps> = ({
         }, 150);
       }
     } catch (error) {
-      console.log(error);
       toast.error("Failed to fetch route");
     } finally {
       setLoadingRoute(false);
@@ -207,8 +203,12 @@ const RouteMap: React.FC<RouteMapProps> = ({
     fetchRoute();
   }, []);
 
+  useEffect(() => {
+    fitStartEnd();
+  }, [start, end, isMapReady]);
+
   // =========================
-  // INITIAL REGION
+  // INITIAL REGION (UNCHANGED LOGIC)
   // =========================
   const initialRegion: Region = useMemo(() => {
     const base = mapCenter
@@ -227,12 +227,10 @@ const RouteMap: React.FC<RouteMapProps> = ({
       latitudeDelta: 0.05,
       longitudeDelta: 0.05,
     };
-    // FIX: Removed mapCenter and agents from dependencies to prevent unintended map resetting layout updates
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // =========================
-  // POPUP OPEN
+  // POPUP
   // =========================
   const openPopup = (title: string, description: string) => {
     setPopupData({ title, description });
@@ -246,24 +244,19 @@ const RouteMap: React.FC<RouteMapProps> = ({
         provider={PROVIDER_GOOGLE}
         style={styles.map}
         mapType={mapType}
-        initialRegion={initialRegion}>
-        {/* ROUTE - Rendered only when coordinates exist */}
+        initialRegion={isMapReady ? undefined : initialRegion}
+        onMapReady={() => setIsMapReady(true)}>
         {route.length > 0 && (
           <Polyline
             coordinates={route}
             strokeColor="#8b5cf6"
             strokeWidth={5}
-            geodesic={true}
+            geodesic
           />
         )}
 
-        {/* START */}
         {start && (
-          <Marker
-            coordinate={toGoogleCoord(start)}
-            onPress={() =>
-              openPopup("Pickup Location", "This is the starting point.")
-            }>
+          <Marker coordinate={toGoogleCoord(start)}>
             <View style={styles.markerContainer}>
               <View style={[styles.iconBox, { backgroundColor: "#10B981" }]}>
                 <Ionicons name="location" size={20} color="white" />
@@ -273,131 +266,35 @@ const RouteMap: React.FC<RouteMapProps> = ({
           </Marker>
         )}
 
-        {/* END */}
         {end && (
-          <Marker
-            coordinate={toGoogleCoord(end)}
-            onPress={() =>
-              openPopup("Destination", "This is the delivery destination.")
-            }>
+          <Marker coordinate={toGoogleCoord(end)}>
             <View style={[styles.iconBox, { backgroundColor: "orange" }]}>
-              <Ionicons
-                name="cube"
-                size={18}
-                color={COLORS.surface || "#fff"}
-              />
+              <Ionicons name="cube" size={18} color="#fff" />
             </View>
           </Marker>
         )}
 
-        {/* AGENTS */}
         {hasAgentsMode &&
           agents.map((agent) => (
-            <Marker
-              key={agent.id}
-              coordinate={toGoogleCoord(agent.coordinate)}
-              onPress={() =>
-                openPopup(
-                  agent.name || "Delivery Agent",
-                  `Agent ID: ${agent.id}`,
-                )
-              }>
+            <Marker key={agent.id} coordinate={toGoogleCoord(agent.coordinate)}>
               <View style={[styles.iconBox, { backgroundColor: "#3B82F6" }]}>
                 <Ionicons name="bicycle" size={20} color="white" />
               </View>
             </Marker>
           ))}
 
-        {/* USER */}
         {userLocation && (
-          <Marker
-            coordinate={userLocation}
-            onPress={() =>
-              openPopup("Your Location", "You are currently here.")
-            }>
+          <Marker coordinate={userLocation}>
             <View style={styles.userDot} />
           </Marker>
         )}
       </MapView>
 
-      {/* ROUTE LOADER */}
       {loadingRoute && (
         <View style={styles.loader}>
           <ActivityIndicator size="large" color="#fff" />
         </View>
       )}
-
-      {/* MY LOCATION BUTTON */}
-      <View style={styles.buttonContainer}>
-        <Pressable onPress={goToMyLocation} style={styles.floatButton}>
-          {isPermissionPending ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Ionicons name="location-sharp" size={22} color="white" />
-          )}
-        </Pressable>
-      </View>
-
-      {/* MAP TYPE BUTTON */}
-      {hasPermission && (
-        <View style={styles.mapTypeContainer}>
-          <Pressable
-            onPress={() => setMapModalVisible(true)}
-            style={styles.floatButton}>
-            <Ionicons name="map-outline" size={22} color="white" />
-          </Pressable>
-        </View>
-      )}
-
-      {/* MAP TYPE MODAL */}
-      <Modal
-        visible={mapModalVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setMapModalVisible(false)}>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalBox}>
-            <Text style={styles.modalTitle}>Select Map Type</Text>
-            {MAP_TYPES.map((type) => (
-              <Pressable
-                key={type}
-                style={[
-                  styles.option,
-                  mapType === type && { backgroundColor: "#f3f4f6" },
-                ]}
-                onPress={() => {
-                  setMapType(type);
-                  setMapModalVisible(false);
-                }}>
-                <Text style={styles.optionText}>
-                  {type.charAt(0).toUpperCase() + type.slice(1)}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
-        </View>
-      </Modal>
-
-      {/* CUSTOM POPUP */}
-      <Modal
-        visible={popupVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setPopupVisible(false)}>
-        <View style={styles.popupOverlay}>
-          <View style={styles.popupBox}>
-            <Text style={styles.popupTitle}>{popupData?.title}</Text>
-            <Text style={styles.popupDescription}>
-              {popupData?.description}
-            </Text>
-            <Pressable
-              style={styles.closeButton}
-              onPress={() => setPopupVisible(false)}>
-              <Text style={styles.closeText}>Close</Text>
-            </Pressable>
-          </View>
-        </View>
-      </Modal>
     </View>
   );
 };
