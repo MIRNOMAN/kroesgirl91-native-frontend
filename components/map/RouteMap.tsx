@@ -2,13 +2,7 @@ import { COLORS } from "@/constants/colors";
 import { useGetRouteCoordinatesMutation } from "@/redux/api/createDelivery";
 import { Ionicons } from "@expo/vector-icons";
 import * as Location from "expo-location";
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Modal,
@@ -58,7 +52,21 @@ const RouteMap: React.FC<RouteMapProps> = ({
 }) => {
   const mapRef = useRef<MapView>(null);
 
-  const [route, setRoute] = useState<Coordinate[]>([]);
+  const defalutRoute: Coordinate[] =
+    start && end
+      ? [
+          {
+            latitude: start?.[1],
+            longitude: start?.[0],
+          },
+          {
+            latitude: end?.[1],
+            longitude: end?.[0],
+          },
+        ]
+      : [];
+
+  const [route, setRoute] = useState<Coordinate[]>(defalutRoute);
   const [loadingRoute, setLoadingRoute] = useState(false);
   const [mapCenter, setMapCenter] = useState<Coordinate | null>(null);
   const [userLocation, setUserLocation] = useState<Coordinate | null>(null);
@@ -66,6 +74,8 @@ const RouteMap: React.FC<RouteMapProps> = ({
   const [isPermissionPending, setIsPermissionPending] = useState(false);
   const [mapType, setMapType] = useState<(typeof MAP_TYPES)[number]>("terrain");
   const [mapModalVisible, setMapModalVisible] = useState(false);
+  const [isCurrentLocationCentered, setIsCurrentLocationCentered] =
+    useState(false);
 
   const [getRouteCoordinates] = useGetRouteCoordinatesMutation();
 
@@ -83,6 +93,12 @@ const RouteMap: React.FC<RouteMapProps> = ({
   // LOCATION
   // =========================
   const goToMyLocation = async () => {
+    if (isCurrentLocationCentered) {
+      initialRegion && mapRef.current?.animateToRegion(initialRegion, 1000);
+
+      setIsCurrentLocationCentered(false);
+      return;
+    }
     try {
       setIsPermissionPending(true);
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -115,6 +131,7 @@ const RouteMap: React.FC<RouteMapProps> = ({
         1000,
       );
 
+      setIsCurrentLocationCentered(true);
       toast.success("Location fetched");
     } catch (error) {
       toast.error("Unable to fetch location");
@@ -126,7 +143,8 @@ const RouteMap: React.FC<RouteMapProps> = ({
   // =========================
   // ROUTE FETCH
   // =========================
-  const fetchRoute = useCallback(async () => {
+
+  const fetchRoute = async () => {
     if (!start || !end) return;
 
     try {
@@ -136,8 +154,6 @@ const RouteMap: React.FC<RouteMapProps> = ({
         start,
         end,
       }).unwrap();
-
-      console.log(response.coordinates);
 
       if (!response?.coordinates || response.coordinates.length === 0) {
         toast.error("No route found");
@@ -151,10 +167,17 @@ const RouteMap: React.FC<RouteMapProps> = ({
        *   coordinates: [[lng, lat], ...]
        * }
        */
-      const coords: Coordinate[] = response.coordinates.map((c: number[]) => ({
-        longitude: c[0],
-        latitude: c[1],
+      // const coords: Coordinate[] = response.coordinates.map((c: number[]) => ({
+      //   longitude: c[0],
+      //   latitude: c[1],
+      // }));
+
+      const coords = response.coordinates.map((c) => ({
+        longitude: c.longitude,
+        latitude: c.latitude,
       }));
+
+      console.log(coords);
 
       setRoute(coords);
       toast.success("Route fetched successfully");
@@ -178,13 +201,11 @@ const RouteMap: React.FC<RouteMapProps> = ({
     } finally {
       setLoadingRoute(false);
     }
-  }, [start, end, getRouteCoordinates]);
+  };
 
   useEffect(() => {
-    if (autoFetch && hasRouteMode) {
-      fetchRoute();
-    }
-  }, [fetchRoute, autoFetch, hasRouteMode]);
+    fetchRoute();
+  }, []);
 
   // =========================
   // INITIAL REGION
@@ -318,13 +339,15 @@ const RouteMap: React.FC<RouteMapProps> = ({
       </View>
 
       {/* MAP TYPE BUTTON */}
-      <View style={styles.mapTypeContainer}>
-        <Pressable
-          onPress={() => setMapModalVisible(true)}
-          style={styles.floatButton}>
-          <Ionicons name="map-outline" size={22} color="white" />
-        </Pressable>
-      </View>
+      {hasPermission && (
+        <View style={styles.mapTypeContainer}>
+          <Pressable
+            onPress={() => setMapModalVisible(true)}
+            style={styles.floatButton}>
+            <Ionicons name="map-outline" size={22} color="white" />
+          </Pressable>
+        </View>
+      )}
 
       {/* MAP TYPE MODAL */}
       <Modal
@@ -346,7 +369,9 @@ const RouteMap: React.FC<RouteMapProps> = ({
                   setMapType(type);
                   setMapModalVisible(false);
                 }}>
-                <Text style={styles.optionText}>{type.toUpperCase()}</Text>
+                <Text style={styles.optionText}>
+                  {type.charAt(0).toUpperCase() + type.slice(1)}
+                </Text>
               </Pressable>
             ))}
           </View>

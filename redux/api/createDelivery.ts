@@ -7,7 +7,10 @@ interface RouteCoordinatesRequest {
 }
 
 interface RouteCoordinatesResponse {
-  coordinates?: [number, number][];
+  coordinates?: {
+    longitude: number;
+    latitude: number;
+  }[];
 }
 type CreateDeliveryPayload = {
   job_description: string;
