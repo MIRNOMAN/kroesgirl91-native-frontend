@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import React from "react";
+import React, { forwardRef } from "react";
 import {
   Dimensions,
   StyleSheet,
@@ -27,60 +27,72 @@ interface DeliveryInputProps {
   editable?: boolean;
 }
 
-const DeliveryInput: React.FC<DeliveryInputProps> = ({
-  label,
-  placeholder,
-  value,
-  onChangeText,
-  onFocus,
-  keyboardType = "default",
-  icon,
-  isLocationInput = false,
-  onLocationPress,
-  multiline = false,
-  editable = true,
-  onPress,
-}) => {
-  return (
-    <View style={styles.container}>
-      <Text style={styles.label}>{label}</Text>
-      <View style={styles.inputContainer}>
-        {icon && (
-          <Ionicons
-            name={icon}
-            size={20}
-            color="#999999"
-            style={styles.leftIcon}
+// 👇 wrap with forwardRef
+const DeliveryInput = forwardRef<TextInput, DeliveryInputProps>(
+  (
+    {
+      label,
+      placeholder,
+      value,
+      onChangeText,
+      onFocus,
+      keyboardType = "default",
+      icon,
+      isLocationInput = false,
+      onLocationPress,
+      multiline = false,
+      editable = true,
+      onPress,
+    },
+    ref,
+  ) => {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.label}>{label}</Text>
+
+        <View style={styles.inputContainer}>
+          {icon && (
+            <Ionicons
+              name={icon}
+              size={20}
+              color="#999999"
+              style={styles.leftIcon}
+            />
+          )}
+
+          <TextInput
+            ref={ref} // 👈 attach ref here
+            style={[
+              styles.input,
+              icon && styles.inputWithIcon,
+              isLocationInput && styles.inputWithLocation,
+              multiline && styles.multilineInput,
+            ]}
+            onPress={onPress}
+            placeholder={placeholder}
+            placeholderTextColor="#AAAAAA"
+            value={value}
+            onChangeText={onChangeText}
+            // onFocus={onFocus}
+            keyboardType={keyboardType}
+            multiline={multiline}
+            editable={editable}
           />
-        )}
-        <TextInput
-          style={[
-            styles.input,
-            icon && styles.inputWithIcon,
-            isLocationInput && styles.inputWithLocation,
-            multiline && styles.multilineInput,
-          ]}
-          onPress={onPress}
-          placeholder={placeholder}
-          placeholderTextColor="#AAAAAA"
-          value={value}
-          onChangeText={onChangeText}
-          onFocus={onFocus}
-          keyboardType={keyboardType}
-          multiline={multiline}
-          editable={editable}
-        />
-        {isLocationInput && (
-          <TouchableOpacity
-            style={styles.locationButton}
-            onPress={onLocationPress}>
-            <Ionicons name="location" size={20} color="#F5A623" />
-          </TouchableOpacity>
-        )}
+
+          {isLocationInput && (
+            <TouchableOpacity
+              style={styles.locationButton}
+              onPress={onLocationPress}>
+              <Ionicons name="location" size={20} color="#F5A623" />
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
-    </View>
-  );
-};
+    );
+  },
+);
+
+DeliveryInput.displayName = "DeliveryInput"; // 👈 set display name for better debugging
 
 const styles = StyleSheet.create({
   container: {

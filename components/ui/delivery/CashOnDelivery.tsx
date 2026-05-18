@@ -235,7 +235,7 @@ const CashOnDelivery: React.FC<CashOnDeliveryProps> = ({
         <DeliveryButton
           title={isSubmitting ? "Submitting..." : "Confirm Booking"}
           onPress={onConfirm}
-          variant="secondary"
+          variant="primary"
           disabled={isSubmitting || !isAgreedToProhibited}
         />
       </View>

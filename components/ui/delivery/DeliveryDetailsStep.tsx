@@ -13,6 +13,7 @@ interface DeliveryData {
   phoneNumber: string;
   email: string;
   fullAddress: string;
+  streetNumber?: string;
   latitude?: number;
   longitude?: number;
 }
@@ -80,11 +81,20 @@ const DeliveryDetails: React.FC<DeliveryDetailsProps> = ({
         />
 
         <DeliveryInput
+          label="Street / House No."
+          placeholder="Enter street or house number"
+          value={data.streetNumber || ""}
+          onChangeText={(text) => onDataChange({ ...data, streetNumber: text })}
+          keyboardType="default"
+          icon="home-outline"
+        />
+
+        <DeliveryInput
           label="Full Address"
           placeholder="Search address"
           value={data.fullAddress}
           onChangeText={(text) => onDataChange({ ...data, fullAddress: text })}
-          onFocus={openLocationSearch}
+          // onFocus={openLocationSearch}
           onPress={openLocationSearch}
           icon="location-outline"
           isLocationInput

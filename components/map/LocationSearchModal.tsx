@@ -129,8 +129,8 @@ const GooglePlacesSearch: React.FC<GooglePlacesSearchProps> = ({
       longitude: coords.longitude,
     });
 
-    setSearchQuery("");
-    setPredictions([]);
+    // setSearchQuery("");
+    // setPredictions([]);
     onClose();
   };
 

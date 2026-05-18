@@ -153,20 +153,28 @@ export default function ShipmentScreen() {
   const orderCardData: Order[] = useMemo(
     () =>
       allOrders.map((order, index) => ({
-        id: String(order?.id || `${index}`),
+        id: String(order?.id ?? index),
+
         date: formatOrderDate(order?.deliveryDate || order?.createdAt || ""),
+
         status: normalizeOrderStatus(order?.status),
+
         price: Number(order?.totalPrice ?? 0),
 
-        shippingType: toTitleCase(order?.paymentMethod),
+        shippingType: order?.paymentMethod
+          ? toTitleCase(order.paymentMethod)
+          : "__",
 
-        origin: order?.pickupAddress || "N/A",
+        // ✅ keep raw values or fallback to undefined (NOT "N/A")
+        origin: order?.pickupAddress ?? "",
+        destination: order?.deliveryAddress ?? "",
 
-        destination: order?.deliveryAddress || "N/A",
+        // optional (if you have street separately in API)
+        pickup_street_address: order?.pickup_street_address ?? "",
+        delivery_street_address: order?.delivery_street_address ?? "",
       })),
     [allOrders],
   );
-
   const emptyStateMessage = useMemo(() => {
     if (allOrders.length === 0) {
       return activeStatus === "ALL"

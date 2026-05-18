@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Dimensions, StyleSheet, Text, View } from "react-native";
+import { Dimensions, StyleSheet, Text, TextInput, View } from "react-native";
 
 import GooglePlacesSearch from "@/components/map/LocationSearchModal";
 import DeliveryButton from "./DeliveryButton";
@@ -13,6 +13,7 @@ interface PickupData {
   phoneNumber: string;
   email: string;
   fullAddress: string;
+  streetNumber?: string;
   latitude?: number;
   longitude?: number;
 }
@@ -34,7 +35,10 @@ const PickupDetails: React.FC<PickupDetailsProps> = ({
 }) => {
   const [showLocationModal, setShowLocationModal] = useState(false);
 
+  const addressRef = React.useRef<TextInput>(null);
+
   const openLocationSearch = () => {
+    addressRef.current?.blur();
     setShowLocationModal(true);
   };
 
@@ -72,6 +76,20 @@ const PickupDetails: React.FC<PickupDetailsProps> = ({
           icon="call-outline"
         />
 
+        <DeliveryInput
+          label="Street / House No."
+          placeholder="Enter street or house number"
+          value={data.streetNumber || ""}
+          onChangeText={(text) =>
+            onDataChange({
+              ...data,
+              streetNumber: text,
+            })
+          }
+          keyboardType="default"
+          icon="home-outline"
+        />
+
         {/* <DeliveryInput
           label="Store Email"
           placeholder="Enter store email"
@@ -87,6 +105,7 @@ const PickupDetails: React.FC<PickupDetailsProps> = ({
         /> */}
 
         <DeliveryInput
+          ref={addressRef}
           label="Store Address"
           placeholder="Search store address"
           value={data.fullAddress}

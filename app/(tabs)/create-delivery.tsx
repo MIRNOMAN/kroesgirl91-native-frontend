@@ -42,6 +42,7 @@ interface PickupData {
   phoneNumber: string;
   email: string;
   fullAddress: string;
+  streetNumber?: string;
   latitude?: number;
   longitude?: number;
 }
@@ -51,6 +52,7 @@ interface DeliveryData {
   phoneNumber: string;
   email: string;
   fullAddress: string;
+  streetNumber?: string;
   latitude?: number;
   longitude?: number;
 }
@@ -89,6 +91,7 @@ interface CreateOrderPayload {
   pickup_phone: string;
   pickup_email: string;
   pickup_address: string;
+  pickup_street_address?: string;
   pickup_latitude: number;
   pickup_longitude: number;
   pickup_datetime: string;
@@ -96,6 +99,7 @@ interface CreateOrderPayload {
   delivery_phone: string;
   delivery_email: string;
   delivery_address: string;
+  delivery_street_address?: string;
   delivery_latitude: number;
   delivery_longitude: number;
   job_delivery_datetime: string;
@@ -104,14 +108,21 @@ interface CreateOrderPayload {
 
 type FormLocationData = PickupData | DeliveryData;
 
+type TrackingResponseData = {
+  data?: {
+    order_id?: string;
+    id?: string;
+  };
+};
+
 export default function CreateDeliveryScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ title?: string }>();
   const [currentStep, setCurrentStep] = useState(1);
   const [step, setStep] = useState<Step>("pickup");
   const [showConfirmed, setShowConfirmed] = useState(false);
+  const [createdOrderId, setCreatedOrderId] = useState<string | null>(null);
   const [bankImageUri, setBankImageUri] = useState<string | null>(null);
-  // Prohibited items agreement state
   const [isAgreedToProhibited, setIsAgreedToProhibited] = useState(false);
 
   const [createDelivery, { isLoading: isCreatingDelivery }] =
@@ -119,19 +130,18 @@ export default function CreateDeliveryScreen() {
   const [getEstimatedPrice, { isLoading: isLoadingPrice }] =
     useGetEstimatedPriceMutation();
 
-  // Estimated Price State
   const [estimatedPriceData, setEstimatedPriceData] = useState<{
     distance_km: string;
     total_price: number;
     max_distance_km: number;
   } | null>(null);
 
-  // Form Data States
   const [pickupData, setPickupData] = useState<PickupData>({
     fullName: "",
     phoneNumber: "",
     email: "",
     fullAddress: "",
+    streetNumber: "",
   });
 
   const [deliveryData, setDeliveryData] = useState<DeliveryData>({
@@ -139,6 +149,7 @@ export default function CreateDeliveryScreen() {
     phoneNumber: "",
     email: "",
     fullAddress: "",
+    streetNumber: "",
   });
 
   const [selectedRide, setSelectedRide] = useState<string | null>(null);
@@ -160,58 +171,11 @@ export default function CreateDeliveryScreen() {
     }
   }, [bankImageUri, packageData.paymentMethod]);
 
-  // Fetch estimated price when navigating to ride step with both locations
-  useEffect(() => {
-    const fetchEstimatedPrice = async () => {
-      const isPickupComplete =
-        pickupData.fullAddress.trim() &&
-        Number.isFinite(pickupData.latitude) &&
-        Number.isFinite(pickupData.longitude);
-      const isDeliveryComplete =
-        deliveryData.fullAddress.trim() &&
-        Number.isFinite(deliveryData.latitude) &&
-        Number.isFinite(deliveryData.longitude);
-
-      if (step === "ride" && isPickupComplete && isDeliveryComplete) {
-        try {
-          const response = await getEstimatedPrice({
-            pickup_latitude: pickupData.latitude!,
-            pickup_longitude: pickupData.longitude!,
-            delivery_latitude: deliveryData.latitude!,
-            delivery_longitude: deliveryData.longitude!,
-          }).unwrap();
-
-          if (response?.data) {
-            setEstimatedPriceData(response.data);
-            // Auto-select same-day ride
-            if (!selectedRide) {
-              handleSelectRide("same-day");
-            }
-          }
-        } catch (error) {
-          console.error("Failed to fetch estimated price:", error);
-          toast.error("Failed to fetch price estimate. Please try again.");
-        }
-      }
-    };
-
-    fetchEstimatedPrice();
-  }, [step, pickupData, deliveryData]);
-
-  const selectedRideOption = useMemo(
-    () =>
-      (createDeliveryData.rideOptions as RideOption[]).find(
-        (option) => option.id === selectedRide,
-      ),
-    [selectedRide],
-  );
-
   const rideOptionsForDisplay = useMemo(() => {
     const baseOptions = (createDeliveryData.rideOptions as RideOption[]).filter(
       (option) => option.id === "same-day",
     );
 
-    // 🚫 Don't show anything until API comes
     if (!estimatedPriceData || step !== "ride") {
       return [];
     }
@@ -249,10 +213,42 @@ export default function CreateDeliveryScreen() {
     }));
   };
 
+  useEffect(() => {
+    const fetchEstimatedPrice = async () => {
+      const isPickupComplete =
+        pickupData.fullAddress.trim() &&
+        Number.isFinite(pickupData.latitude) &&
+        Number.isFinite(pickupData.longitude);
+      const isDeliveryComplete =
+        deliveryData.fullAddress.trim() &&
+        Number.isFinite(deliveryData.latitude) &&
+        Number.isFinite(deliveryData.longitude);
+
+      if (step === "ride" && isPickupComplete && isDeliveryComplete) {
+        try {
+          const response = await getEstimatedPrice({
+            pickup_latitude: pickupData.latitude!,
+            pickup_longitude: pickupData.longitude!,
+            delivery_latitude: deliveryData.latitude!,
+            delivery_longitude: deliveryData.longitude!,
+          }).unwrap();
+
+          if (response?.data) {
+            setEstimatedPriceData(response.data);
+            setSelectedRide((currentRide) => currentRide ?? "same-day");
+          }
+        } catch (error) {
+          console.error("Failed to fetch estimated price:", error);
+          toast.error("Failed to fetch price estimate. Please try again.");
+        }
+      }
+    };
+
+    fetchEstimatedPrice();
+  }, [step, pickupData, deliveryData, getEstimatedPrice]);
+
   const getJobDeliveryDateTime = (pickup: Date): string => {
     const now = new Date();
-
-    // ensure pickup itself is never in the past
     const safePickup =
       pickup.getTime() < now.getTime()
         ? new Date(now.getTime() + 15 * 60 * 1000)
@@ -266,7 +262,6 @@ export default function CreateDeliveryScreen() {
       delivery = new Date(safePickup);
       delivery.setDate(delivery.getDate() + 1);
     } else {
-      // fallback safety buffer
       delivery = new Date(safePickup.getTime() + 60 * 60 * 1000);
     }
 
@@ -323,9 +318,13 @@ export default function CreateDeliveryScreen() {
     if (
       !pickupData.fullName.trim() ||
       !pickupData.phoneNumber.trim() ||
-      !pickupData.fullAddress.trim()
+      !pickupData.fullAddress.trim() ||
+      !pickupData.streetNumber?.trim()
     ) {
-      Alert.alert("Required", "Please complete pickup details before next.");
+      Alert.alert(
+        "Required",
+        "Please complete pickup details (including street/house number) before next.",
+      );
       return;
     }
 
@@ -337,9 +336,13 @@ export default function CreateDeliveryScreen() {
     if (
       !deliveryData.name.trim() ||
       !deliveryData.phoneNumber.trim() ||
-      !deliveryData.fullAddress.trim()
+      !deliveryData.fullAddress.trim() ||
+      !deliveryData.streetNumber?.trim()
     ) {
-      Alert.alert("Required", "Please complete delivery details before next.");
+      Alert.alert(
+        "Required",
+        "Please complete delivery details (including street/house number) before next.",
+      );
       return;
     }
 
@@ -517,7 +520,6 @@ export default function CreateDeliveryScreen() {
     }
 
     const now = new Date();
-
     const pickupDate =
       new Date(Date.now() + 15 * 60 * 1000) < now
         ? new Date(now.getTime() + 15 * 60 * 1000)
@@ -532,21 +534,23 @@ export default function CreateDeliveryScreen() {
       pickup_phone: pickupData.phoneNumber,
       pickup_email: pickupData.email,
       pickup_address: pickupData.fullAddress,
+      pickup_street_address: pickupData.streetNumber ?? "",
       pickup_latitude: pickupData.latitude ?? 0,
       pickup_longitude: pickupData.longitude ?? 0,
+      pickup_datetime: pickupDate.toISOString(),
       delivery_name: deliveryData.name,
       delivery_phone: deliveryData.phoneNumber,
       delivery_email: deliveryData.email,
       delivery_address: deliveryData.fullAddress,
+      delivery_street_address: deliveryData.streetNumber ?? "",
       delivery_latitude: deliveryData.latitude ?? 0,
       delivery_longitude: deliveryData.longitude ?? 0,
-      pickup_datetime: pickupDate.toISOString(),
       job_delivery_datetime: deliveryDate,
       specialInstructions: packageData.instructions,
     };
 
     try {
-      const response = await createDelivery({
+      const response = (await createDelivery({
         data: payload,
         image:
           packageData.paymentMethod === "bank" && bankImageUri
@@ -556,39 +560,87 @@ export default function CreateDeliveryScreen() {
                 name: `payment-${Date.now()}.jpg`,
               }
             : undefined,
-      }).unwrap();
-      console.log(response);
-      toast.success(response?.message || "Delivery created successfully");
+      }).unwrap()) as TrackingResponseData;
+
+      const orderId = response?.data?.order_id ?? response?.data?.id ?? null;
+      setCreatedOrderId(orderId);
+      toast.success("Delivery created successfully");
       setShowConfirmed(true);
     } catch (error) {
       const message =
         (error as { data?: { message?: string } })?.data?.message ||
         "Failed to create delivery. Please try again.";
-      console.log({ error });
       Alert.alert("Request Failed", message);
     }
   };
 
   const handleTrackShipment = () => {
+    if (!createdOrderId) {
+      Alert.alert("Missing Order", "No created order id was found.");
+      return;
+    }
+
     setShowConfirmed(false);
-    router.push("/(tabs)/tracking", {});
+    router.push({
+      pathname: "/(tabs)/tracking",
+      params: { ordersId: createdOrderId },
+    });
+
+    clearAllState();
+  };
+
+  const clearAllState = () => {
+    setCurrentStep(1);
+    setPickupData({
+      fullName: "",
+      phoneNumber: "",
+      email: "",
+      fullAddress: "",
+      streetNumber: "",
+    });
+    setDeliveryData({
+      name: "",
+      phoneNumber: "",
+      email: "",
+      fullAddress: "",
+      streetNumber: "",
+    });
+    setSelectedRide(null);
+    setSelectedRideFareOptionById({});
+    setPackageData({
+      description: "",
+      instructions: "",
+      quantity: 1,
+      weight: 0,
+      paymentMethod: null,
+    });
+    setBankImageUri(null);
+    setIsAgreedToProhibited(false);
+    setCreatedOrderId(null);
+    setStep("pickup");
   };
 
   const handleBackToHome = () => {
-    setShowConfirmed(false);
+    clearAllState();
     router.push("/(tabs)/home");
   };
 
   const getShipmentSummary = () => ({
     pickupFrom: {
       label: "PICKUP FROM",
-      address: pickupData.fullAddress || "123 Main St, Paramaribo",
+      address:
+        [pickupData.streetNumber, pickupData.fullAddress]
+          .filter(Boolean)
+          .join(", ") || "123 Main St, Paramaribo",
       details: pickupData.phoneNumber || "+597 xx-xxxx",
     },
     deliverTo: {
       label: "DELIVER TO",
       name: deliveryData.name || "Jane Doe",
-      address: deliveryData.fullAddress || "456 Delivery St, Nickerie",
+      address:
+        [deliveryData.streetNumber, deliveryData.fullAddress]
+          .filter(Boolean)
+          .join(", ") || "456 Delivery St, Nickerie",
       details: deliveryData.phoneNumber || "+597 xx-xxxx",
     },
     parcelDetails: {
@@ -662,6 +714,7 @@ export default function CreateDeliveryScreen() {
             />
           );
         }
+
         return (
           <CashOnDelivery
             amount={estimatedPriceData?.total_price ?? 0}
@@ -688,10 +741,8 @@ export default function CreateDeliveryScreen() {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}>
         <View style={styles.container}>
-          {/* Header */}
           <DeliveryHeader title={getHeaderTitle()} onBackPress={handleBack} />
 
-          {/* Step Indicator */}
           {showStepIndicator && (
             <StepIndicator
               steps={createDeliveryData.steps}
@@ -699,7 +750,6 @@ export default function CreateDeliveryScreen() {
             />
           )}
 
-          {/* Step Content */}
           <ScrollView
             style={styles.scrollView}
             contentContainerStyle={styles.scrollContent}
@@ -709,7 +759,6 @@ export default function CreateDeliveryScreen() {
           </ScrollView>
         </View>
 
-        {/* Booking Confirmed Modal */}
         <BookingConfirmed
           visible={showConfirmed}
           title={createDeliveryData.bookingConfirmed.title}

@@ -115,7 +115,7 @@ export default function TrackingScreen() {
   // Guard: Only use data if we aren't fetching AND the ID matches our current URL
   const order =
     !isFetching && orderData?.data?.id === params.ordersId
-      ? orderData.data
+      ? orderData?.data
       : null;
 
   const pickup = useMemo(() => {

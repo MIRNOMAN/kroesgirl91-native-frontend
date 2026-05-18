@@ -19,6 +19,8 @@ export interface Order {
   shippingType: string;
   origin: string;
   destination: string;
+  pickup_street_address?: string;
+  delivery_street_address?: string;
 }
 
 const getStatusColor = (status: string) => {
@@ -50,15 +52,23 @@ interface OrderCardProps {
 export const OrderCard = ({ order }: OrderCardProps) => {
   const statusColor = getStatusColor(order.status);
 
+  // ✅ Split address safely
+  const pickupStreet = order.pickup_street_address;
+  const pickupLocation = order.origin;
+
+  const deliveryStreet = order.delivery_street_address;
+  const deliveryLocation = order.destination;
+
   return (
     <View style={styles.orderCard}>
+      {/* HEADER */}
       <View style={styles.orderCardContent}>
         <View style={styles.orderIconContainer}>
           <Feather name="package" size={24} color="#F5A623" />
         </View>
 
         <View style={styles.orderDetails}>
-          <Text style={styles.orderId} numberOfLines={1} ellipsizeMode="tail">
+          <Text style={styles.orderId} numberOfLines={1}>
             {order.id}
           </Text>
 
@@ -75,35 +85,43 @@ export const OrderCard = ({ order }: OrderCardProps) => {
         <View style={styles.orderPriceContainer}>
           <Text style={styles.orderPrice}>${order.price.toFixed(2)}</Text>
 
-          <Text
-            style={styles.shippingType}
-            numberOfLines={1}
-            ellipsizeMode="tail">
+          <Text style={styles.shippingType} numberOfLines={1}>
             {order.shippingType}
           </Text>
         </View>
       </View>
 
+      {/* ROUTE */}
       <View style={styles.routeContainer}>
         <View style={styles.routeIconWrapper}>
           <View style={styles.pickupDot} />
-
           <View style={styles.routeLine} />
-
           <View style={styles.deliveryDot} />
         </View>
 
         <View style={styles.routeContent}>
+          {/* PICKUP */}
           <View style={styles.routeItem}>
             <Text style={styles.routeTitle}>Pickup</Text>
 
-            <Text style={styles.routeText}>{order.origin}</Text>
+            <Text style={styles.routeTextBold}>
+              {pickupStreet ? pickupStreet : "__"}
+            </Text>
+
+            <Text style={styles.routeText}>
+              {pickupLocation ? pickupLocation : "__"}
+            </Text>
           </View>
 
-          <View style={styles.routeItem}>
-            <Text style={styles.routeTitle}>Delivery</Text>
-
-            <Text style={styles.routeText}>{order.destination}</Text>
+          {/* DELIVERY */}
+          <View style={{ ...styles.routeItem, marginBottom: -4 }}>
+            <Text style={styles.routeTextBold}>
+              {deliveryStreet ? deliveryStreet : "__"}
+            </Text>
+            <Text style={styles.routeText}>
+              {deliveryLocation ? deliveryLocation : "__"}
+            </Text>
+            <Text style={styles.routeTitle}>Delivery</Text>ß
           </View>
         </View>
       </View>
@@ -217,11 +235,6 @@ const styles = StyleSheet.create({
     marginVertical: 2,
   },
 
-  routeLabel: {
-    fontWeight: "600",
-    color: COLORS.textPrimary,
-  },
-
   pickupDot: {
     width: 10,
     height: 10,
@@ -238,10 +251,7 @@ const styles = StyleSheet.create({
 
   routeContent: {
     flex: 1,
-  },
-
-  routeItem: {
-    marginBottom: 12,
+    justifyContent: "space-between",
   },
 
   routeTitle: {
@@ -255,8 +265,18 @@ const styles = StyleSheet.create({
 
   routeText: {
     fontSize: width > 400 ? 13 : 12,
-    color: "#444",
+    color: "black",
     lineHeight: 18,
-    flexWrap: "wrap",
+  },
+
+  routeTextBold: {
+    fontSize: width > 400 ? 13 : 12,
+    color: "black",
+    fontWeight: "600",
+    lineHeight: 18,
+  },
+  routeItem: {
+    marginBottom: 26,
+    gap: 2,
   },
 });

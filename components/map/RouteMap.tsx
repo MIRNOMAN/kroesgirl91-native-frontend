@@ -31,9 +31,27 @@ interface RouteMapProps {
 
 const MAP_TYPES = ["standard", "satellite", "hybrid", "terrain"] as const;
 
+const MIN_DELTA = 0.005;
+
 const toGoogleCoord = (coord: [number, number]): Coordinate => ({
   latitude: coord[1],
   longitude: coord[0],
+});
+
+const areCoordinatesTooClose = (
+  a: Coordinate,
+  b: Coordinate,
+  threshold = 0.00005,
+) => {
+  return (
+    Math.abs(a.latitude - b.latitude) < threshold &&
+    Math.abs(a.longitude - b.longitude) < threshold
+  );
+};
+
+const offsetCoordinate = (coord: Coordinate, offset = 0.00012): Coordinate => ({
+  latitude: coord.latitude + offset,
+  longitude: coord.longitude + offset,
 });
 
 const RouteMap: React.FC<RouteMapProps> = ({
@@ -46,15 +64,15 @@ const RouteMap: React.FC<RouteMapProps> = ({
 
   const [isMapReady, setIsMapReady] = useState(false);
 
-  const defalutRoute: Coordinate[] =
+  const defaultRoute: Coordinate[] =
     start && end
       ? [
-          { latitude: start?.[1], longitude: start?.[0] },
-          { latitude: end?.[1], longitude: end?.[0] },
+          { latitude: start[1], longitude: start[0] },
+          { latitude: end[1], longitude: end[0] },
         ]
       : [];
 
-  const [route, setRoute] = useState<Coordinate[]>(defalutRoute);
+  const [route, setRoute] = useState<Coordinate[]>(defaultRoute);
   const [loadingRoute, setLoadingRoute] = useState(false);
   const [mapCenter, setMapCenter] = useState<Coordinate | null>(null);
   const [userLocation, setUserLocation] = useState<Coordinate | null>(null);
@@ -130,16 +148,33 @@ const RouteMap: React.FC<RouteMapProps> = ({
   };
 
   // =========================
-  // FIT START/END (FIXED)
+  // FIT START/END
   // =========================
   const fitStartEnd = () => {
     if (!isMapReady) return;
     if (!mapRef.current || !start || !end) return;
 
-    const coords = [toGoogleCoord(start), toGoogleCoord(end)];
+    const startCoord = toGoogleCoord(start);
+    const endCoord = toGoogleCoord(end);
+
+    const isTooClose = areCoordinatesTooClose(startCoord, endCoord);
+
+    if (isTooClose) {
+      mapRef.current.animateToRegion(
+        {
+          latitude: startCoord.latitude,
+          longitude: startCoord.longitude,
+          latitudeDelta: MIN_DELTA,
+          longitudeDelta: MIN_DELTA,
+        },
+        500,
+      );
+
+      return;
+    }
 
     requestAnimationFrame(() => {
-      mapRef.current?.fitToCoordinates(coords, {
+      mapRef.current?.fitToCoordinates([startCoord, endCoord], {
         edgePadding: {
           top: 120,
           right: 80,
@@ -152,7 +187,7 @@ const RouteMap: React.FC<RouteMapProps> = ({
   };
 
   // =========================
-  // ROUTE FETCH (FIXED)
+  // ROUTE FETCH
   // =========================
   const fetchRoute = async () => {
     if (!start || !end) return;
@@ -175,22 +210,39 @@ const RouteMap: React.FC<RouteMapProps> = ({
         latitude: c.latitude,
       }));
 
-      if (coords.length > 2) {
+      if (coords.length > 1) {
         setRoute(coords);
       }
 
       if (coords.length > 0 && isMapReady) {
-        setTimeout(() => {
-          mapRef.current?.fitToCoordinates(coords, {
-            edgePadding: {
-              top: 100,
-              right: 50,
-              bottom: 100,
-              left: 50,
+        const startCoord = coords[0];
+        const endCoord = coords[coords.length - 1];
+
+        const isTooClose = areCoordinatesTooClose(startCoord, endCoord);
+
+        if (isTooClose) {
+          mapRef.current?.animateToRegion(
+            {
+              latitude: startCoord.latitude,
+              longitude: startCoord.longitude,
+              latitudeDelta: MIN_DELTA,
+              longitudeDelta: MIN_DELTA,
             },
-            animated: true,
-          });
-        }, 150);
+            500,
+          );
+        } else {
+          setTimeout(() => {
+            mapRef.current?.fitToCoordinates(coords, {
+              edgePadding: {
+                top: 100,
+                right: 50,
+                bottom: 100,
+                left: 50,
+              },
+              animated: true,
+            });
+          }, 150);
+        }
       }
     } catch (error) {
       toast.error("Failed to fetch route");
@@ -208,7 +260,7 @@ const RouteMap: React.FC<RouteMapProps> = ({
   }, [start, end, isMapReady]);
 
   // =========================
-  // INITIAL REGION (UNCHANGED LOGIC)
+  // INITIAL REGION
   // =========================
   const initialRegion: Region = useMemo(() => {
     const base = mapCenter
@@ -237,6 +289,28 @@ const RouteMap: React.FC<RouteMapProps> = ({
     setPopupVisible(true);
   };
 
+  const startCoordinate =
+    start && end
+      ? areCoordinatesTooClose(toGoogleCoord(start), toGoogleCoord(end))
+        ? offsetCoordinate(toGoogleCoord(start), -0.00008)
+        : toGoogleCoord(start)
+      : undefined;
+
+  const endCoordinate =
+    start && end
+      ? areCoordinatesTooClose(toGoogleCoord(start), toGoogleCoord(end))
+        ? offsetCoordinate(toGoogleCoord(end), 0.00008)
+        : toGoogleCoord(end)
+      : undefined;
+
+  const shouldShowPolyline =
+    route.length > 1 &&
+    !(
+      start &&
+      end &&
+      areCoordinatesTooClose(toGoogleCoord(start), toGoogleCoord(end))
+    );
+
   return (
     <View style={styles.container}>
       <MapView
@@ -246,7 +320,7 @@ const RouteMap: React.FC<RouteMapProps> = ({
         mapType={mapType}
         initialRegion={isMapReady ? undefined : initialRegion}
         onMapReady={() => setIsMapReady(true)}>
-        {route.length > 0 && (
+        {shouldShowPolyline && (
           <Polyline
             coordinates={route}
             strokeColor="#8b5cf6"
@@ -255,9 +329,9 @@ const RouteMap: React.FC<RouteMapProps> = ({
           />
         )}
 
-        {start && (
-          <Marker coordinate={toGoogleCoord(start)}>
-            <View style={styles.markerContainer}>
+        {start && startCoordinate && (
+          <Marker coordinate={startCoordinate}>
+            <View style={{ ...styles.markerContainer, zIndex: 20 }}>
               <View style={[styles.iconBox, { backgroundColor: "#10B981" }]}>
                 <Ionicons name="location" size={20} color="white" />
               </View>
@@ -266,8 +340,8 @@ const RouteMap: React.FC<RouteMapProps> = ({
           </Marker>
         )}
 
-        {end && (
-          <Marker coordinate={toGoogleCoord(end)}>
+        {end && endCoordinate && (
+          <Marker coordinate={endCoordinate}>
             <View style={[styles.iconBox, { backgroundColor: "orange" }]}>
               <Ionicons name="cube" size={18} color="#fff" />
             </View>
@@ -304,8 +378,19 @@ export default RouteMap;
 const styles = StyleSheet.create({
   container: { flex: 1 },
   map: { ...StyleSheet.absoluteFillObject },
-  buttonContainer: { position: "absolute", right: 16, bottom: 120 },
-  mapTypeContainer: { position: "absolute", right: 16, bottom: 185 },
+
+  buttonContainer: {
+    position: "absolute",
+    right: 16,
+    bottom: 120,
+  },
+
+  mapTypeContainer: {
+    position: "absolute",
+    right: 16,
+    bottom: 185,
+  },
+
   floatButton: {
     width: 52,
     height: 52,
@@ -315,7 +400,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     elevation: 6,
   },
-  markerContainer: { alignItems: "center" },
+
+  markerContainer: {
+    alignItems: "center",
+    zIndex: 10,
+  },
+
   iconBox: {
     width: 38,
     height: 38,
@@ -326,6 +416,7 @@ const styles = StyleSheet.create({
     borderColor: "#fff",
     elevation: 5,
   },
+
   triangle: {
     width: 0,
     height: 0,
@@ -337,6 +428,7 @@ const styles = StyleSheet.create({
     borderTopColor: "#fff",
     marginTop: -1,
   },
+
   userDot: {
     width: 18,
     height: 18,
@@ -345,6 +437,7 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderColor: "#fff",
   },
+
   loader: {
     position: "absolute",
     top: "50%",
@@ -353,21 +446,38 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 14,
   },
+
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.4)",
     justifyContent: "center",
     alignItems: "center",
   },
+
   modalBox: {
     width: "75%",
     backgroundColor: "#fff",
     borderRadius: 16,
     padding: 16,
   },
-  modalTitle: { fontSize: 18, fontWeight: "700", marginBottom: 14 },
-  option: { paddingVertical: 14, borderRadius: 10, paddingHorizontal: 12 },
-  optionText: { fontSize: 15, fontWeight: "600" },
+
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    marginBottom: 14,
+  },
+
+  option: {
+    paddingVertical: 14,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+  },
+
+  optionText: {
+    fontSize: 15,
+    fontWeight: "600",
+  },
+
   popupOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.5)",
@@ -375,14 +485,26 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 20,
   },
+
   popupBox: {
     width: "100%",
     backgroundColor: "#fff",
     borderRadius: 20,
     padding: 20,
   },
-  popupTitle: { fontSize: 20, fontWeight: "700", marginBottom: 10 },
-  popupDescription: { fontSize: 15, color: "#4B5563", lineHeight: 22 },
+
+  popupTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    marginBottom: 10,
+  },
+
+  popupDescription: {
+    fontSize: 15,
+    color: "#4B5563",
+    lineHeight: 22,
+  },
+
   closeButton: {
     marginTop: 20,
     backgroundColor: "#111827",
@@ -390,5 +512,10 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: "center",
   },
-  closeText: { color: "#fff", fontWeight: "700", fontSize: 15 },
+
+  closeText: {
+    color: "#fff",
+    fontWeight: "700",
+    fontSize: 15,
+  },
 });
