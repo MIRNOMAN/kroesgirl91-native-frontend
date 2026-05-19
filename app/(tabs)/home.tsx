@@ -107,7 +107,7 @@ export default function HomeScreen() {
     <SafeAreaView style={styles.safeArea}>
       <ScrollView
         contentContainerStyle={{
-          height: height - insets.bottom - insets.top,
+          minHeight: height - insets.bottom - insets.top,
         }}
         style={{
           ...styles.container,
@@ -217,7 +217,6 @@ export default function HomeScreen() {
               ),
             )}
 
-        <View style={styles.bottomSpacing} />
         <Image
           source={backround}
           style={{
