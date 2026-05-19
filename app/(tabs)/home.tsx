@@ -202,33 +202,34 @@ export default function HomeScreen() {
                   status?: string;
                 },
               ) => (
-                <ShipmentItem
-                  key={shipment.id}
-                  id={shipment.tookanJobId || shipment.id}
-                  name={shipment.deliveryName || shipment.name}
-                  status={shipment.status}
-                  onPress={() => {
-                    router.push({
-                      pathname: "/(tabs)/tracking",
-                      params: { ordersId: shipment.id },
-                    });
-                  }}
-                />
+                <>
+                  <ShipmentItem
+                    key={shipment.id}
+                    id={shipment.tookanJobId || shipment.id}
+                    name={shipment.deliveryName || shipment.name}
+                    status={shipment.status}
+                    onPress={() => {
+                      router.push({
+                        pathname: "/(tabs)/tracking",
+                        params: { ordersId: shipment.id },
+                      });
+                    }}
+                  />
+                </>
               ),
             )}
-
-        <Image
-          source={backround}
-          style={{
-            height: height * 0.3,
-            bottom: 0,
-            left: 0,
-            right: 0,
-            zIndex: -10,
-            position: "absolute",
-          }}
-        />
       </ScrollView>
+      <Image
+        source={backround}
+        style={{
+          height: height * 0.3,
+          bottom: 0,
+          left: 0,
+          right: 0,
+          zIndex: -10,
+          position: "absolute",
+        }}
+      />
     </SafeAreaView>
   );
 }
@@ -236,11 +237,11 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#F8F9FA",
+    backgroundColor: "#fff",
+    paddingBottom: 80,
   },
   container: {
     flex: 1,
-    backgroundColor: "#F8F9FA",
     marginBottom: 0,
   },
   serviceCardsContainer: {
