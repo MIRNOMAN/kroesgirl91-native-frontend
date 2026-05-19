@@ -77,6 +77,24 @@ const PickupDetails: React.FC<PickupDetailsProps> = ({
         />
 
         <DeliveryInput
+          ref={addressRef}
+          label="Store Address"
+          placeholder="Search store address"
+          value={data.fullAddress}
+          onChangeText={(text) => {
+            onDataChange({
+              ...data,
+              fullAddress: text,
+            });
+          }}
+          onFocus={openLocationSearch}
+          onPress={openLocationSearch}
+          icon="location-outline"
+          isLocationInput
+          onLocationPress={openLocationSearch}
+        />
+
+        <DeliveryInput
           label="Street / House No."
           placeholder="Enter street or house number"
           value={data.streetNumber || ""}
@@ -103,24 +121,6 @@ const PickupDetails: React.FC<PickupDetailsProps> = ({
           keyboardType="email-address"
           icon="mail-outline"
         /> */}
-
-        <DeliveryInput
-          ref={addressRef}
-          label="Store Address"
-          placeholder="Search store address"
-          value={data.fullAddress}
-          onChangeText={(text) => {
-            onDataChange({
-              ...data,
-              fullAddress: text,
-            });
-          }}
-          onFocus={openLocationSearch}
-          onPress={openLocationSearch}
-          icon="location-outline"
-          isLocationInput
-          onLocationPress={openLocationSearch}
-        />
       </View>
 
       <View style={styles.buttonContainer}>

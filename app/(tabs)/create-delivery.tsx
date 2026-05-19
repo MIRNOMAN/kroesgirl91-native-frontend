@@ -4,9 +4,12 @@ import React, { useEffect, useMemo, useState } from "react";
 import {
   Alert,
   KeyboardAvoidingView,
+  Modal,
   Platform,
   ScrollView,
   StyleSheet,
+  Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -129,6 +132,9 @@ export default function CreateDeliveryScreen() {
     useCreateDeliveryMutation();
   const [getEstimatedPrice, { isLoading: isLoadingPrice }] =
     useGetEstimatedPriceMutation();
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertTitle, setAlertTitle] = useState("");
+  const [alertMessage, setAlertMessage] = useState("");
 
   const [estimatedPriceData, setEstimatedPriceData] = useState<{
     distance_km: string;
@@ -321,15 +327,20 @@ export default function CreateDeliveryScreen() {
       !pickupData.fullAddress.trim() ||
       !pickupData.streetNumber?.trim()
     ) {
-      Alert.alert(
+      showAlert(
         "Required",
         "Please complete pickup details (including street/house number) before next.",
       );
-      return;
     }
 
     setStep("delivery");
     setCurrentStep(2);
+  };
+
+  const showAlert = (title: string, message: string) => {
+    setAlertTitle(title);
+    setAlertMessage(message);
+    setAlertVisible(true);
   };
 
   const handleDeliveryNext = () => {
@@ -339,7 +350,7 @@ export default function CreateDeliveryScreen() {
       !deliveryData.fullAddress.trim() ||
       !deliveryData.streetNumber?.trim()
     ) {
-      Alert.alert(
+      showAlert(
         "Required",
         "Please complete delivery details (including street/house number) before next.",
       );
@@ -352,7 +363,7 @@ export default function CreateDeliveryScreen() {
 
   const handleRideNext = () => {
     if (!selectedRide) {
-      Alert.alert("Required", "Please select a ride option.");
+      showAlert("Required", "Please select a ride option.");
       return;
     }
 
@@ -366,7 +377,7 @@ export default function CreateDeliveryScreen() {
     );
 
     if (hasFareOptions && !selectedRideFareOptionById[selectedRide]) {
-      Alert.alert("Required", "Please select a ride distance option.");
+      showAlert("Required", "Please select a ride distance option.");
       return;
     }
 
@@ -376,12 +387,12 @@ export default function CreateDeliveryScreen() {
 
   const handlePackageNext = () => {
     if (!packageData.description.trim()) {
-      Alert.alert("Required", "Please enter package description.");
+      showAlert("Required", "Please enter package description.");
       return;
     }
 
     if (!packageData.paymentMethod) {
-      Alert.alert("Required", "Please select a payment method.");
+      showAlert("Required", "Please select a payment method.");
       return;
     }
 
@@ -394,30 +405,6 @@ export default function CreateDeliveryScreen() {
       Number.isFinite(value.latitude) &&
       Number.isFinite(value.longitude)
     );
-  };
-
-  const askLocationPermissionConfirmation = async () => {
-    return new Promise<boolean>((resolve) => {
-      Alert.alert(
-        "Location Required",
-        "User location not found. Allow current location to auto-fill latitude, longitude, and address?",
-        [
-          {
-            text: "Cancel",
-            style: "cancel",
-            onPress: () => resolve(false),
-          },
-          {
-            text: "Allow Location",
-            onPress: () => resolve(true),
-          },
-        ],
-        {
-          cancelable: true,
-          onDismiss: () => resolve(false),
-        },
-      );
-    });
   };
 
   const formatAddress = (address?: Location.LocationGeocodedAddress) => {
@@ -437,37 +424,6 @@ export default function CreateDeliveryScreen() {
       .join(", ");
   };
 
-  const resolveCurrentLocation = async (): Promise<
-    Pick<FormLocationData, "fullAddress" | "latitude" | "longitude">
-  > => {
-    const permission = await Location.requestForegroundPermissionsAsync();
-
-    if (permission.status !== "granted") {
-      throw new Error("LOCATION_PERMISSION_DENIED");
-    }
-
-    const current = await Location.getCurrentPositionAsync({
-      accuracy: Location.Accuracy.High,
-    });
-
-    let fullAddress = "";
-    try {
-      const reverse = await Location.reverseGeocodeAsync({
-        latitude: current.coords.latitude,
-        longitude: current.coords.longitude,
-      });
-      fullAddress = formatAddress(reverse[0]);
-    } catch {
-      fullAddress = "";
-    }
-
-    return {
-      fullAddress,
-      latitude: current.coords.latitude,
-      longitude: current.coords.longitude,
-    };
-  };
-
   const handleConfirmBooking = async () => {
     if (!packageData.paymentMethod) {
       Alert.alert("Required", "Please select a payment method.");
@@ -483,40 +439,16 @@ export default function CreateDeliveryScreen() {
     let bookingLocationData: FormLocationData = sourceData;
 
     if (!isLocationComplete(sourceData)) {
-      const shouldProceed = await askLocationPermissionConfirmation();
-      if (!shouldProceed) {
-        return;
-      }
+      bookingLocationData = {
+        ...sourceData,
+      };
 
-      try {
-        const currentLocation = await resolveCurrentLocation();
-        bookingLocationData = {
-          ...sourceData,
-          fullAddress:
-            sourceData.fullAddress ||
-            currentLocation.fullAddress ||
-            `${currentLocation.latitude}, ${currentLocation.longitude}`,
-          latitude: currentLocation.latitude,
-          longitude: currentLocation.longitude,
-        };
-
-        setPickupData((prev) => ({
-          ...prev,
-          fullAddress: bookingLocationData.fullAddress,
-          latitude: bookingLocationData.latitude,
-          longitude: bookingLocationData.longitude,
-        }));
-      } catch (error) {
-        const isPermissionDenied =
-          (error as Error)?.message === "LOCATION_PERMISSION_DENIED";
-        Alert.alert(
-          "Location Missing",
-          isPermissionDenied
-            ? "Location permission is required to continue booking."
-            : "Unable to fetch current location. Please try again.",
-        );
-        return;
-      }
+      setPickupData((prev) => ({
+        ...prev,
+        fullAddress: bookingLocationData.fullAddress,
+        latitude: bookingLocationData.latitude,
+        longitude: bookingLocationData.longitude,
+      }));
     }
 
     const now = new Date();
@@ -591,6 +523,7 @@ export default function CreateDeliveryScreen() {
 
   const clearAllState = () => {
     setCurrentStep(1);
+    setShowConfirmed(false);
     setPickupData({
       fullName: "",
       phoneNumber: "",
@@ -759,6 +692,26 @@ export default function CreateDeliveryScreen() {
           </ScrollView>
         </View>
 
+        <Modal
+          transparent
+          visible={alertVisible}
+          animationType="fade"
+          onRequestClose={() => setAlertVisible(false)}>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContainer}>
+              <Text style={styles.modalTitle}>{alertTitle}</Text>
+
+              <Text style={styles.modalMessage}>{alertMessage}</Text>
+
+              <TouchableOpacity
+                style={styles.modalButton}
+                onPress={() => setAlertVisible(false)}>
+                <Text style={styles.modalButtonText}>OK</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+
         <BookingConfirmed
           visible={showConfirmed}
           title={createDeliveryData.bookingConfirmed.title}
@@ -789,5 +742,45 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingBottom: Platform.OS === "ios" ? 40 : 20,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  modalContainer: {
+    width: "85%",
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    padding: 20,
+  },
+
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    marginBottom: 10,
+    color: "#111",
+  },
+
+  modalMessage: {
+    fontSize: 15,
+    color: "#555",
+    marginBottom: 20,
+    lineHeight: 22,
+  },
+
+  modalButton: {
+    backgroundColor: "#000",
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: "center",
+  },
+
+  modalButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
   },
 });

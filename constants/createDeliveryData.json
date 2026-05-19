@@ -92,14 +92,17 @@
     "bankDetails": [
       {
         "bankName": "DSB",
+        "accountName": "Swiftdrop Logistics",
         "accountNumber": "11093145"
       },
       {
         "bankName": "Hakrinbank",
+        "accountName": "Swiftdrop Logistics",
         "accountNumber": "200158704"
       },
       {
         "bankName": "Finabank",
+        "accountName": "Swiftdrop Logistics",
         "accountNumber": "1002471929"
       }
     ]

@@ -81,15 +81,6 @@ const DeliveryDetails: React.FC<DeliveryDetailsProps> = ({
         />
 
         <DeliveryInput
-          label="Street / House No."
-          placeholder="Enter street or house number"
-          value={data.streetNumber || ""}
-          onChangeText={(text) => onDataChange({ ...data, streetNumber: text })}
-          keyboardType="default"
-          icon="home-outline"
-        />
-
-        <DeliveryInput
           label="Full Address"
           placeholder="Search address"
           value={data.fullAddress}
@@ -99,6 +90,15 @@ const DeliveryDetails: React.FC<DeliveryDetailsProps> = ({
           icon="location-outline"
           isLocationInput
           onLocationPress={openLocationSearch}
+        />
+
+        <DeliveryInput
+          label="Street / House No."
+          placeholder="Enter street or house number"
+          value={data.streetNumber || ""}
+          onChangeText={(text) => onDataChange({ ...data, streetNumber: text })}
+          keyboardType="default"
+          icon="home-outline"
         />
       </View>
 

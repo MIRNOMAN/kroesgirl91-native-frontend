@@ -20,6 +20,7 @@ const isSmallDevice = width < 375;
 interface BankTransferProps {
   bankDetails: {
     bankName: string;
+    accountName: string;
     accountNumber: string;
   }[];
   screenshotUri: string | null;
@@ -121,7 +122,7 @@ const BankTransfer: React.FC<BankTransferProps> = ({
 
               <View style={styles.bankRow}>
                 <Text style={styles.bankLabel}>Account Name</Text>
-                <Text style={styles.bankValue}>{bank.bankName}</Text>
+                <Text style={styles.bankValue}>{bank.accountName}</Text>
               </View>
 
               <View style={styles.bankRow}>

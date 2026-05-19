@@ -1,14 +1,23 @@
+import { useGetAllOrdersQuery } from "@/redux/api/createDelivery";
+import { Image } from "expo-image";
 import { Link, useRouter } from "expo-router";
 import React from "react";
 import {
-  ImageBackground,
   ScrollView,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import CurrentShipment from "../../components/ui/home/CurrentShipment";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
+import backround1 from "../../assets/backround/backround_1.png";
+import backround2 from "../../assets/backround/backround_2.png";
+import backround from "../../assets/backround/Photoroom.png";
+import redDeliveryIcon from "../../assets/Custom_icons/red-delivery.png";
+import storeIcon from "../../assets/Custom_icons/store-icon.png";
 import DeliveryCard from "../../components/ui/home/DeliveryCard";
 import HeaderSection from "../../components/ui/home/HeaderSection";
 import ServiceCard from "../../components/ui/home/ServiceCard";
@@ -16,13 +25,6 @@ import type { ShipmentItemProps } from "../../components/ui/home/ShipmentItem";
 import ShipmentItem from "../../components/ui/home/ShipmentItem";
 import homeData from "../../constants/homeData.json";
 import { APP_ROUTES } from "../../constants/routes";
-
-import { useGetAllOrdersQuery } from "@/redux/api/createDelivery";
-import backround1 from "../../assets/backround/backround_1.png";
-import backround2 from "../../assets/backround/backround_2.png";
-import backround from "../../assets/backround/Photoroom.png";
-import redDeliveryIcon from "../../assets/Custom_icons/red-delivery.png";
-import storeIcon from "../../assets/Custom_icons/store-icon.png";
 import { getGreeting } from "../../utils/getGreeting";
 
 // Status steps for dynamic mapping
@@ -53,16 +55,6 @@ const STATUS_INDEX_MAP: Record<string, number> = {
   SUCCESSFUL: 3,
   CANCELLED: 4,
 };
-
-function getShipmentStatuses(status: string) {
-  // Find the current step index
-  const idx = STATUS_INDEX_MAP[status?.toUpperCase?.()] ?? 0;
-  return STATUS_STEPS.map((step, i) => ({
-    image: step.image,
-    label: step.label,
-    active: i <= idx,
-  }));
-}
 
 const SERVICE_IMAGES = {
   "store-icon": storeIcon,
@@ -108,9 +100,20 @@ export default function HomeScreen() {
     console.log(`Pressed ${serviceTitle}`);
   };
 
+  const { height } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={{
+          height: height - insets.bottom - insets.top,
+        }}
+        style={{
+          ...styles.container,
+          height,
+        }}
+        showsVerticalScrollIndicator={false}>
         {/* Header Section */}
         <HeaderSection greeting={getGreeting()} />
 
@@ -157,84 +160,75 @@ export default function HomeScreen() {
           </View>
         ) : null}
 
-        {/* Shipment Section With Background */}
-        <ImageBackground
-          source={backround}
-          style={styles.shipmentSection}
-          imageStyle={styles.shipmentBackgroundImage}>
-          {/* Current Shipment - Conditional Rendering */}
-          {shouldShowCurrentShipmentCard && (
-            <CurrentShipment
-              recipientName={orders[0].deliveryName}
-              trackingId={orders[0].tookanJobId || orders[0].id}
-              status={orders[0].status}
-              statuses={getShipmentStatuses(orders[0].status)}
-              startDate={orders[0].pickupDatetime || orders[0].createdAt}
-              startLocation={orders[0].pickupAddress || "N/A"}
-              endDate={orders[0].deliveryDate}
-              endLocation={orders[0].deliveryAddress || "N/A"}
-            />
-          )}
-
-          <View
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            paddingRight: 30,
+          }}>
+          <Text
             style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-              paddingRight: 30,
+              fontSize: 22,
+              fontWeight: "700",
+              marginLeft: 20,
+              marginTop: 10,
+              marginBottom: 10,
+              color: "#333",
             }}>
-            <Text
-              style={{
-                fontSize: 22,
-                fontWeight: "700",
-                marginLeft: 20,
-                marginTop: 10,
-                marginBottom: 10,
-                color: "#333",
-              }}>
-              Current Shipment
-            </Text>
-            <Link
-              href={"/shipment"}
-              style={{
-                color: "#3B82F6",
-                fontSize: 16,
-                fontWeight: "500",
-                touchAction: "manipulation",
-              }}>
-              View all
-            </Link>
-          </View>
+            Current Shipment
+          </Text>
+          <Link
+            href={"/shipment"}
+            style={{
+              color: "#3B82F6",
+              fontSize: 16,
+              fontWeight: "500",
+              touchAction: "manipulation",
+            }}>
+            View all
+          </Link>
+        </View>
 
-          {/* Shipment Items */}
-          {/* Shipment Items */}
-          {isLoading
-            ? // Render a fixed number of skeletons while loading
-              [1, 2, 3, 4].map((key) => <ShipmentSkeleton key={key} />)
-            : orders.map(
-                (
-                  shipment: ShipmentItemProps & {
-                    deliveryName?: string;
-                    status?: string;
-                  },
-                ) => (
-                  <ShipmentItem
-                    key={shipment.id}
-                    id={shipment.tookanJobId || shipment.id}
-                    name={shipment.deliveryName || shipment.name}
-                    status={shipment.status}
-                    onPress={() => {
-                      router.push({
-                        pathname: "/(tabs)/tracking",
-                        params: { ordersId: shipment.id },
-                      });
-                    }}
-                  />
-                ),
-              )}
-        </ImageBackground>
+        {/* Shipment Items */}
+
+        {isLoading
+          ? // Render a fixed number of skeletons while loading
+            [1, 2, 3, 4].map((key) => <ShipmentSkeleton key={key} />)
+          : orders.map(
+              (
+                shipment: ShipmentItemProps & {
+                  deliveryName?: string;
+                  status?: string;
+                },
+              ) => (
+                <ShipmentItem
+                  key={shipment.id}
+                  id={shipment.tookanJobId || shipment.id}
+                  name={shipment.deliveryName || shipment.name}
+                  status={shipment.status}
+                  onPress={() => {
+                    router.push({
+                      pathname: "/(tabs)/tracking",
+                      params: { ordersId: shipment.id },
+                    });
+                  }}
+                />
+              ),
+            )}
 
         <View style={styles.bottomSpacing} />
+        <Image
+          source={backround}
+          style={{
+            height: height * 0.3,
+            bottom: 0,
+            left: 0,
+            right: 0,
+            zIndex: -10,
+            position: "absolute",
+          }}
+        />
       </ScrollView>
     </SafeAreaView>
   );
@@ -271,23 +265,18 @@ const styles = StyleSheet.create({
 });
 
 const ShipmentSkeleton = () => (
-  <View style={{ padding: 16, borderBottomWidth: 1, borderColor: "#eee" }}>
+  <View
+    style={{
+      padding: 5,
+      paddingLeft: 16,
+      paddingRight: 16,
+      borderColor: "#eee",
+    }}>
     {/* Mimic the Name/Title */}
     <View
       style={{
-        width: "60%",
-        height: 20,
+        height: 60,
         backgroundColor: "#E1E9EE",
-        borderRadius: 4,
-        marginBottom: 8,
-      }}
-    />
-    {/* Mimic the Status/ID */}
-    <View
-      style={{
-        width: "40%",
-        height: 14,
-        backgroundColor: "#F2F8FC",
         borderRadius: 4,
       }}
     />
