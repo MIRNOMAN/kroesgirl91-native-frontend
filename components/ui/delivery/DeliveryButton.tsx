@@ -50,9 +50,9 @@ const DeliveryButton: React.FC<DeliveryButtonProps> = ({
   return (
     <TouchableOpacity
       style={[getButtonStyle(), disabled && styles.disabledButton]}
-      onPress={onPress}
+      onPress={disabled ? undefined : onPress}
       disabled={disabled || loading}
-      activeOpacity={0.8}>
+      activeOpacity={1}>
       {loading ? (
         <ActivityIndicator
           color={variant === "outline" ? "#F5A623" : "#FFFFFF"}

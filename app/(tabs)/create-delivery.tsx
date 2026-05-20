@@ -126,7 +126,6 @@ export default function CreateDeliveryScreen() {
   const [showConfirmed, setShowConfirmed] = useState(false);
   const [createdOrderId, setCreatedOrderId] = useState<string | null>(null);
   const [bankImageUri, setBankImageUri] = useState<string | null>(null);
-  const [isAgreedToProhibited, setIsAgreedToProhibited] = useState(false);
 
   const [createDelivery, { isLoading: isCreatingDelivery }] =
     useCreateDeliveryMutation();
@@ -331,7 +330,6 @@ export default function CreateDeliveryScreen() {
         "Required",
         "Please complete pickup details (including street/house number) before next.",
       );
-      return;
     }
 
     setStep("delivery");
@@ -425,6 +423,8 @@ export default function CreateDeliveryScreen() {
   };
 
   const handleConfirmBooking = async () => {
+    toast.success("Creating your delivery...");
+
     if (!packageData.paymentMethod) {
       Alert.alert("Required", "Please select a payment method.");
       return;
@@ -461,7 +461,7 @@ export default function CreateDeliveryScreen() {
     const payload: CreateOrderPayload = {
       job_description: packageData.description,
       paymentMethod: packageData.paymentMethod === "bank" ? "BANK" : "COD",
-      isAgreedToTerms: isAgreedToProhibited,
+      isAgreedToTerms: true,
       pickup_name: pickupData.fullName,
       pickup_phone: pickupData.phoneNumber,
       pickup_email: pickupData.email,
@@ -548,7 +548,7 @@ export default function CreateDeliveryScreen() {
       paymentMethod: null,
     });
     setBankImageUri(null);
-    setIsAgreedToProhibited(false);
+
     setCreatedOrderId(null);
     setStep("pickup");
   };
@@ -640,8 +640,6 @@ export default function CreateDeliveryScreen() {
               onScreenshotChange={setBankImageUri}
               isSubmitting={isCreatingDelivery}
               onConfirm={handleConfirmBooking}
-              isAgreedToProhibited={isAgreedToProhibited}
-              setIsAgreedToProhibited={setIsAgreedToProhibited}
               amount={estimatedPriceData?.total_price ?? 0}
               distance={estimatedPriceData?.distance_km ?? "0"}
             />
@@ -655,8 +653,6 @@ export default function CreateDeliveryScreen() {
             pricingDetails={createDeliveryData.pricingDetails}
             isSubmitting={isCreatingDelivery}
             onConfirm={handleConfirmBooking}
-            isAgreedToProhibited={isAgreedToProhibited}
-            setIsAgreedToProhibited={setIsAgreedToProhibited}
             distance={estimatedPriceData?.distance_km ?? "0"}
           />
         );

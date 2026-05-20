@@ -1,3 +1,4 @@
+import { COLORS } from "@/constants/colors";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import {
@@ -56,6 +57,8 @@ const PackageDetails: React.FC<PackageDetailsProps> = ({
     }
   };
 
+  const isSelected = (method: "cash" | "bank") => data.paymentMethod === method;
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{title}</Text>
@@ -84,19 +87,15 @@ const PackageDetails: React.FC<PackageDetailsProps> = ({
             <TouchableOpacity
               style={[
                 styles.paymentCard,
-                data.paymentMethod === "cash" && styles.paymentCardSelected,
+                isSelected("cash") && styles.paymentCardSelected,
               ]}
+              activeOpacity={1}
               onPress={() => onDataChange({ ...data, paymentMethod: "cash" })}>
-              <Ionicons
-                name="cash-outline"
-                size={24}
-                color={data.paymentMethod === "cash" ? "#F5A623" : "#666666"}
-              />
+              <Ionicons name="cash-outline" size={24} color={"#F5A623"} />
               <Text
-                style={[
-                  styles.paymentText,
-                  data.paymentMethod === "cash" && styles.paymentTextSelected,
-                ]}>
+                style={{
+                  color: "black",
+                }}>
                 Cash on Delivery
               </Text>
             </TouchableOpacity>
@@ -104,19 +103,15 @@ const PackageDetails: React.FC<PackageDetailsProps> = ({
             <TouchableOpacity
               style={[
                 styles.paymentCard,
-                data.paymentMethod === "bank" && styles.paymentCardSelected,
+                isSelected("bank") && styles.paymentCardSelected,
               ]}
+              activeOpacity={1}
               onPress={() => onDataChange({ ...data, paymentMethod: "bank" })}>
-              <Ionicons
-                name="card-outline"
-                size={24}
-                color={data.paymentMethod === "bank" ? "#F5A623" : "#666666"}
-              />
+              <Ionicons name="card-outline" size={24} color={"#F5A623"} />
               <Text
-                style={[
-                  styles.paymentText,
-                  data.paymentMethod === "bank" && styles.paymentTextSelected,
-                ]}>
+                style={{
+                  color: "black",
+                }}>
                 Bank transfer
               </Text>
             </TouchableOpacity>
@@ -224,7 +219,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   paymentTextSelected: {
-    color: "#1A3A4A",
+    color: COLORS.textPrimary,
     fontWeight: "500",
   },
   buttonContainer: {

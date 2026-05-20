@@ -1,3 +1,4 @@
+import { COLORS } from "@/constants/colors";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import {
@@ -23,7 +24,7 @@ const DeliveryHeader: React.FC<DeliveryHeaderProps> = ({
   return (
     <View style={styles.container}>
       <TouchableOpacity style={styles.backButton} onPress={onBackPress}>
-        <Ionicons name="chevron-back" size={24} color="#1A3A4A" />
+        <Ionicons name="chevron-back" size={24} color={COLORS.textPrimary} />
       </TouchableOpacity>
       <Text style={styles.title}>{title}</Text>
       <View style={styles.placeholder} />

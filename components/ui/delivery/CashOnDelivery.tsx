@@ -2,6 +2,7 @@ import { COLORS } from "@/constants/colors";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { Dimensions, Pressable, StyleSheet, Text, View } from "react-native";
+import { toast } from "sonner-native";
 import DeliveryButton from "./DeliveryButton";
 
 const { width } = Dimensions.get("window");
@@ -38,8 +39,7 @@ interface CashOnDeliveryProps {
   pricingDetails: PricingDetails;
   isSubmitting?: boolean;
   onConfirm: () => void;
-  isAgreedToProhibited: boolean;
-  setIsAgreedToProhibited: (v: boolean) => void;
+
   distance?: string;
   pricingBreakdown?: {
     base_fare?: number;
@@ -54,12 +54,11 @@ const CashOnDelivery: React.FC<CashOnDeliveryProps> = ({
   pricingDetails,
   isSubmitting = false,
   onConfirm,
-  isAgreedToProhibited,
-  setIsAgreedToProhibited,
   distance = "0",
   pricingBreakdown,
 }) => {
   const total = pricingDetails.deliveryFee + pricingDetails.serviceFee;
+  const [isAgreedToProhibited, setIsAgreedToProhibited] = React.useState(false);
 
   return (
     <View style={styles.container}>
@@ -234,9 +233,20 @@ const CashOnDelivery: React.FC<CashOnDeliveryProps> = ({
       <View style={styles.buttonContainer}>
         <DeliveryButton
           title={isSubmitting ? "Submitting..." : "Confirm Booking"}
-          onPress={onConfirm}
+          onPress={() => {
+            if (!isAgreedToProhibited) {
+              toast.error(
+                "Please confirm that the delivery does not contain prohibited items.",
+              );
+              return;
+            }
+
+            toast.success("Creating your delivery...");
+            onConfirm();
+          }}
           variant="primary"
-          disabled={isSubmitting || !isAgreedToProhibited}
+          disabled={!isAgreedToProhibited || isSubmitting}
+          loading={isSubmitting}
         />
       </View>
     </View>

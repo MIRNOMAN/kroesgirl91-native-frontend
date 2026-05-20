@@ -58,11 +58,6 @@ const ChooseRide: React.FC<ChooseRideProps> = ({
     [rideOptions, selectedRide],
   );
 
-  const requiresFareOption = Boolean(
-    selectedRideOption?.fareOptions &&
-    selectedRideOption.fareOptions.length > 0,
-  );
-
   const distanceInfo = useMemo(() => {
     if (!selectedRideOption) return null;
 
@@ -85,7 +80,7 @@ const ChooseRide: React.FC<ChooseRideProps> = ({
     };
   }, [selectedRideOption]);
 
-  const canProceed = true;
+  const canProceed = Boolean(selectedRide) && !distanceInfo?.exceeded;
 
   const formatPrice = (price: number) => {
     if (!Number.isFinite(price)) return "0";
@@ -277,8 +272,8 @@ const ChooseRide: React.FC<ChooseRideProps> = ({
         <DeliveryButton
           title="Next"
           onPress={onNext}
-          disabled={false}
-          loading={false}
+          disabled={canProceed ? false : true}
+          loading={isLoading}
         />
       </View>
     </View>

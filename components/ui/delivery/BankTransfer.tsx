@@ -1,7 +1,7 @@
 import { COLORS } from "@/constants/colors";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Alert,
   Dimensions,
@@ -27,8 +27,6 @@ interface BankTransferProps {
   onScreenshotChange: (uri: string | null) => void;
   isSubmitting?: boolean;
   onConfirm: () => void;
-  isAgreedToProhibited: boolean;
-  setIsAgreedToProhibited: (v: boolean) => void;
   amount?: number;
   distance?: string;
   pricingBreakdown?: {
@@ -44,12 +42,15 @@ const BankTransfer: React.FC<BankTransferProps> = ({
   onScreenshotChange,
   isSubmitting = false,
   onConfirm,
-  isAgreedToProhibited,
-  setIsAgreedToProhibited,
   amount = 0,
   distance = "0",
   pricingBreakdown,
 }) => {
+  const [isAgreedToProhibited, setIsAgreedToProhibited] = React.useState(false);
+  const [disableNext, setDisableNext] = React.useState(
+    !screenshotUri || isSubmitting || !isAgreedToProhibited,
+  );
+
   const pickImage = async () => {
     const permissionResult =
       await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -64,7 +65,7 @@ const BankTransfer: React.FC<BankTransferProps> = ({
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
+      allowsEditing: false,
       aspect: [4, 3],
       quality: 0.8,
     });
@@ -73,6 +74,10 @@ const BankTransfer: React.FC<BankTransferProps> = ({
       onScreenshotChange(result.assets[0].uri);
     }
   };
+
+  useEffect(() => {
+    setDisableNext(!screenshotUri || isSubmitting || !isAgreedToProhibited);
+  }, [screenshotUri, isSubmitting, isAgreedToProhibited]);
 
   return (
     <View style={styles.container}>
@@ -211,7 +216,7 @@ const BankTransfer: React.FC<BankTransferProps> = ({
           title={isSubmitting ? "Submitting..." : "Confirm booking"}
           onPress={onConfirm}
           variant="secondary"
-          disabled={!screenshotUri || isSubmitting || !isAgreedToProhibited}
+          disabled={disableNext}
         />
       </View>
     </View>
