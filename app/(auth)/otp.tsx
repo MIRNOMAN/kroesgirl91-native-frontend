@@ -2,11 +2,9 @@ import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
   Image,
-  Keyboard,
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
-  TouchableWithoutFeedback,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -37,40 +35,34 @@ export default function OtpScreen() {
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : undefined}>
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-          <View style={styles.container}>
-            <View style={styles.content}>
-              <View style={styles.logoContainer}>
-                <Image
-                  source={require("../../assets/login/login_icons.png")}
-                  style={styles.logo}
-                  resizeMode="contain"
-                />
-              </View>
-
-              <AuthTitleBlock
-                title="Apply Code Here"
-                subtitle="Please check your email. Give correct authentication code here."
-              />
-
-              <OtpCodeInput
-                value={otpValue}
-                onChange={setOtpValue}
-                length={4}
+        <View style={styles.container}>
+          <View style={styles.content}>
+            <View style={styles.logoContainer}>
+              <Image
+                source={require("../../assets/login/login_icons.png")}
+                style={styles.logo}
+                resizeMode="contain"
               />
             </View>
 
-            <View style={styles.actions}>
-              <AuthButton title="Apply Code" onPress={handleApplyCode} />
+            <AuthTitleBlock
+              title="Apply Code Here"
+              subtitle="Please check your email. Give correct authentication code here."
+            />
 
-              <AuthButton
-                title="Send Email Again"
-                variant="secondary"
-                onPress={() => setOtpValue("")}
-              />
-            </View>
+            <OtpCodeInput value={otpValue} onChange={setOtpValue} length={4} />
           </View>
-        </TouchableWithoutFeedback>
+
+          <View style={styles.actions}>
+            <AuthButton title="Apply Code" onPress={handleApplyCode} />
+
+            <AuthButton
+              title="Send Email Again"
+              variant="secondary"
+              onPress={() => setOtpValue("")}
+            />
+          </View>
+        </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

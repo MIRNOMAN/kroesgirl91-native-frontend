@@ -327,7 +327,7 @@ export default function CreateDeliveryScreen() {
       !pickupData.fullAddress.trim() ||
       !pickupData.streetNumber?.trim()
     ) {
-      showAlert(
+      return showAlert(
         "Required",
         "Please complete pickup details (including street/house number) before next.",
       );
@@ -350,11 +350,10 @@ export default function CreateDeliveryScreen() {
       !deliveryData.fullAddress.trim() ||
       !deliveryData.streetNumber?.trim()
     ) {
-      showAlert(
+      return showAlert(
         "Required",
         "Please complete delivery details (including street/house number) before next.",
       );
-      return;
     }
 
     setStep("ride");
