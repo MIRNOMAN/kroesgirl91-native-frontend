@@ -1,9 +1,19 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useHeaderHeight } from "@react-navigation/elements";
 import { useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import { useEffect, useState } from "react";
-import { Image, Platform, StyleSheet, View } from "react-native";
+import {
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { toast } from "sonner-native";
+
 import AuthButton from "../../components/ui/auth/AuthButton";
 import AuthTitleBlock from "../../components/ui/auth/AuthTitleBlock";
 import OtpCodeInput from "../../components/ui/auth/OtpCodeInput";
@@ -17,37 +27,25 @@ import {
 const FORGOT_EMAIL_STORAGE_KEY = "forgot_password_email";
 const RESET_PASSWORD_TOKEN_KEY = "reset_password_token";
 
-type GenericApiResponse = {
-  success?: boolean;
-  message?: string;
-  data?: {
-    message?: string;
-    resetToken?: string;
-  };
-};
-
-type ApiErrorShape = {
-  data?: {
-    message?: string;
-  };
-  error?: string;
-};
-
 export default function ForgotOtpScreen() {
   const router = useRouter();
+  const headerHeight = useHeaderHeight();
+
   const [otpValue, setOtpValue] = useState("");
   const [email, setEmail] = useState("");
+
   const [forgotOtpSend, { isLoading: isVerifying }] =
     useForgotOtpSendMutation();
+
   const [userForgotPassword, { isLoading: isResending }] =
     useUserForgotPasswordMutation();
 
   const getErrorMessage = (error: unknown) => {
-    const parsedError = error as ApiErrorShape;
+    const parsed = error as any;
 
     return (
-      parsedError?.data?.message ||
-      parsedError?.error ||
+      parsed?.data?.message ||
+      parsed?.error ||
       "Something went wrong. Please try again."
     );
   };
@@ -103,15 +101,11 @@ export default function ForgotOtpScreen() {
       return;
     }
 
-    const payload = {
-      email,
-      otp: normalizedOtp,
-    };
-
     try {
-      const response = (await forgotOtpSend(
-        payload,
-      ).unwrap()) as GenericApiResponse;
+      const response = await forgotOtpSend({
+        email,
+        otp: normalizedOtp,
+      }).unwrap();
 
       const resetToken = response?.data?.resetToken;
       if (resetToken) {
@@ -123,6 +117,7 @@ export default function ForgotOtpScreen() {
           response?.message ||
           "OTP verified successfully",
       );
+
       router.push(APP_ROUTES.resetPassword);
     } catch (error) {
       toast.error(getErrorMessage(error));
@@ -137,9 +132,8 @@ export default function ForgotOtpScreen() {
     }
 
     try {
-      const response = (await userForgotPassword({
-        email,
-      }).unwrap()) as GenericApiResponse;
+      const response = await userForgotPassword({ email }).unwrap();
+
       setOtpValue("");
       toast.success(response?.message || "OTP sent again successfully");
     } catch (error) {
@@ -148,65 +142,98 @@ export default function ForgotOtpScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.content}>
-        <View style={styles.logoContainer}>
-          <Image
-            source={require("../../assets/login/login_icons.png")}
-            style={styles.logo}
-            resizeMode="contain"
-          />
-        </View>
+    <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.authBg }}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentInsetAdjustmentBehavior="automatic"
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{ flexGrow: 1 }}>
+          <View style={styles.container}>
+            {/* CONTENT */}
+            <View style={styles.content}>
+              <View style={styles.logoContainer}>
+                <Image
+                  source={require("../../assets/login/login_icons.png")}
+                  style={styles.logo}
+                  resizeMode="contain"
+                />
+              </View>
 
-        <AuthTitleBlock
-          title="Apply Reset Code"
-          subtitle="Please check your email. Give correct reset 4 digit code here."
-          titleSize={31}
-          subtitleSize={11}
-          subtitleMaxWidth={240}
-        />
+              <AuthTitleBlock
+                title="Apply Reset Code"
+                subtitle="Please check your email. Give correct reset 4 digit code here."
+                titleSize={31}
+                subtitleSize={11}
+                subtitleMaxWidth={240}
+              />
 
-        <OtpCodeInput value={otpValue} onChange={setOtpValue} length={4} />
-      </View>
+              <OtpCodeInput
+                value={otpValue}
+                onChange={setOtpValue}
+                length={4}
+              />
+            </View>
 
-      <View style={styles.actions}>
-        <AuthButton
-          title={isVerifying ? "Applying..." : "Apply Code"}
-          onPress={handleApplyCode}
-          disabled={isVerifying || isResending}
-        />
-        <AuthButton
-          title={isResending ? "Sending..." : "Send Email Again"}
-          variant="secondary"
-          onPress={handleSendEmailAgain}
-          disabled={isVerifying || isResending}
-        />
-      </View>
-    </View>
+            {/* ACTIONS */}
+            <View style={styles.actions}>
+              <AuthButton
+                title={isVerifying ? "Applying..." : "Apply Code"}
+                onPress={handleApplyCode}
+                disabled={isVerifying || isResending}
+              />
+
+              <AuthButton
+                title={isResending ? "Sending..." : "Send Email Again"}
+                variant="secondary"
+                onPress={handleSendEmailAgain}
+                disabled={isVerifying || isResending}
+              />
+            </View>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: COLORS.authBg,
+  },
+
+  flex: {
+    flex: 1,
+  },
+
   container: {
     flex: 1,
     backgroundColor: COLORS.authBg,
     paddingHorizontal: 20,
     paddingTop: 28,
     paddingBottom: 24,
-    justifyContent: "space-between",
   },
+
   content: {
-    gap: 24,
+    flex: 1,
     alignItems: "center",
+    justifyContent: "center",
+    gap: 24,
   },
+
   logoContainer: {
     alignItems: "center",
   },
+
   logo: {
-     width: 530,
+    // width: 'ait',
     height: 100,
   },
+
   actions: {
-    gap: 10,
+    // marginTop: "auto",
   },
 });

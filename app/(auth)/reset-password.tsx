@@ -2,7 +2,15 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import { useEffect, useState } from "react";
-import { Image, Platform, StyleSheet, View } from "react-native";
+import {
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { toast } from "sonner-native";
 import AuthButton from "../../components/ui/auth/AuthButton";
 import AuthLabeledInput from "../../components/ui/auth/AuthLabeledInput";
@@ -135,56 +143,65 @@ export default function ResetPasswordScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.content}>
-        <View style={styles.logoContainer}>
-          <Image
-            source={require("../../assets/login/login_icons.png")}
-            style={styles.logo}
-            resizeMode="contain"
-          />
-        </View>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}>
+      <SafeAreaView style={{ flex: 1, padding: 20 }}>
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}>
+          <View style={styles.content}>
+            <View style={styles.logoContainer}>
+              <Image
+                source={require("../../assets/login/login_icons.png")}
+                style={styles.logo}
+                resizeMode="contain"
+              />
+            </View>
 
-        <AuthTitleBlock
-          title="Reset Password"
-          subtitle="Add your new password"
-          titleSize={31}
-          subtitleSize={16}
-          subtitleMaxWidth={180}
-        />
+            <AuthTitleBlock
+              title="Reset Password"
+              subtitle="Add your new password"
+              titleSize={31}
+              subtitleSize={16}
+              subtitleMaxWidth={180}
+            />
 
-        <View style={styles.form}>
-          <AuthLabeledInput
-            label="New Password"
-            placeholder="Enter New Password Here"
-            secureTextEntry
-            showPasswordToggle
-            value={newPassword}
-            onChangeText={setNewPassword}
-            autoCapitalize="none"
-            autoCorrect={false}
-            compact
-          />
-          <AuthLabeledInput
-            label="Confirm Password"
-            placeholder="Enter Password Here"
-            secureTextEntry
-            showPasswordToggle
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-            autoCapitalize="none"
-            autoCorrect={false}
-            compact
-          />
-        </View>
-      </View>
+            <View style={styles.form}>
+              <AuthLabeledInput
+                label="New Password"
+                placeholder="Enter New Password Here"
+                secureTextEntry
+                showPasswordToggle
+                value={newPassword}
+                onChangeText={setNewPassword}
+                autoCapitalize="none"
+                autoCorrect={false}
+                compact
+              />
+              <AuthLabeledInput
+                label="Confirm Password"
+                placeholder="Enter Password Here"
+                secureTextEntry
+                showPasswordToggle
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                autoCapitalize="none"
+                autoCorrect={false}
+                compact
+              />
+            </View>
+          </View>
 
-      <AuthButton
-        title={isLoading ? "Resetting..." : "Reset Password"}
-        onPress={handleResetPassword}
-        disabled={isLoading}
-      />
-    </View>
+          <AuthButton
+            title={isLoading ? "Resetting..." : "Reset Password"}
+            onPress={handleResetPassword}
+            disabled={isLoading}
+          />
+        </ScrollView>
+      </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 }
 

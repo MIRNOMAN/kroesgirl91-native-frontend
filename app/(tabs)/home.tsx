@@ -192,6 +192,8 @@ export default function HomeScreen() {
 
         {/* Shipment Items */}
 
+        {orders.length === 0 && !isLoading && <EmptyShipmentState />}
+
         {isLoading
           ? // Render a fixed number of skeletons while loading
             [1, 2, 3, 4].map((key) => <ShipmentSkeleton key={key} />)
@@ -282,3 +284,29 @@ const ShipmentSkeleton = () => (
     />
   </View>
 );
+
+const EmptyShipmentState = () => {
+  return (
+    <View
+      style={{
+        alignItems: "center",
+        justifyContent: "center",
+        paddingVertical: 40,
+        paddingHorizontal: 20,
+      }}>
+      <Text style={{ fontSize: 18, fontWeight: "600", color: "#333" }}>
+        No Shipments Found
+      </Text>
+
+      <Text
+        style={{
+          fontSize: 14,
+          color: "#777",
+          textAlign: "center",
+          marginTop: 6,
+        }}>
+        You don’t have any active shipments right now.
+      </Text>
+    </View>
+  );
+};

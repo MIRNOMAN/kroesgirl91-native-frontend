@@ -27,8 +27,7 @@ export default function AuthTitleBlock({
             lineHeight: subtitleSize + 6,
             maxWidth: subtitleMaxWidth,
           },
-        ]}
-      >
+        ]}>
         {subtitle}
       </Text>
     </View>
@@ -44,7 +43,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 31,
     fontWeight: "800",
-    marginTop: 50,
+    marginTop: 8,
     color: COLORS.textPrimary,
     textAlign: "center",
   },
@@ -54,6 +53,5 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "500",
     lineHeight: 22,
-   
   },
 });

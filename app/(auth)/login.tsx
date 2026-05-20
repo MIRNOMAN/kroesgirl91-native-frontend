@@ -66,6 +66,15 @@ export default function LoginScreen() {
       }).unwrap()) as LoginResponse;
 
       if (!response?.success || !response?.data?.accessToken) {
+        console.log({ response });
+        if (response.data?.redirectToOtpVerifyPage) {
+          toast.info(
+            "Account exists but needs verification. Redirecting to OTP verification.",
+          );
+          router.push(`/(auth)/verify-otp?email=${normalizedEmail}`);
+
+          return;
+        }
         toast.error("Login failed. Invalid server response.");
         return;
       }
@@ -78,6 +87,8 @@ export default function LoginScreen() {
       toast.success(response.data.message || response.message);
       router.replace(APP_ROUTES.home);
     } catch (error) {
+      // if(error?.data?.redirectToOtpVerifyPage)
+      console.log({ error });
       toast.error(getErrorMessage(error));
     }
   };

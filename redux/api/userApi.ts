@@ -38,6 +38,7 @@ export type LoginResponse = {
     user: LoginUser;
     accessToken: string;
     message: string;
+    redirectToOtpVerifyPage?: boolean;
   };
 };
 

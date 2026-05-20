@@ -37,7 +37,7 @@ type VerifyErrorShape = {
 
 export default function VerifyOtpScreen() {
   const router = useRouter();
-  const params = useLocalSearchParams<{ otp?: string }>();
+  const params = useLocalSearchParams<{ otp?: string; email?: string }>();
   const [otpValue, setOtpValue] = useState("");
   const [email, setEmail] = useState("");
   const [isVerified, setIsVerified] = useState(false);
@@ -62,12 +62,11 @@ export default function VerifyOtpScreen() {
       }
 
       const savedEmail = await AsyncStorage.getItem(REGISTER_EMAIL_STORAGE_KEY);
-      setEmail(savedEmail?.trim().toLowerCase() || "");
+      setEmail(params.email || savedEmail?.trim().toLowerCase() || "");
     };
 
     loadRegisterEmail();
-  }, []);
-
+  }, [params.email]);
   const getErrorMessage = (error: unknown) => {
     const parsedError = error as VerifyErrorShape;
 
@@ -148,7 +147,7 @@ export default function VerifyOtpScreen() {
               <View style={styles.content}>
                 <Text style={styles.title}>Verify Your Account</Text>
                 <Text style={styles.subtitle}>
-                  Enter the 4 digit OTP code sent to your registered email.
+                  Enter the 4 digit OTP code sent to your registered email
                 </Text>
                 <OtpCodeInput
                   value={otpValue}

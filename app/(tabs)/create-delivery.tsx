@@ -331,6 +331,7 @@ export default function CreateDeliveryScreen() {
         "Required",
         "Please complete pickup details (including street/house number) before next.",
       );
+      return;
     }
 
     setStep("delivery");

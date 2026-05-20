@@ -20,18 +20,16 @@ export default function AuthButton({
       onPress={onPress}
       disabled={disabled}
       className={`
-        h-[56px] w-full rounded-2xl items-center justify-center
+        h-[56px] w-full rounded-2xl mt-5 items-center justify-center
         ${isPrimary ? "btn-primary" : "bg-[#E5E7EB]"}
         active:opacity-80
       `}
-      style={{ opacity: disabled ? 0.65 : 1 }}
-    >
+      style={{ opacity: disabled ? 0.65 : 1 }}>
       <Text
         className={`
           text-[16px] font-bold  tracking-wide
           ${isPrimary ? "text-white" : "text-[#002B3B]"}
-        `}
-      >
+        `}>
         {title}
       </Text>
     </Pressable>

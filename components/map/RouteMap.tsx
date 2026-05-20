@@ -2,7 +2,14 @@ import { useGetRouteCoordinatesMutation } from "@/redux/api/createDelivery";
 import { Ionicons } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { ActivityIndicator, StyleSheet, View } from "react-native";
+import {
+  ActivityIndicator,
+  Modal,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import MapView, {
   Marker,
   Polyline,
@@ -29,7 +36,13 @@ interface RouteMapProps {
   autoFetch?: boolean;
 }
 
-const MAP_TYPES = ["standard", "satellite", "hybrid", "terrain"] as const;
+const MAP_TYPES = ["standard", "hybrid", "terrain"] as const;
+
+const MAP_TYPE_LABELS: Record<(typeof MAP_TYPES)[number], string> = {
+  standard: "Map",
+  hybrid: "Street + Satellite",
+  terrain: "Terrain",
+};
 
 const MIN_DELTA = 0.005;
 
@@ -77,7 +90,6 @@ const RouteMap: React.FC<RouteMapProps> = ({
   const [mapCenter, setMapCenter] = useState<Coordinate | null>(null);
   const [userLocation, setUserLocation] = useState<Coordinate | null>(null);
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
-  const [isPermissionPending, setIsPermissionPending] = useState(false);
   const [mapType, setMapType] = useState<(typeof MAP_TYPES)[number]>("terrain");
   const [mapModalVisible, setMapModalVisible] = useState(false);
   const [isCurrentLocationCentered, setIsCurrentLocationCentered] =
@@ -98,24 +110,15 @@ const RouteMap: React.FC<RouteMapProps> = ({
   // LOCATION
   // =========================
   const goToMyLocation = async () => {
-    if (isCurrentLocationCentered) {
-      initialRegion && mapRef.current?.animateToRegion(initialRegion, 1000);
+    if (!hasPermission) return; // ⛔ do nothing if denied
 
+    if (isCurrentLocationCentered && initialRegion) {
+      mapRef.current?.animateToRegion(initialRegion, 1000);
       setIsCurrentLocationCentered(false);
       return;
     }
 
     try {
-      setIsPermissionPending(true);
-
-      const { status } = await Location.requestForegroundPermissionsAsync();
-
-      if (status !== "granted") {
-        toast.error("Location permission denied");
-        setHasPermission(false);
-        return;
-      }
-
       const location = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.High,
       });
@@ -126,8 +129,6 @@ const RouteMap: React.FC<RouteMapProps> = ({
       };
 
       setUserLocation(coords);
-      setMapCenter(coords);
-      setHasPermission(true);
 
       mapRef.current?.animateToRegion(
         {
@@ -139,11 +140,8 @@ const RouteMap: React.FC<RouteMapProps> = ({
       );
 
       setIsCurrentLocationCentered(true);
-      toast.success("Location fetched");
-    } catch (error) {
+    } catch {
       toast.error("Unable to fetch location");
-    } finally {
-      setIsPermissionPending(false);
     }
   };
 
@@ -185,6 +183,32 @@ const RouteMap: React.FC<RouteMapProps> = ({
       });
     });
   };
+
+  useEffect(() => {
+    (async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+
+      if (status !== "granted") {
+        setHasPermission(false);
+        return;
+      }
+
+      setHasPermission(true);
+
+      const location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.High,
+      });
+
+      const coords = {
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      };
+
+      setUserLocation(coords);
+      setMapCenter(coords);
+      setIsCurrentLocationCentered(true);
+    })();
+  }, []);
 
   // =========================
   // ROUTE FETCH
@@ -363,6 +387,50 @@ const RouteMap: React.FC<RouteMapProps> = ({
           </Marker>
         )}
       </MapView>
+      <View style={styles.mapTypeContainer}>
+        <Pressable
+          style={styles.floatButton}
+          onPress={() => setMapModalVisible(true)}>
+          <Ionicons name="layers" size={22} color="white" />
+        </Pressable>
+      </View>
+
+      {hasPermission && (
+        <View style={styles.buttonContainer}>
+          <Pressable style={styles.floatButton} onPress={goToMyLocation}>
+            <Ionicons name="locate" size={22} color="white" />
+          </Pressable>
+        </View>
+      )}
+
+      <Modal
+        visible={mapModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setMapModalVisible(false)}>
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setMapModalVisible(false)}>
+          <View style={styles.modalBox}>
+            <Text style={styles.modalTitle}>Map Type</Text>
+
+            {MAP_TYPES.map((type) => (
+              <Pressable
+                key={type}
+                style={[
+                  styles.option,
+                  mapType === type && { backgroundColor: "#E5E7EB" },
+                ]}
+                onPress={() => {
+                  setMapType(type);
+                  setMapModalVisible(false);
+                }}>
+                <Text style={styles.optionText}>{MAP_TYPE_LABELS[type]}</Text>
+              </Pressable>
+            ))}
+          </View>
+        </Pressable>
+      </Modal>
 
       {loadingRoute && (
         <View style={styles.loader}>
