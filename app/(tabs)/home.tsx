@@ -1,7 +1,8 @@
+import { Order, OrderCard } from "@/components/ui/shipment";
 import { useGetAllOrdersQuery } from "@/redux/api/createDelivery";
 import { Image } from "expo-image";
 import { Link, useRouter } from "expo-router";
-import React from "react";
+import React, { useMemo } from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -21,40 +22,10 @@ import storeIcon from "../../assets/Custom_icons/store-icon.png";
 import DeliveryCard from "../../components/ui/home/DeliveryCard";
 import HeaderSection from "../../components/ui/home/HeaderSection";
 import ServiceCard from "../../components/ui/home/ServiceCard";
-import type { ShipmentItemProps } from "../../components/ui/home/ShipmentItem";
-import ShipmentItem from "../../components/ui/home/ShipmentItem";
 import homeData from "../../constants/homeData.json";
 import { APP_ROUTES } from "../../constants/routes";
 import { getGreeting } from "../../utils/getGreeting";
-
-// Status steps for dynamic mapping
-const STATUS_STEPS = [
-  { key: "ASSIGNED", label: "Accepted", image: "accepted" },
-  { key: "STARTED", label: "Picked", image: "picked" },
-  {
-    key: "ARRIVED",
-    label: "Out for Delivery",
-    image: "outfordelivery",
-  },
-  { key: "SUCCESSFUL", label: "In Transit", image: "transit" },
-
-  { key: "CANCELLED", label: "Delivered", image: "delivered" },
-];
-
-// Map API status to step index
-const STATUS_INDEX_MAP: Record<string, number> = {
-  PENDING: 0,
-  ACCEPTED: 0,
-  PICKED: 1,
-  IN_TRANSIT: 2,
-  OUT_FOR_DELIVERY: 3,
-  DELIVERED: 4,
-  ASSIGNED: 0,
-  STARTED: 1,
-  ARRIVED: 2,
-  SUCCESSFUL: 3,
-  CANCELLED: 4,
-};
+import { formatOrderDate, normalizeOrderStatus, toTitleCase } from "./shipment";
 
 const SERVICE_IMAGES = {
   "store-icon": storeIcon,
@@ -72,6 +43,37 @@ export default function HomeScreen() {
     limit: 10,
     status: "PENDING",
   });
+
+  const orderCardData: Order[] = useMemo(
+    () =>
+      (ordersResponse?.data ?? []).map((order: any, index: number) => ({
+        id: String(order?.id ?? index),
+
+        date: formatOrderDate(order?.deliveryDate || order?.createdAt || ""),
+
+        status: normalizeOrderStatus(order?.status),
+
+        price: Number(order?.totalPrice ?? 0),
+
+        shippingType: order?.paymentMethod
+          ? toTitleCase(order.paymentMethod)
+          : "__",
+
+        // ✅ keep raw values or fallback to undefined (NOT "N/A")
+        origin: order?.pickupAddress ?? "",
+        destination: order?.deliveryAddress ?? "",
+
+        // optional (if you have street separately in API)
+        pickup_street_address: order?.pickup_street_address ?? "",
+        delivery_street_address: order?.delivery_street_address ?? "",
+
+        pickupStatus: order.pickupStatus,
+
+        deliveryStatus: order.deliveryStatus,
+      })),
+    [ordersResponse],
+  ).slice(0, 5); // Limit to 5 items for home screen
+
   const router = useRouter();
   const orders = ordersResponse?.data.slice(0, 5) || [];
   const hasCurrentShipments = orders.length > 0;
@@ -194,32 +196,16 @@ export default function HomeScreen() {
 
         {orders.length === 0 && !isLoading && <EmptyShipmentState />}
 
-        {isLoading
-          ? // Render a fixed number of skeletons while loading
-            [1, 2, 3, 4].map((key) => <ShipmentSkeleton key={key} />)
-          : orders.map(
-              (
-                shipment: ShipmentItemProps & {
-                  deliveryName?: string;
-                  status?: string;
-                },
-              ) => (
+        <View className="p-4">
+          {isLoading
+            ? // Render a fixed number of skeletons while loading
+              [1, 2, 3, 4].map((key) => <ShipmentSkeleton key={key} />)
+            : orderCardData.map((shipment: any) => (
                 <>
-                  <ShipmentItem
-                    key={shipment.id}
-                    id={shipment.tookanJobId || shipment.id}
-                    name={shipment.deliveryName || shipment.name}
-                    status={shipment.status}
-                    onPress={() => {
-                      router.push({
-                        pathname: "/(tabs)/tracking",
-                        params: { ordersId: shipment.id },
-                      });
-                    }}
-                  />
+                  <OrderCard key={shipment.id} order={shipment} />
                 </>
-              ),
-            )}
+              ))}
+        </View>
       </ScrollView>
       <Image
         source={backround}

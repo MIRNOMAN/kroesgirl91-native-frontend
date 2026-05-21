@@ -47,7 +47,7 @@ const STATUS_FILTERS: StatusFilter[] = [
   "CANCELLED",
 ];
 
-const toTitleCase = (value?: string | null) => {
+export const toTitleCase = (value?: string | null) => {
   if (!value || typeof value !== "string") {
     return "N/A";
   }
@@ -59,7 +59,7 @@ const toTitleCase = (value?: string | null) => {
     .join(" ");
 };
 
-const formatOrderDate = (date: string) => {
+export const formatOrderDate = (date: string) => {
   const parsedDate = new Date(date);
   if (Number.isNaN(parsedDate.getTime())) {
     return date;
@@ -72,7 +72,9 @@ const formatOrderDate = (date: string) => {
   });
 };
 
-const normalizeOrderStatus = (status?: TOrderStatus | null): ShipmentStatus => {
+export const normalizeOrderStatus = (
+  status?: TOrderStatus | null,
+): ShipmentStatus => {
   const normalized = String(status || "").toUpperCase();
 
   switch (normalized) {
@@ -172,6 +174,9 @@ export default function ShipmentScreen() {
         // optional (if you have street separately in API)
         pickup_street_address: order?.pickup_street_address ?? "",
         delivery_street_address: order?.delivery_street_address ?? "",
+
+        pickupStatus: order?.pickupStatus ?? null,
+        deliveryStatus: order?.deliveryStatus ?? null,
       })),
     [allOrders],
   );

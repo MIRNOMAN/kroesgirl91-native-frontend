@@ -127,6 +127,9 @@ export type TAgent = {
   deviceType?: number | null;
   createdAt?: string;
   updatedAt?: string;
+
+  pickupStatus?: string;
+  deliveryStatus?: string;
 };
 
 export type TAgentResponse = {

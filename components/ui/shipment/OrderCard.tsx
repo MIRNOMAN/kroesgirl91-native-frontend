@@ -21,6 +21,9 @@ export interface Order {
   destination: string;
   pickup_street_address?: string;
   delivery_street_address?: string;
+
+  pickupStatus: string | null;
+  deliveryStatus: string | null;
 }
 
 const getStatusColor = (status: string) => {
@@ -52,12 +55,19 @@ interface OrderCardProps {
 export const OrderCard = ({ order }: OrderCardProps) => {
   const statusColor = getStatusColor(order.status);
 
-  // ✅ Split address safely
   const pickupStreet = order.pickup_street_address;
   const pickupLocation = order.origin;
 
   const deliveryStreet = order.delivery_street_address;
   const deliveryLocation = order.destination;
+
+  const pickupStatusColor = order.pickupStatus
+    ? getStatusColor(order.pickupStatus)
+    : null;
+
+  const deliveryStatusColor = order.deliveryStatus
+    ? getStatusColor(order.deliveryStatus)
+    : null;
 
   return (
     <View style={styles.orderCard}>
@@ -83,7 +93,7 @@ export const OrderCard = ({ order }: OrderCardProps) => {
         </View>
 
         <View style={styles.orderPriceContainer}>
-          <Text style={styles.orderPrice}>${order.price.toFixed(2)}</Text>
+          <Text style={styles.orderPrice}>${order.price?.toFixed(2)}</Text>
 
           <Text style={styles.shippingType} numberOfLines={1}>
             {order.shippingType}
@@ -102,26 +112,68 @@ export const OrderCard = ({ order }: OrderCardProps) => {
         <View style={styles.routeContent}>
           {/* PICKUP */}
           <View style={styles.routeItem}>
-            <Text style={styles.routeTitle}>Pickup</Text>
+            <View style={styles.routeRow}>
+              <View style={styles.routeTextBlock}>
+                <Text style={styles.routeTitle}>Pickup</Text>
 
-            <Text style={styles.routeTextBold}>
-              {pickupStreet ? pickupStreet : "__"}
-            </Text>
+                <Text style={styles.routeTextBold}>
+                  {pickupStreet ? pickupStreet : "__"}
+                </Text>
 
-            <Text style={styles.routeText}>
-              {pickupLocation ? pickupLocation : "__"}
-            </Text>
+                <Text style={styles.routeText}>
+                  {pickupLocation ? pickupLocation : "__"}
+                </Text>
+              </View>
+
+              {pickupStatusColor && (
+                <View
+                  style={[
+                    styles.statusBadge,
+                    { backgroundColor: pickupStatusColor.bg },
+                  ]}>
+                  <Text
+                    style={[
+                      styles.statusText,
+                      { color: pickupStatusColor.text },
+                    ]}>
+                    {toDisplayLabel(order.pickupStatus!)}
+                  </Text>
+                </View>
+              )}
+            </View>
           </View>
 
           {/* DELIVERY */}
-          <View style={{ ...styles.routeItem, marginBottom: -4 }}>
-            <Text style={styles.routeTextBold}>
-              {deliveryStreet ? deliveryStreet : "__"}
-            </Text>
-            <Text style={styles.routeText}>
-              {deliveryLocation ? deliveryLocation : "__"}
-            </Text>
-            <Text style={styles.routeTitle}>Delivery</Text>ß
+          <View style={[styles.routeItem, { marginBottom: -4 }]}>
+            <View style={styles.routeRow}>
+              <View style={styles.routeTextBlock}>
+                <Text style={styles.routeTitle}>Delivery</Text>
+
+                <Text style={styles.routeTextBold}>
+                  {deliveryStreet ? deliveryStreet : "__"}
+                </Text>
+
+                <Text style={styles.routeText}>
+                  {deliveryLocation ? deliveryLocation : "__"}
+                </Text>
+              </View>
+
+              {deliveryStatusColor && (
+                <View
+                  style={[
+                    styles.statusBadge,
+                    { backgroundColor: deliveryStatusColor.bg },
+                  ]}>
+                  <Text
+                    style={[
+                      styles.statusText,
+                      { color: deliveryStatusColor.text },
+                    ]}>
+                    {toDisplayLabel(order.deliveryStatus!)}
+                  </Text>
+                </View>
+              )}
+            </View>
           </View>
         </View>
       </View>
@@ -231,6 +283,7 @@ const styles = StyleSheet.create({
     width: 1.5,
     flex: 1,
     minHeight: 18,
+    height: 45,
     backgroundColor: "#D1D5DB",
     marginVertical: 2,
   },
@@ -251,7 +304,6 @@ const styles = StyleSheet.create({
 
   routeContent: {
     flex: 1,
-    justifyContent: "space-between",
   },
 
   routeTitle: {
@@ -275,8 +327,19 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     lineHeight: 18,
   },
+
   routeItem: {
     marginBottom: 26,
-    gap: 2,
+  },
+
+  routeRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+  },
+
+  routeTextBlock: {
+    flex: 1,
+    paddingRight: 10,
   },
 });
