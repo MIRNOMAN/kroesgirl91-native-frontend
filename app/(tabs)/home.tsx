@@ -38,7 +38,11 @@ const BACKGROUND_IMAGES = {
 } as const;
 
 export default function HomeScreen() {
-  const { data: ordersResponse, isLoading } = useGetAllOrdersQuery({
+  const {
+    data: ordersResponse,
+    isLoading,
+    isFetching,
+  } = useGetAllOrdersQuery({
     page: 1,
     limit: 10,
     status: "PENDING",
@@ -197,7 +201,7 @@ export default function HomeScreen() {
         {orders.length === 0 && !isLoading && <EmptyShipmentState />}
 
         <View className="p-4">
-          {isLoading
+          {isLoading || isFetching
             ? // Render a fixed number of skeletons while loading
               [1, 2, 3, 4].map((key) => <ShipmentSkeleton key={key} />)
             : orderCardData.map((shipment: any) => (
@@ -223,6 +227,98 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
+  skeletonCard: {
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#F0F0F0",
+  },
+
+  skeletonHeader: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+  },
+
+  skeletonIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: "#E5E7EB",
+  },
+
+  skeletonMiddle: {
+    flex: 1,
+    marginLeft: 12,
+  },
+
+  skeletonRight: {
+    alignItems: "flex-end",
+    maxWidth: "35%",
+  },
+
+  skeletonRoute: {
+    flexDirection: "row",
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: "#F0F0F0",
+  },
+
+  skeletonRouteIconCol: {
+    alignItems: "center",
+    marginRight: 10,
+  },
+
+  skeletonDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 999,
+    backgroundColor: "#E5E7EB",
+  },
+
+  skeletonLineVertical: {
+    width: 1.5,
+    flex: 1,
+    backgroundColor: "#E5E7EB",
+    marginVertical: 4,
+  },
+
+  skeletonLineShort: {
+    width: "40%",
+    height: 12,
+    backgroundColor: "#E5E7EB",
+    borderRadius: 6,
+  },
+
+  skeletonLineMedium: {
+    width: "70%",
+    height: 12,
+    backgroundColor: "#E5E7EB",
+    borderRadius: 6,
+  },
+
+  skeletonLineTiny: {
+    width: "30%",
+    height: 10,
+    backgroundColor: "#E5E7EB",
+    borderRadius: 6,
+  },
+
+  skeletonBadge: {
+    width: 80,
+    height: 18,
+    borderRadius: 10,
+    backgroundColor: "#E5E7EB",
+  },
+
+  skeletonChip: {
+    width: 60,
+    height: 20,
+    borderRadius: 20,
+    backgroundColor: "#E5E7EB",
+  },
   safeArea: {
     flex: 1,
     backgroundColor: "#fff",
@@ -252,24 +348,52 @@ const styles = StyleSheet.create({
   },
 });
 
-const ShipmentSkeleton = () => (
-  <View
-    style={{
-      padding: 5,
-      paddingLeft: 16,
-      paddingRight: 16,
-      borderColor: "#eee",
-    }}>
-    {/* Mimic the Name/Title */}
-    <View
-      style={{
-        height: 60,
-        backgroundColor: "#E1E9EE",
-        borderRadius: 4,
-      }}
-    />
-  </View>
-);
+const ShipmentSkeleton = () => {
+  return (
+    <View style={styles.skeletonCard}>
+      {/* HEADER */}
+      <View style={styles.skeletonHeader}>
+        {/* ICON */}
+        <View style={styles.skeletonIcon} />
+
+        {/* DETAILS */}
+        <View style={styles.skeletonMiddle}>
+          <View style={styles.skeletonLineShort} />
+          <View style={[styles.skeletonLineTiny, { marginTop: 6 }]} />
+          <View style={[styles.skeletonBadge, { marginTop: 10 }]} />
+        </View>
+
+        {/* PRICE */}
+        <View style={styles.skeletonRight}>
+          <View style={styles.skeletonLineMedium} />
+          <View style={[styles.skeletonLineTiny, { marginTop: 6 }]} />
+          <View style={[styles.skeletonChip, { marginTop: 10 }]} />
+        </View>
+      </View>
+
+      {/* ROUTE */}
+      <View style={styles.skeletonRoute}>
+        {/* LEFT ICON COLUMN */}
+        <View style={styles.skeletonRouteIconCol}>
+          <View style={styles.skeletonDot} />
+          <View style={styles.skeletonLineVertical} />
+          <View style={styles.skeletonDot} />
+        </View>
+
+        {/* RIGHT CONTENT */}
+        <View style={{ flex: 1 }}>
+          <View style={styles.skeletonLineShort} />
+          <View style={[styles.skeletonLineMedium, { marginTop: 8 }]} />
+
+          <View style={{ marginTop: 16 }}>
+            <View style={styles.skeletonLineShort} />
+            <View style={[styles.skeletonLineMedium, { marginTop: 8 }]} />
+          </View>
+        </View>
+      </View>
+    </View>
+  );
+};
 
 const EmptyShipmentState = () => {
   return (

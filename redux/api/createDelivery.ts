@@ -159,6 +159,17 @@ const createDeliveryApi = baseApi.injectEndpoints({
         body: data,
       }),
     }),
+
+    cancelOrder: build.mutation<
+      { success?: boolean; message?: string },
+      string
+    >({
+      query: (id) => ({
+        url: `/orders/cancel/${id}`,
+        method: "POST", // change to DELETE if your backend uses DELETE
+      }),
+      invalidatesTags: ["Deliveries"],
+    }),
   }),
 });
 
@@ -169,4 +180,5 @@ export const {
   useOrderByIdQuery,
   useGetEstimatedPriceMutation,
   useGetRouteCoordinatesMutation,
+  useCancelOrderMutation,
 } = createDeliveryApi;
