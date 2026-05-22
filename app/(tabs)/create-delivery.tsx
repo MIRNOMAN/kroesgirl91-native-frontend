@@ -564,25 +564,16 @@ export default function CreateDeliveryScreen() {
   const getShipmentSummary = () => ({
     pickupFrom: {
       label: "PICKUP FROM",
-      address:
-        [pickupData.streetNumber, pickupData.fullAddress]
-          .filter(Boolean)
-          .join(", ") || "123 Main St, Paramaribo",
+      streetAddress: pickupData.streetNumber || "123 Main St",
+      address: pickupData.fullAddress || "Paramaribo",
       details: pickupData.phoneNumber || "+597 xx-xxxx",
     },
     deliverTo: {
       label: "DELIVER TO",
       name: deliveryData.name || "Jane Doe",
-      address:
-        [deliveryData.streetNumber, deliveryData.fullAddress]
-          .filter(Boolean)
-          .join(", ") || "456 Delivery St, Nickerie",
+      streetAddress: deliveryData.streetNumber || "456 Delivery St",
+      address: deliveryData.fullAddress || "Nickerie",
       details: deliveryData.phoneNumber || "+597 xx-xxxx",
-    },
-    parcelDetails: {
-      label: "PARCEL DETAILS",
-      description: packageData.description || "Electronics & Documents",
-      weight: `Weight: ${packageData.weight} kg`,
     },
   });
 

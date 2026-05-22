@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Dimensions,
   StyleSheet,
@@ -80,7 +80,14 @@ const ChooseRide: React.FC<ChooseRideProps> = ({
     };
   }, [selectedRideOption]);
 
-  const canProceed = Boolean(selectedRide) && !distanceInfo?.exceeded;
+  const canProceed =
+    distanceInfo?.distance && !isLoading && !distanceInfo?.exceeded;
+
+  useEffect(() => {
+    if (!isLoading && rideOptions.length > 0 && !selectedRide) {
+      onSelectRide(rideOptions[0].id);
+    }
+  }, [isLoading, rideOptions, selectedRide, onSelectRide]);
 
   const formatPrice = (price: number) => {
     if (!Number.isFinite(price)) return "0";
@@ -269,12 +276,16 @@ const ChooseRide: React.FC<ChooseRideProps> = ({
       )}
 
       <View style={styles.buttonContainer}>
-        <DeliveryButton
-          title="Next"
-          onPress={onNext}
-          disabled={canProceed ? false : true}
-          loading={isLoading}
-        />
+        <DeliveryButton title="Next" onPress={onNext} disabled={!canProceed} />
+        <Text>
+          {isLoading
+            ? "Loading ride options..."
+            : !distanceInfo?.distance
+              ? "Calculating distance..."
+              : distanceInfo.exceeded
+                ? `Distance exceeded by ${distanceInfo.exceededBy} km`
+                : `Distance: ${distanceInfo.distance} km / Max: ${distanceInfo.max} km`}
+        </Text>
       </View>
     </View>
   );

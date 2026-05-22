@@ -6,6 +6,7 @@ import {
   Text,
   TouchableOpacity,
 } from "react-native";
+import { toast } from "sonner-native";
 
 const { width } = Dimensions.get("window");
 const isSmallDevice = width < 375;
@@ -50,7 +51,13 @@ const DeliveryButton: React.FC<DeliveryButtonProps> = ({
   return (
     <TouchableOpacity
       style={[getButtonStyle(), disabled && styles.disabledButton]}
-      onPress={disabled ? undefined : onPress}
+      onPress={() => {
+        toast.success(
+          `Button pressed: ${title}, disabled: ${disabled}, loading: ${loading}`,
+        );
+        if (disabled || loading) return;
+        onPress();
+      }}
       disabled={disabled || loading}
       activeOpacity={1}>
       {loading ? (

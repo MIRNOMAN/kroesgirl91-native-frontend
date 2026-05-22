@@ -11,19 +11,16 @@ const isSmallDevice = width < 375;
 interface ShipmentSummary {
   pickupFrom: {
     label: string;
+    streetAddress: string;
     address: string;
     details: string;
   };
   deliverTo: {
     label: string;
     name: string;
+    streetAddress: string;
     address: string;
     details: string;
-  };
-  parcelDetails: {
-    label: string;
-    description: string;
-    weight: string;
   };
 }
 
@@ -57,7 +54,6 @@ const CashOnDelivery: React.FC<CashOnDeliveryProps> = ({
   distance = "0",
   pricingBreakdown,
 }) => {
-  const total = pricingDetails.deliveryFee + pricingDetails.serviceFee;
   const [isAgreedToProhibited, setIsAgreedToProhibited] = React.useState(false);
 
   return (
@@ -108,6 +104,9 @@ const CashOnDelivery: React.FC<CashOnDeliveryProps> = ({
               {shipmentSummary.pickupFrom.label}
             </Text>
             <Text style={styles.summaryValue}>
+              {shipmentSummary.pickupFrom.streetAddress}
+            </Text>
+            <Text style={styles.summaryDetails}>
               {shipmentSummary.pickupFrom.address}
             </Text>
             <Text style={styles.summaryDetails}>
@@ -129,6 +128,9 @@ const CashOnDelivery: React.FC<CashOnDeliveryProps> = ({
               {shipmentSummary.deliverTo.name}
             </Text>
             <Text style={styles.summaryDetails}>
+              {shipmentSummary.deliverTo.streetAddress}
+            </Text>
+            <Text style={styles.summaryDetails}>
               {shipmentSummary.deliverTo.address}
             </Text>
             <Text style={styles.summaryDetails}>
@@ -141,17 +143,6 @@ const CashOnDelivery: React.FC<CashOnDeliveryProps> = ({
         <View style={styles.summaryRow}>
           <View style={styles.summaryDot}>
             <Ionicons name="cube-outline" size={16} color="#F5A623" />
-          </View>
-          <View style={styles.summaryContent}>
-            <Text style={styles.summaryLabel}>
-              {shipmentSummary.parcelDetails.label}
-            </Text>
-            <Text style={styles.summaryValue}>
-              {shipmentSummary.parcelDetails.description}
-            </Text>
-            <Text style={styles.summaryDetails}>
-              {shipmentSummary.parcelDetails.weight}
-            </Text>
           </View>
         </View>
       </View>
