@@ -82,7 +82,7 @@ export const OrderCard = ({ order }: OrderCardProps) => {
 
   return (
     // 2. Added 'asChild' prop here
-    <Link href={`/tracking?orderId=${order.id}`} asChild>
+    <Link href={`/tracking?ordersId=${order.id}`} asChild>
       {/* 3. Changed root wrapper to Pressable and passed the styles here */}
       <Pressable style={styles.orderCard}>
         {/* HEADER */}
