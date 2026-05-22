@@ -21,6 +21,7 @@ interface PickupData {
 interface PickupDetailsProps {
   title: string;
   subtitle: string;
+  isStorePickup: boolean;
   data: PickupData;
   onDataChange: (data: PickupData) => void;
   onNext: () => void;
@@ -29,6 +30,7 @@ interface PickupDetailsProps {
 const PickupDetails: React.FC<PickupDetailsProps> = ({
   title,
   subtitle,
+  isStorePickup,
   data,
   onDataChange,
   onNext,
@@ -50,8 +52,8 @@ const PickupDetails: React.FC<PickupDetailsProps> = ({
 
       <View style={styles.form}>
         <DeliveryInput
-          label="Name"
-          placeholder="Enter name"
+          label={isStorePickup ? "Store Name" : "Name"}
+          placeholder={isStorePickup ? "Enter store name" : "Enter name"}
           value={data.fullName}
           onChangeText={(text) =>
             onDataChange({
@@ -63,8 +65,10 @@ const PickupDetails: React.FC<PickupDetailsProps> = ({
         />
 
         <DeliveryInput
-          label="Store Phone Number"
-          placeholder="Enter store phone number"
+          label={isStorePickup ? "Store Phone Number" : "Phone Number"}
+          placeholder={
+            isStorePickup ? "Enter store phone number" : "Enter phone number"
+          }
           value={data.phoneNumber}
           onChangeText={(text) =>
             onDataChange({
@@ -78,8 +82,10 @@ const PickupDetails: React.FC<PickupDetailsProps> = ({
 
         <DeliveryInput
           ref={addressRef}
-          label="Store Address"
-          placeholder="Search store address"
+          label={isStorePickup ? "Store Address" : "Address"}
+          placeholder={
+            isStorePickup ? "Search store address" : "Search address"
+          }
           value={data.fullAddress}
           onChangeText={(text) => {
             onDataChange({
@@ -95,8 +101,14 @@ const PickupDetails: React.FC<PickupDetailsProps> = ({
         />
 
         <DeliveryInput
-          label="Street / House No."
-          placeholder="Enter street or house number"
+          label={
+            isStorePickup ? "Store Street / House No." : "Street / House No."
+          }
+          placeholder={
+            isStorePickup
+              ? "Enter store street or house number"
+              : "Enter street or house number"
+          }
           value={data.streetNumber || ""}
           onChangeText={(text) =>
             onDataChange({

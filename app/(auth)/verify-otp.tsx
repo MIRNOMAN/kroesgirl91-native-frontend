@@ -119,14 +119,6 @@ export default function VerifyOtpScreen() {
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={{ flexGrow: 1 }}>
           <View style={styles.container}>
-            <View style={styles.topLogoContainer}>
-              <Image
-                source={require("../../assets/login/login_icons.png")}
-                style={styles.topLogo}
-                contentFit="contain"
-              />
-            </View>
-
             {isVerified ? (
               <View style={styles.content}>
                 <View style={styles.iconWrap}>

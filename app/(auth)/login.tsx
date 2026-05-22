@@ -1,7 +1,6 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
-  Image,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
@@ -107,14 +106,6 @@ export default function LoginScreen() {
             <View style={styles.container}>
               {/* ================= TOP CONTENT ================= */}
               <View style={styles.content}>
-                <View style={styles.logoContainer}>
-                  <Image
-                    source={require("../../assets/login/login_icons.png")}
-                    style={styles.logo}
-                    resizeMode="contain"
-                  />
-                </View>
-
                 <AuthTitleBlock
                   title="Sign In Account"
                   subtitle="Start your journey in playmate with fun, interactive lessons now"

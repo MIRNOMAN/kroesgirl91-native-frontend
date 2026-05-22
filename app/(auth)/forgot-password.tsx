@@ -2,7 +2,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
-  Image,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
@@ -91,14 +90,6 @@ export default function ForgotPasswordScreen() {
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled">
             <View style={styles.content}>
-              <View style={styles.logoContainer}>
-                <Image
-                  source={require("../../assets/login/login_icons.png")}
-                  style={styles.logo}
-                  resizeMode="contain"
-                />
-              </View>
-
               <AuthTitleBlock
                 title="Forget Password"
                 subtitle="Enter your email here. Give valid email to reset your password"

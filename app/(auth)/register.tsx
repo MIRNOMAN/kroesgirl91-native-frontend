@@ -2,7 +2,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
-  Image,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
@@ -142,14 +141,6 @@ export default function RegisterScreen() {
           <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
             <View style={styles.container}>
               <View style={styles.content}>
-                <View style={styles.logoContainer}>
-                  <Image
-                    source={require("../../assets/login/login_icons.png")}
-                    style={styles.logo}
-                    resizeMode="contain"
-                  />
-                </View>
-
                 <AuthTitleBlock
                   title="Create An Account"
                   subtitle="Create your account to access unlimited payment options."

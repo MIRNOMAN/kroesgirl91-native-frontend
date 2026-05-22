@@ -121,6 +121,9 @@ type TrackingResponseData = {
 export default function CreateDeliveryScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ title?: string }>();
+  const isStorePickup =
+    typeof params.title === "string" &&
+    params.title.trim().toLowerCase() === "store pickup";
   const [currentStep, setCurrentStep] = useState(1);
   const [step, setStep] = useState<Step>("pickup");
   const [showConfirmed, setShowConfirmed] = useState(false);
@@ -590,6 +593,7 @@ export default function CreateDeliveryScreen() {
           <PickupDetails
             title={createDeliveryData.pickupDetails.title}
             subtitle={createDeliveryData.pickupDetails.subtitle}
+            isStorePickup={isStorePickup}
             data={pickupData}
             onDataChange={setPickupData}
             onNext={handlePickupNext}

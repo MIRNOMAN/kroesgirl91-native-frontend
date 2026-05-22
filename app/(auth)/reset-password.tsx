@@ -3,7 +3,6 @@ import { useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import { useEffect, useState } from "react";
 import {
-  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -152,14 +151,6 @@ export default function ResetPasswordScreen() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}>
           <View style={styles.content}>
-            <View style={styles.logoContainer}>
-              <Image
-                source={require("../../assets/login/login_icons.png")}
-                style={styles.logo}
-                resizeMode="contain"
-              />
-            </View>
-
             <AuthTitleBlock
               title="Reset Password"
               subtitle="Add your new password"
