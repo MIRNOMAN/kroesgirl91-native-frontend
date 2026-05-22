@@ -72,7 +72,7 @@ export default function TabsLayout() {
           />
         ),
         sceneStyle: {
-          paddingBottom: Platform.OS === "ios" ? 110 : 0,
+          paddingBottom: Platform.OS === "ios" ? 0 : 0,
         },
       })}>
       <Tabs.Screen name="home" options={{ title: "Home" }} />
