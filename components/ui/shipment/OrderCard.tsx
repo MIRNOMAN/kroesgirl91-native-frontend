@@ -1,5 +1,6 @@
 import { Feather } from "@expo/vector-icons";
-import { Dimensions, StyleSheet, Text, View } from "react-native";
+import { Link } from "expo-router";
+import { Dimensions, Pressable, StyleSheet, Text, View } from "react-native";
 import { COLORS } from "../../../constants/colors";
 
 const { width } = Dimensions.get("window");
@@ -61,123 +62,137 @@ export const OrderCard = ({ order }: OrderCardProps) => {
   const deliveryStreet = order.delivery_street_address;
   const deliveryLocation = order.destination;
 
-  const pickupStatusColor = order.pickupStatus
-    ? getStatusColor(order.pickupStatus)
-    : null;
+  const shouldShowSubStatuses =
+    order.pickupStatus !== order.status ||
+    order.deliveryStatus !== order.status;
 
-  const deliveryStatusColor = order.deliveryStatus
-    ? getStatusColor(order.deliveryStatus)
-    : null;
+  const pickupStatusColor =
+    shouldShowSubStatuses &&
+    order.pickupStatus &&
+    order.pickupStatus !== order.status
+      ? getStatusColor(order.pickupStatus)
+      : null;
+
+  const deliveryStatusColor =
+    shouldShowSubStatuses &&
+    order.deliveryStatus &&
+    order.deliveryStatus !== order.status
+      ? getStatusColor(order.deliveryStatus)
+      : null;
 
   return (
-    <View style={styles.orderCard}>
-      {/* HEADER */}
-      <View style={styles.orderCardContent}>
-        <View style={styles.orderIconContainer}>
-          <Feather name="package" size={24} color="#F5A623" />
-        </View>
+    // 2. Added 'asChild' prop here
+    <Link href={`/tracking?orderId=${order.id}`} asChild>
+      {/* 3. Changed root wrapper to Pressable and passed the styles here */}
+      <Pressable style={styles.orderCard}>
+        {/* HEADER */}
+        <View style={styles.orderCardContent}>
+          <View style={styles.orderIconContainer}>
+            <Feather name="package" size={24} color="#F5A623" />
+          </View>
 
-        <View style={styles.orderDetails}>
-          <Text style={styles.orderId} numberOfLines={1}>
-            {order.id}
-          </Text>
+          <View style={styles.orderDetails}>
+            <Text style={styles.orderId} numberOfLines={1}>
+              {order.id}
+            </Text>
 
-          <Text style={styles.orderDate}>{order.date}</Text>
+            <Text style={styles.orderDate}>{order.date}</Text>
 
-          <View
-            style={[styles.statusBadge, { backgroundColor: statusColor.bg }]}>
-            <Text style={[styles.statusText, { color: statusColor.text }]}>
-              {toDisplayLabel(order.status)}
+            <View
+              style={[styles.statusBadge, { backgroundColor: statusColor.bg }]}>
+              <Text style={[styles.statusText, { color: statusColor.text }]}>
+                {toDisplayLabel(order.status)}
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.orderPriceContainer}>
+            <Text style={styles.orderPrice}>${order.price?.toFixed(2)}</Text>
+
+            <Text style={styles.shippingType} numberOfLines={1}>
+              {order.shippingType}
             </Text>
           </View>
         </View>
 
-        <View style={styles.orderPriceContainer}>
-          <Text style={styles.orderPrice}>${order.price?.toFixed(2)}</Text>
-
-          <Text style={styles.shippingType} numberOfLines={1}>
-            {order.shippingType}
-          </Text>
-        </View>
-      </View>
-
-      {/* ROUTE */}
-      <View style={styles.routeContainer}>
-        <View style={styles.routeIconWrapper}>
-          <View style={styles.pickupDot} />
-          <View style={styles.routeLine} />
-          <View style={styles.deliveryDot} />
-        </View>
-
-        <View style={styles.routeContent}>
-          {/* PICKUP */}
-          <View style={styles.routeItem}>
-            <View style={styles.routeRow}>
-              <View style={styles.routeTextBlock}>
-                <Text style={styles.routeTitle}>Pickup</Text>
-
-                <Text style={styles.routeTextBold}>
-                  {pickupStreet ? pickupStreet : "__"}
-                </Text>
-
-                <Text style={styles.routeText}>
-                  {pickupLocation ? pickupLocation : "__"}
-                </Text>
-              </View>
-
-              {pickupStatusColor && (
-                <View
-                  style={[
-                    styles.statusBadge,
-                    { backgroundColor: pickupStatusColor.bg },
-                  ]}>
-                  <Text
-                    style={[
-                      styles.statusText,
-                      { color: pickupStatusColor.text },
-                    ]}>
-                    {toDisplayLabel(order.pickupStatus!)}
-                  </Text>
-                </View>
-              )}
-            </View>
+        {/* ROUTE */}
+        <View style={styles.routeContainer}>
+          <View style={styles.routeIconWrapper}>
+            <View style={styles.pickupDot} />
+            <View style={styles.routeLine} />
+            <View style={styles.deliveryDot} />
           </View>
 
-          {/* DELIVERY */}
-          <View style={[styles.routeItem, { marginBottom: -4 }]}>
-            <View style={styles.routeRow}>
-              <View style={styles.routeTextBlock}>
-                <Text style={styles.routeTitle}>Delivery</Text>
+          <View style={styles.routeContent}>
+            {/* PICKUP */}
+            <View style={styles.routeItem}>
+              <View style={styles.routeRow}>
+                <View style={styles.routeTextBlock}>
+                  <Text style={styles.routeTitle}>Pickup</Text>
 
-                <Text style={styles.routeTextBold}>
-                  {deliveryStreet ? deliveryStreet : "__"}
-                </Text>
+                  <Text style={styles.routeTextBold}>
+                    {pickupStreet ? pickupStreet : "__"}
+                  </Text>
 
-                <Text style={styles.routeText}>
-                  {deliveryLocation ? deliveryLocation : "__"}
-                </Text>
-              </View>
-
-              {deliveryStatusColor && (
-                <View
-                  style={[
-                    styles.statusBadge,
-                    { backgroundColor: deliveryStatusColor.bg },
-                  ]}>
-                  <Text
-                    style={[
-                      styles.statusText,
-                      { color: deliveryStatusColor.text },
-                    ]}>
-                    {toDisplayLabel(order.deliveryStatus!)}
+                  <Text style={styles.routeText}>
+                    {pickupLocation ? pickupLocation : "__"}
                   </Text>
                 </View>
-              )}
+
+                {pickupStatusColor && (
+                  <View
+                    style={[
+                      styles.statusBadge,
+                      { backgroundColor: pickupStatusColor.bg },
+                    ]}>
+                    <Text
+                      style={[
+                        styles.statusText,
+                        { color: pickupStatusColor.text },
+                      ]}>
+                      {toDisplayLabel(order.pickupStatus!)}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            </View>
+
+            {/* DELIVERY */}
+            <View style={[styles.routeItem, { marginBottom: 0 }]}>
+              <View style={styles.routeRow}>
+                <View style={styles.routeTextBlock}>
+                  <Text style={styles.routeTitle}>Delivery</Text>
+
+                  <Text style={styles.routeTextBold}>
+                    {deliveryStreet ? deliveryStreet : "__"}
+                  </Text>
+
+                  <Text style={styles.routeText}>
+                    {deliveryLocation ? deliveryLocation : "__"}
+                  </Text>
+                </View>
+
+                {deliveryStatusColor && (
+                  <View
+                    style={[
+                      styles.statusBadge,
+                      { backgroundColor: deliveryStatusColor.bg },
+                    ]}>
+                    <Text
+                      style={[
+                        styles.statusText,
+                        { color: deliveryStatusColor.text },
+                      ]}>
+                      {toDisplayLabel(order.deliveryStatus!)}
+                    </Text>
+                  </View>
+                )}
+              </View>
             </View>
           </View>
         </View>
-      </View>
-    </View>
+      </Pressable>
+    </Link>
   );
 };
 
