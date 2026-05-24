@@ -1,16 +1,16 @@
 {
   "expo": {
     "name": "Swift Drop",
-    "slug": "SwiftDrop",
+    "slug": "swift-drop",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "kroesgirl91",
+    "scheme": "swiftdrop",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "jsEngine": "hermes",
     "ios": {
-      "jsEngine": "jsc",
+      "jsEngine": "hermes",
       "supportsTablet": true,
       "config": {
         "googleMapsApiKey": "AIzaSyDogt_n_mKUk46rQaxHgcBp9XXDKb_AkMY"
@@ -21,9 +21,9 @@
           "NSAllowsArbitraryLoads": true
         },
         "NSLocationWhenInUseUsageDescription": "This app needs access to your location to show you on the map.",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "This app needs access to your location to show you on the map."
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "This app needs access to your location to monitor deliveries in the background."
       },
-      "bundleIdentifier": "com.casonclifton.kroesgirl91"
+      "bundleIdentifier": "com.swiftdrop.app"
     },
     "android": {
       "config": {
@@ -37,15 +37,10 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "permissions": [
-        "ACCESS_FINE_LOCATION",
-        "ACCESS_COARSE_LOCATION",
-        "android.permission.ACCESS_COARSE_LOCATION",
-        "android.permission.ACCESS_FINE_LOCATION"
-      ],
+      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"],
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.casonclifton.kroesgirl91"
+      "package": "com.swiftdrop.app"
     },
     "web": {
       "output": "static",
@@ -68,9 +63,9 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff",
+          "backgroundColor": "#002B3B",
           "dark": {
-            "backgroundColor": "#000000"
+            "backgroundColor": "#002B3B"
           }
         }
       ]
