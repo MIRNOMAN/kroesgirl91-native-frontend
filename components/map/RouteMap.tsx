@@ -357,7 +357,7 @@ const RouteMap: React.FC<RouteMapProps> = ({
           <Marker coordinate={startCoordinate}>
             <View style={{ ...styles.markerContainer, zIndex: 20 }}>
               <View style={[styles.iconBox, { backgroundColor: "#10B981" }]}>
-                <Ionicons name="location" size={20} color="white" />
+                <Ionicons name="location" size={22} color="white" />
               </View>
               <View style={styles.triangle} />
             </View>
@@ -367,7 +367,7 @@ const RouteMap: React.FC<RouteMapProps> = ({
         {end && endCoordinate && (
           <Marker coordinate={endCoordinate}>
             <View style={[styles.iconBox, { backgroundColor: "orange" }]}>
-              <Ionicons name="cube" size={18} color="#fff" />
+              <Ionicons name="cube" size={22} color="#fff" />
             </View>
           </Marker>
         )}
@@ -376,7 +376,7 @@ const RouteMap: React.FC<RouteMapProps> = ({
           agents.map((agent) => (
             <Marker key={agent.id} coordinate={toGoogleCoord(agent.coordinate)}>
               <View style={[styles.iconBox, { backgroundColor: "#3B82F6" }]}>
-                <Ionicons name="bicycle" size={20} color="white" />
+                <Ionicons name="bicycle" size={22} color="white" />
               </View>
             </Marker>
           ))}
@@ -475,8 +475,8 @@ const styles = StyleSheet.create({
   },
 
   iconBox: {
-    width: 38,
-    height: 38,
+    width: 34,
+    height: 34,
     borderRadius: 12,
     justifyContent: "center",
     alignItems: "center",
