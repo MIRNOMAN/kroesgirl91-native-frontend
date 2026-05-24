@@ -5,7 +5,7 @@ export const COLORS = {
   textPrimary: "#0F172A",
   textSecondary: "#1E1E2466",
   border: "#CBD5E1",
-  primary: "#2563EB",
+  primary: "#003C51",
   white: "#FFFFFF",
   onboardingPrimary: "#003C52",
   onboardingTint: "#ECFEFF",

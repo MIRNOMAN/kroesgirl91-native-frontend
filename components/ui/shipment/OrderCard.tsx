@@ -10,9 +10,24 @@ import {
   Text,
   View,
 } from "react-native";
+import { toast } from "sonner-native";
 import { COLORS } from "../../../constants/colors";
 
 const { width } = Dimensions.get("window");
+
+// Updated to match your Enum list
+const formattedShippingType = (type: string) => {
+  switch (type.toUpperCase()) {
+    case "COD":
+      return "Cash on Delivery";
+
+    case "BANK_TRANSFER":
+      return "Bank Transfer";
+
+    default:
+      return type;
+  }
+};
 
 const toDisplayLabel = (value: string) =>
   value
@@ -33,6 +48,7 @@ export interface Order {
   delivery_street_address?: string;
   pickupStatus: string | null;
   deliveryStatus: string | null;
+  title: string;
 }
 
 const getStatusColor = (status: string) => {
@@ -72,8 +88,12 @@ export const OrderCard = ({ order }: OrderCardProps) => {
   const handleConfirmCancel = async () => {
     try {
       await cancelOrder(order.id).unwrap();
-      console.log("Order cancelled successfully");
+      toast.success("Order cancelled successfully.");
     } catch (err) {
+      const errMsg =
+        (err as any)?.data?.message ||
+        "Failed to cancel order. Please try again.";
+      toast.error(errMsg);
       console.log("Cancel failed", err);
     } finally {
       setShowModal(false);
@@ -92,7 +112,7 @@ export const OrderCard = ({ order }: OrderCardProps) => {
 
             <View style={styles.orderDetails}>
               <Text style={styles.orderId} numberOfLines={1}>
-                {order.id}
+                {order.title}
               </Text>
 
               <Text style={styles.orderDate}>{order.date}</Text>
@@ -112,7 +132,7 @@ export const OrderCard = ({ order }: OrderCardProps) => {
               <Text style={styles.orderPrice}>${order.price?.toFixed(2)}</Text>
 
               <Text style={styles.shippingType} numberOfLines={1}>
-                {order.shippingType}
+                {formattedShippingType(order.shippingType)}
               </Text>
 
               {/* Cancel Button */}

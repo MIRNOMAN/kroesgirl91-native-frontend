@@ -48,6 +48,8 @@ export default function HomeScreen() {
     status: "PENDING",
   });
 
+  console.log(ordersResponse);
+
   const orderCardData: Order[] = useMemo(
     () =>
       (ordersResponse?.data ?? []).map((order: any, index: number) => ({
@@ -74,6 +76,16 @@ export default function HomeScreen() {
         pickupStatus: order.pickupStatus,
 
         deliveryStatus: order.deliveryStatus,
+
+        title: order.deliveryName
+          ? `Delivery to ${order.deliveryName}`
+          : order.deliveryAddress
+            ? `Address: ${order.deliveryAddress}`
+            : order.deliveryPhone
+              ? `Phone: ${order.deliveryPhone}`
+              : order.tookanJobId
+                ? `Job ID: ${order.tookanJobId}`
+                : "Delivery",
       })),
     [ordersResponse],
   ).slice(0, 5); // Limit to 5 items for home screen
@@ -205,9 +217,7 @@ export default function HomeScreen() {
             ? // Render a fixed number of skeletons while loading
               [1, 2, 3, 4].map((key) => <ShipmentSkeleton key={key} />)
             : orderCardData.map((shipment: any) => (
-                <>
-                  <OrderCard key={shipment.id} order={shipment} />
-                </>
+                <OrderCard key={shipment.id} order={shipment} />
               ))}
         </View>
       </ScrollView>

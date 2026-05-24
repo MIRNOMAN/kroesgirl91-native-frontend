@@ -14,17 +14,16 @@ export default function Index() {
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
 
   useEffect(() => {
+    if (isAuthenticated) {
+      router.replace(APP_ROUTES.home);
+      return;
+    }
     const timer = setTimeout(async () => {
-      if (isAuthenticated) {
-        router.replace(APP_ROUTES.home);
-        return;
-      }
-
       const hasSeenOnboarding = await AsyncStorage.getItem(ONBOARDING_SEEN_KEY);
       router.replace(
         hasSeenOnboarding === "true" ? APP_ROUTES.login : APP_ROUTES.onboarding,
       );
-    }, 2200);
+    }, 0);
 
     return () => clearTimeout(timer);
   }, [isAuthenticated, router]);
@@ -66,7 +65,7 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   logo: {
-    width: 620,
+    width: 650,
     height: 140,
   },
   loader: {

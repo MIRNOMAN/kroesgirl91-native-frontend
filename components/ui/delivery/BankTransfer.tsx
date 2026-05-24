@@ -1,6 +1,8 @@
 import { COLORS } from "@/constants/colors";
+import { useAppAlert } from "@/hooks/useAppAlert";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
+import { useRouter } from "expo-router";
 import React, { useEffect } from "react";
 import {
   Alert,
@@ -29,6 +31,7 @@ interface BankTransferProps {
   onConfirm: () => void;
   amount?: number;
   distance?: string;
+  clearAllState: () => void;
   pricingBreakdown?: {
     base_fare?: number;
     distance_charge?: number;
@@ -45,11 +48,16 @@ const BankTransfer: React.FC<BankTransferProps> = ({
   amount = 0,
   distance = "0",
   pricingBreakdown,
+  clearAllState,
 }) => {
   const [isAgreedToProhibited, setIsAgreedToProhibited] = React.useState(false);
   const [disableNext, setDisableNext] = React.useState(
     !screenshotUri || isSubmitting || !isAgreedToProhibited,
   );
+
+  const router = useRouter();
+
+  const { showAlert, AlertModal } = useAppAlert();
 
   const pickImage = async () => {
     const permissionResult =
@@ -75,6 +83,19 @@ const BankTransfer: React.FC<BankTransferProps> = ({
     }
   };
 
+  const onCancel = () => {
+    showAlert(
+      "Cancel Confirmation",
+      "Are you sure you want to cancel? Your current progress will be lost.",
+      () => {
+        clearAllState();
+        router.push("/home");
+      },
+      "Yes, Cancel",
+      "No, Keep Editing",
+    );
+  };
+
   useEffect(() => {
     setDisableNext(!screenshotUri || isSubmitting || !isAgreedToProhibited);
   }, [screenshotUri, isSubmitting, isAgreedToProhibited]);
@@ -87,6 +108,8 @@ const BankTransfer: React.FC<BankTransferProps> = ({
         <Text style={styles.sectionSubtitle}>
           Upload a screenshot of your payment confirmation
         </Text>
+
+        <AlertModal />
 
         <TouchableOpacity
           style={styles.uploadArea}
@@ -218,6 +241,9 @@ const BankTransfer: React.FC<BankTransferProps> = ({
           variant="secondary"
           disabled={disableNext}
         />
+
+        {/* cancel and clear all */}
+        <DeliveryButton title="Cancel" variant="outline" onPress={onCancel} />
       </View>
     </View>
   );
@@ -228,6 +254,21 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: isSmallDevice ? 16 : 20,
   },
+  cancelButton: {
+    marginTop: 12,
+    paddingVertical: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#E8E8E8",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  cancelButtonText: {
+    fontSize: 14,
+    color: "#666666",
+    fontWeight: "500",
+  },
+
   section: {
     marginBottom: isSmallDevice ? 20 : 24,
     gap: 12,

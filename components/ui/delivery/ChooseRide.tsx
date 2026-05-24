@@ -1,3 +1,5 @@
+import { COLORS } from "@/constants/colors";
+import { useAppAlert } from "@/hooks/useAppAlert";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useMemo, useState } from "react";
 import {
@@ -53,6 +55,8 @@ const ChooseRide: React.FC<ChooseRideProps> = ({
     string | null
   >(null);
 
+  const { AlertModal, showAlert } = useAppAlert();
+
   const selectedRideOption = useMemo(
     () => rideOptions.find((item) => item.id === selectedRide),
     [rideOptions, selectedRide],
@@ -81,7 +85,20 @@ const ChooseRide: React.FC<ChooseRideProps> = ({
   }, [selectedRideOption]);
 
   const canProceed =
-    distanceInfo?.distance && !isLoading && !distanceInfo?.exceeded;
+    Number.isFinite(distanceInfo?.distance) &&
+    !isLoading &&
+    !distanceInfo?.exceeded;
+
+  const handleOnNext = () => {
+    if (!canProceed) {
+      showAlert(
+        "Cannot proceed",
+        "Please select a valid ride option that does not exceed the maximum distance.",
+      );
+      return;
+    }
+    onNext();
+  };
 
   useEffect(() => {
     if (!isLoading && rideOptions.length > 0 && !selectedRide) {
@@ -112,6 +129,8 @@ const ChooseRide: React.FC<ChooseRideProps> = ({
       <View style={styles.headerRow}>
         <Text style={styles.title}>Choose a ride</Text>
       </View>
+
+      <AlertModal />
 
       {/* 🔥 LOADING STATE */}
       {isLoading ? (
@@ -276,7 +295,14 @@ const ChooseRide: React.FC<ChooseRideProps> = ({
       )}
 
       <View style={styles.buttonContainer}>
-        <DeliveryButton title="Next" onPress={onNext} disabled={!canProceed} />
+        <DeliveryButton
+          variant="secondary"
+          title="Next"
+          onPress={handleOnNext}
+          loading={isLoading}
+          disabled={!canProceed || isLoading}
+        />
+
         <Text>
           {isLoading
             ? "Loading ride options..."
@@ -296,6 +322,23 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: isSmallDevice ? 16 : 20,
   },
+
+  button: {
+    backgroundColor: COLORS.primary,
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignItems: "center",
+    marginBottom: 10,
+  },
+
+  cancelButton: {
+    backgroundColor: "#E5E7EB",
+  },
+  buttonText: {
+    color: COLORS.white,
+    fontWeight: "600",
+  },
+
   title: {
     fontSize: isSmallDevice ? 17 : 19,
     fontWeight: "600",

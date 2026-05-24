@@ -171,6 +171,16 @@ export default function ShipmentScreen() {
         origin: order?.pickupAddress ?? "",
         destination: order?.deliveryAddress ?? "",
 
+        title: order.deliveryName
+          ? `Delivery to ${order.deliveryName}`
+          : order.deliveryAddress
+            ? `Address: ${order.deliveryAddress}`
+            : order.deliveryPhone
+              ? `Phone: ${order.deliveryPhone}`
+              : order.tookanJobId
+                ? `Job ID: ${order.tookanJobId}`
+                : "Delivery",
+
         // optional (if you have street separately in API)
         pickup_street_address: order?.pickup_street_address ?? "",
         delivery_street_address: order?.delivery_street_address ?? "",

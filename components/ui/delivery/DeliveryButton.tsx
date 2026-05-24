@@ -2,11 +2,10 @@ import React from "react";
 import {
   ActivityIndicator,
   Dimensions,
+  Pressable,
   StyleSheet,
   Text,
-  TouchableOpacity,
 } from "react-native";
-import { toast } from "sonner-native";
 
 const { width } = Dimensions.get("window");
 const isSmallDevice = width < 375;
@@ -49,17 +48,15 @@ const DeliveryButton: React.FC<DeliveryButtonProps> = ({
   };
 
   return (
-    <TouchableOpacity
-      style={[getButtonStyle(), disabled && styles.disabledButton]}
+    <Pressable
+      style={[getButtonStyle(), disabled ? styles.disabledButton : null]}
       onPress={() => {
-        toast.success(
-          `Button pressed: ${title}, disabled: ${disabled}, loading: ${loading}`,
-        );
-        if (disabled || loading) return;
+        if (disabled || loading) {
+          return null;
+        }
         onPress();
       }}
-      disabled={disabled || loading}
-      activeOpacity={1}>
+      disabled={disabled || loading}>
       {loading ? (
         <ActivityIndicator
           color={variant === "outline" ? "#F5A623" : "#FFFFFF"}
@@ -67,7 +64,7 @@ const DeliveryButton: React.FC<DeliveryButtonProps> = ({
       ) : (
         <Text style={getTextStyle()}>{title}</Text>
       )}
-    </TouchableOpacity>
+    </Pressable>
   );
 };
 
@@ -88,7 +85,7 @@ const styles = StyleSheet.create({
   outlineButton: {
     backgroundColor: "transparent",
     borderWidth: 2,
-    borderColor: "#002B3B",
+    borderColor: "#002B3B33",
   },
   disabledButton: {
     opacity: 0.6,

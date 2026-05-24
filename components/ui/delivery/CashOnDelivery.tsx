@@ -1,5 +1,7 @@
 import { COLORS } from "@/constants/colors";
+import { useAppAlert } from "@/hooks/useAppAlert";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import React from "react";
 import { Dimensions, Pressable, StyleSheet, Text, View } from "react-native";
 import { toast } from "sonner-native";
@@ -38,6 +40,7 @@ interface CashOnDeliveryProps {
   onConfirm: () => void;
 
   distance?: string;
+  clearAllState: () => void;
   pricingBreakdown?: {
     base_fare?: number;
     distance_charge?: number;
@@ -53,11 +56,30 @@ const CashOnDelivery: React.FC<CashOnDeliveryProps> = ({
   onConfirm,
   distance = "0",
   pricingBreakdown,
+  clearAllState,
 }) => {
   const [isAgreedToProhibited, setIsAgreedToProhibited] = React.useState(false);
 
+  const router = useRouter();
+
+  const onCancel = () => {
+    showAlert(
+      "Cancel Confirmation",
+      "Are you sure you want to cancel? Your current progress will be lost.",
+      () => {
+        clearAllState();
+        router.push("/home");
+      },
+      "Yes, Cancel",
+      "No, Keep Editing",
+    );
+  };
+
+  const { showAlert, AlertModal } = useAppAlert();
+
   return (
     <View style={styles.container}>
+      <AlertModal />
       {/* Cash on Delivery Selection */}
       <View style={styles.checkboxContainer}>
         <View style={styles.checkboxSelected}>
@@ -238,6 +260,12 @@ const CashOnDelivery: React.FC<CashOnDeliveryProps> = ({
           variant="primary"
           disabled={!isAgreedToProhibited || isSubmitting}
           loading={isSubmitting}
+        />
+        <DeliveryButton
+          title="Cancel"
+          onPress={onCancel}
+          variant="outline"
+          disabled={isSubmitting}
         />
       </View>
     </View>

@@ -3,6 +3,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import {
   Alert,
+  BackHandler,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -301,6 +302,7 @@ export default function CreateDeliveryScreen() {
   const handleBack = () => {
     switch (step) {
       case "pickup":
+        clearAllState();
         router.back();
         break;
       case "delivery":
@@ -321,6 +323,25 @@ export default function CreateDeliveryScreen() {
         break;
     }
   };
+
+  useEffect(() => {
+    const onHardwareBackPress = () => {
+      if (step !== "pickup") {
+        handleBack();
+        return true;
+      }
+
+      clearAllState();
+      return false;
+    };
+
+    const subscription = BackHandler.addEventListener(
+      "hardwareBackPress",
+      onHardwareBackPress,
+    );
+
+    return () => subscription.remove();
+  }, [handleBack, step]);
 
   const handlePickupNext = () => {
     if (
@@ -630,6 +651,7 @@ export default function CreateDeliveryScreen() {
         if (packageData.paymentMethod === "bank") {
           return (
             <BankTransfer
+              clearAllState={clearAllState}
               bankDetails={createDeliveryData.bankTransfer.bankDetails}
               screenshotUri={bankImageUri}
               onScreenshotChange={setBankImageUri}
@@ -643,6 +665,7 @@ export default function CreateDeliveryScreen() {
 
         return (
           <CashOnDelivery
+            clearAllState={clearAllState}
             amount={estimatedPriceData?.total_price ?? 0}
             shipmentSummary={getShipmentSummary()}
             pricingDetails={createDeliveryData.pricingDetails}
