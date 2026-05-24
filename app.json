@@ -37,7 +37,12 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"],
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ],
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.swiftdrop.app"
@@ -77,7 +82,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "d15d212d-de0a-44a1-b91e-b8102701a0ed"
+        "projectId": "70b2058a-57ed-472f-9373-deef7800c66a"
       }
     }
   }
