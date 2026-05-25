@@ -44,7 +44,6 @@ const STATUS_FILTERS: StatusFilter[] = [
   "ARRIVED",
   "SUCCESSFUL",
   "FAILED",
-  "CANCELLED",
 ];
 
 export const toTitleCase = (value?: string | null) => {

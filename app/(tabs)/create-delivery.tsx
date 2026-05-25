@@ -447,8 +447,6 @@ export default function CreateDeliveryScreen() {
   };
 
   const handleConfirmBooking = async () => {
-    toast.success("Creating your delivery...");
-
     if (!packageData.paymentMethod) {
       Alert.alert("Required", "Please select a payment method.");
       return;
@@ -504,6 +502,8 @@ export default function CreateDeliveryScreen() {
       job_delivery_datetime: deliveryDate,
       specialInstructions: packageData.instructions,
     };
+
+    console.log({ payload });
 
     try {
       const response = (await createDelivery({
