@@ -30,7 +30,19 @@ const baseQueryWithToken: BaseQueryFn<
   unknown,
   FetchBaseQueryError
 > = async (args, api, extraOptions) => {
+  const route = typeof args === "string" ? args : args.url;
+  const body = typeof args === "object" && "body" in args ? args.body : undefined;
+
   const result = await baseQuery(args, api, extraOptions);
+
+  if (result.error) {
+    console.group(`🔴 [API ERROR] ${route}`);
+    console.log("Method:", typeof args === "object" ? (args as any).method ?? "GET" : "GET");
+    console.log("Body:", body ?? "N/A");
+    console.log("Status:", result.error.status);
+    console.log("Data:", JSON.stringify(result.error.data, null, 2));
+    console.groupEnd();
+  }
 
   if (result.error?.status === 401) {
     api.dispatch(logout());

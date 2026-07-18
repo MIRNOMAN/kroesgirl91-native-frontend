@@ -1,10 +1,12 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -16,9 +18,14 @@ import AuthButton from "../../components/ui/auth/AuthButton";
 import OtpCodeInput from "../../components/ui/auth/OtpCodeInput";
 import { COLORS } from "../../constants/colors";
 import { APP_ROUTES } from "../../constants/routes";
-import { useRegisterOtpVerificationMutation } from "../../redux/api/userApi";
+import {
+  useRegisterOtpVerificationMutation,
+  useResendOtpMutation,
+} from "../../redux/api/userApi";
 
 const REGISTER_EMAIL_STORAGE_KEY = "register_email";
+const REGISTER_PHONE_STORAGE_KEY = "register_phone";
+const COOLDOWN_SECONDS = 60;
 
 type VerifyResponse = {
   success?: boolean;
@@ -37,12 +44,44 @@ type VerifyErrorShape = {
 
 export default function VerifyOtpScreen() {
   const router = useRouter();
-  const params = useLocalSearchParams<{ otp?: string; email?: string }>();
+  const params = useLocalSearchParams<{
+    otp?: string;
+    email?: string;
+    phone?: string;
+    otpMethod?: string;
+  }>();
   const [otpValue, setOtpValue] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [otpMethod, setOtpMethod] = useState<"email" | "phone">("email");
   const [isVerified, setIsVerified] = useState(false);
   const [registerOtpVerification, { isLoading }] =
     useRegisterOtpVerificationMutation();
+  const [resendOtp, { isLoading: isResending }] = useResendOtpMutation();
+  const [resendTarget, setResendTarget] = useState<"email" | "sms">("email");
+  const [cooldown, setCooldown] = useState(COOLDOWN_SECONDS);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const startCooldown = () => {
+    setCooldown(COOLDOWN_SECONDS);
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => {
+      setCooldown((prev) => {
+        if (prev <= 1) {
+          if (timerRef.current) clearInterval(timerRef.current);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  useEffect(() => {
+    startCooldown();
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     const otpFromParams = typeof params.otp === "string" ? params.otp : "";
@@ -52,24 +91,38 @@ export default function VerifyOtpScreen() {
   }, [params.otp]);
 
   useEffect(() => {
-    const loadRegisterEmail = async () => {
+    const loadData = async () => {
       if (Platform.OS === "web" && typeof window !== "undefined") {
         const savedEmail = window.localStorage.getItem(
           REGISTER_EMAIL_STORAGE_KEY,
         );
-        setEmail(savedEmail?.trim().toLowerCase() || "");
+        const savedPhone = window.localStorage.getItem(
+          REGISTER_PHONE_STORAGE_KEY,
+        );
+        setEmail(params.email || savedEmail?.trim().toLowerCase() || "");
+        setPhone(params.phone || savedPhone?.trim() || "");
         return;
       }
 
       const savedEmail = await AsyncStorage.getItem(REGISTER_EMAIL_STORAGE_KEY);
+      const savedPhone = await AsyncStorage.getItem(REGISTER_PHONE_STORAGE_KEY);
       setEmail(params.email || savedEmail?.trim().toLowerCase() || "");
+      setPhone(params.phone || savedPhone?.trim() || "");
     };
 
-    loadRegisterEmail();
-  }, [params.email]);
+    loadData();
+  }, [params.email, params.phone]);
+
+  useEffect(() => {
+    if (params.otpMethod === "phone") {
+      setOtpMethod("phone");
+    } else {
+      setOtpMethod("email");
+    }
+  }, [params.otpMethod]);
+
   const getErrorMessage = (error: unknown) => {
     const parsedError = error as VerifyErrorShape;
-
     return (
       parsedError?.data?.message ||
       parsedError?.error ||
@@ -108,6 +161,36 @@ export default function VerifyOtpScreen() {
     }
   };
 
+  const handleResendOtp = async (target: "email" | "sms") => {
+    if (cooldown > 0) return;
+
+    try {
+      setResendTarget(target);
+      const payload = target === "email" ? { email } : { phone };
+
+      const response = await resendOtp(payload).unwrap();
+
+      toast.success(
+        (response as any)?.message ||
+          `OTP resent to your ${target === "email" ? "email" : "phone"}`,
+      );
+      startCooldown();
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    }
+  };
+
+  const handleSwitchMethod = (method: "email" | "phone") => {
+    if (method === otpMethod) return;
+    setOtpMethod(method);
+    setOtpValue("");
+  };
+
+  const maskedValue =
+    otpMethod === "email"
+      ? email.replace(/(.{2})(.*)(@.*)/, "$1***$3")
+      : phone.replace(/(.{3})(.*)(.{2})/, "$1***$3");
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.authBg }}>
       <KeyboardAvoidingView
@@ -139,13 +222,120 @@ export default function VerifyOtpScreen() {
               <View style={styles.content}>
                 <Text style={styles.title}>Verify Your Account</Text>
                 <Text style={styles.subtitle}>
-                  Enter the 4 digit OTP code sent to your registered email
+                  Enter the 4 digit OTP code sent to your{" "}
+                  {otpMethod === "email" ? "email" : "phone"}
                 </Text>
+
+                <View style={styles.methodSwitcher}>
+                  <Pressable
+                    onPress={() => handleSwitchMethod("email")}
+                    style={[
+                      styles.methodButton,
+                      otpMethod === "email" && styles.methodButtonActive,
+                    ]}>
+                    <Ionicons
+                      name="mail-outline"
+                      size={16}
+                      color={
+                        otpMethod === "email" ? "#FFFFFF" : COLORS.textSecondary
+                      }
+                    />
+                    <Text
+                      style={[
+                        styles.methodButtonText,
+                        otpMethod === "email" && styles.methodButtonTextActive,
+                      ]}>
+                      Email
+                    </Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => handleSwitchMethod("phone")}
+                    style={[
+                      styles.methodButton,
+                      otpMethod === "phone" && styles.methodButtonActive,
+                    ]}>
+                    <Ionicons
+                      name="call-outline"
+                      size={16}
+                      color={
+                        otpMethod === "phone" ? "#FFFFFF" : COLORS.textSecondary
+                      }
+                    />
+                    <Text
+                      style={[
+                        styles.methodButtonText,
+                        otpMethod === "phone" && styles.methodButtonTextActive,
+                      ]}>
+                      Phone
+                    </Text>
+                  </Pressable>
+                </View>
+
+                <Text style={styles.maskedValue}>{maskedValue}</Text>
+
                 <OtpCodeInput
                   value={otpValue}
                   onChange={setOtpValue}
                   length={4}
                 />
+
+                <View style={styles.resendSection}>
+                  <Text style={styles.didNotReceive}>
+                    Didn&apos;t receive the OTP?
+                  </Text>
+
+                  {cooldown > 0 ? (
+                    <Text style={styles.cooldownText}>
+                      Resend in {cooldown}s
+                    </Text>
+                  ) : (
+                    <View style={styles.resendOptions}>
+                      <Pressable
+                        onPress={() => handleResendOtp("email")}
+                        disabled={isResending}
+                        style={styles.resendOption}>
+                        {isResending && resendTarget === "email" ? (
+                          <Ionicons
+                            name="reload"
+                            size={16}
+                            color="#F59E0B"
+                          />
+                        ) : (
+                          <Ionicons
+                            name="mail-outline"
+                            size={16}
+                            color="#F59E0B"
+                          />
+                        )}
+                        <Text style={styles.resendOptionText}>
+                          Resend via Email
+                        </Text>
+                      </Pressable>
+
+                      <Pressable
+                        onPress={() => handleResendOtp("sms")}
+                        disabled={isResending}
+                        style={styles.resendOption}>
+                        {isResending && resendTarget === "sms" ? (
+                          <Ionicons
+                            name="reload"
+                            size={16}
+                            color="#F59E0B"
+                          />
+                        ) : (
+                          <Ionicons
+                            name="chatbubble-outline"
+                            size={16}
+                            color="#F59E0B"
+                          />
+                        )}
+                        <Text style={styles.resendOptionText}>
+                          Resend via SMS
+                        </Text>
+                      </Pressable>
+                    </View>
+                  )}
+                </View>
               </View>
             )}
 
@@ -180,14 +370,6 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
     justifyContent: "space-between",
   },
-  topLogoContainer: {
-    alignItems: "center",
-    marginBottom: 8,
-  },
-  topLogo: {
-    width: 530,
-    height: 100,
-  },
   content: {
     flex: 1,
     alignItems: "center",
@@ -207,19 +389,6 @@ const styles = StyleSheet.create({
     width: 220,
     height: 220,
   },
-  badge: {
-    position: "absolute",
-    right: 10,
-    top: 10,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: COLORS.onboardingPrimary,
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 2,
-    borderColor: "#FFFFFF",
-  },
   title: {
     fontSize: 28,
     fontWeight: "800",
@@ -232,5 +401,67 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     textAlign: "center",
     maxWidth: 290,
+  },
+  methodSwitcher: {
+    flexDirection: "row",
+    gap: 12,
+    marginTop: 8,
+  },
+  methodButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 20,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: COLORS.authBorder,
+    backgroundColor: COLORS.authInput,
+  },
+  methodButtonActive: {
+    backgroundColor: COLORS.onboardingPrimary,
+    borderColor: COLORS.onboardingPrimary,
+  },
+  methodButtonText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: COLORS.textSecondary,
+  },
+  methodButtonTextActive: {
+    color: "#FFFFFF",
+  },
+  maskedValue: {
+    fontSize: 14,
+    color: COLORS.authPlaceholder,
+    fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
+  },
+  resendSection: {
+    alignItems: "center",
+    gap: 12,
+    marginTop: 8,
+  },
+  didNotReceive: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: COLORS.textPrimary,
+  },
+  resendOptions: {
+    flexDirection: "row",
+    gap: 20,
+  },
+  resendOption: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  resendOptionText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#F59E0B",
+  },
+  cooldownText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: COLORS.textSecondary,
   },
 });

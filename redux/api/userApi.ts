@@ -2,7 +2,8 @@ import { TQueryParam } from "@/types";
 import { baseApi } from "./baseApi";
 
 type LoginRequest = {
-  email: string;
+  email?: string;
+  phone?: string;
   password: string;
 };
 
@@ -10,6 +11,18 @@ type RegisterRequest = {
   email: string;
   fullName: string;
   password: string;
+  phone?: string;
+  address?: string;
+  latitude?: number;
+  longitude?: number;
+  role?: "USER" | "MERCHANT";
+  businessName?: string;
+  businessAddressLine1?: string;
+  businessLatitude1?: number;
+  businessLongitude1?: number;
+  businessAddressLine2?: string;
+  businessLatitude2?: number;
+  businessLongitude2?: number;
 };
 
 type ResetPasswordRequest = {
@@ -22,7 +35,7 @@ type LoginUser = {
   email: string;
   fullName: string;
   profileImage: string;
-  role: "USER";
+  role: "USER" | "MERCHANT";
   isAccountVerified: boolean;
   createdAt: string;
   passwordHashed: string;
@@ -53,7 +66,7 @@ export type RegisterResponse = {
       email?: string;
       fullName?: string;
       profileImage?: string | null;
-      role?: "USER";
+      role?: "USER" | "MERCHANT";
       isAccountVerified?: boolean;
       createdAt?: string;
     };
@@ -105,6 +118,16 @@ const authApi = baseApi.injectEndpoints({
         };
       },
       invalidatesTags: ["Auth"],
+    }),
+
+    resendOtp: build.mutation({
+      query: (data: { email?: string; phone?: string }) => {
+        return {
+          url: `/auth/resend-otp`,
+          method: "POST",
+          body: data,
+        };
+      },
     }),
 
     createUserLogin: build.mutation<LoginResponse, LoginRequest>({
@@ -248,4 +271,5 @@ export const {
   useForgotOtpSendMutation,
   useRegisterOtpVerificationMutation,
   useUpdateChangePasswordMutation,
+  useResendOtpMutation,
 } = authApi;

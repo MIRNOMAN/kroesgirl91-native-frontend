@@ -34,10 +34,14 @@ export default function LoginScreen() {
   const router = useRouter();
   const { signIn } = useAuth();
 
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
 
   const [createUserLogin, { isLoading }] = useCreateUserLoginMutation();
+
+  const detectInputType = (value: string): "email" | "phone" => {
+    return value.includes("@") ? "email" : "phone";
+  };
 
   const getErrorMessage = (error: unknown) => {
     const parsedError = error as LoginErrorShape;
@@ -50,19 +54,23 @@ export default function LoginScreen() {
   };
 
   const handleLogin = async () => {
-    const normalizedEmail = email.trim().toLowerCase();
+    const trimmedIdentifier = identifier.trim();
     const trimmedPassword = password.trim();
 
-    if (!normalizedEmail || !trimmedPassword) {
-      toast.warning("Email and password are required");
+    if (!trimmedIdentifier || !trimmedPassword) {
+      toast.warning("Email/phone and password are required");
       return;
     }
 
+    const inputType = detectInputType(trimmedIdentifier);
+
     try {
-      const response = (await createUserLogin({
-        email: normalizedEmail,
-        password: trimmedPassword,
-      }).unwrap()) as LoginResponse;
+      const payload =
+        inputType === "email"
+          ? { email: trimmedIdentifier.toLowerCase(), password: trimmedPassword }
+          : { phone: trimmedIdentifier, password: trimmedPassword };
+
+      const response = (await createUserLogin(payload).unwrap()) as LoginResponse;
 
       if (!response?.success || !response?.data?.accessToken) {
         console.log({ response });
@@ -70,7 +78,11 @@ export default function LoginScreen() {
           toast.info(
             "Account exists but needs verification. Redirecting to OTP verification.",
           );
-          router.push(`/(auth)/verify-otp?email=${normalizedEmail}`);
+          const otpParams =
+            inputType === "email"
+              ? `email=${trimmedIdentifier.toLowerCase()}`
+              : `phone=${trimmedIdentifier}`;
+          router.push(`/(auth)/verify-otp?${otpParams}`);
 
           return;
         }
@@ -86,7 +98,6 @@ export default function LoginScreen() {
       toast.success(response.data.message || response.message);
       router.replace(APP_ROUTES.home);
     } catch (error) {
-      // if(error?.data?.redirectToOtpVerifyPage)
       console.log({ error });
       toast.error(getErrorMessage(error));
     }
@@ -116,12 +127,12 @@ export default function LoginScreen() {
 
                 <View style={styles.form}>
                   <AuthLabeledInput
-                    label="Email"
-                    placeholder="Enter Email Here"
-                    keyboardType="email-address"
+                    label="Email or Phone"
+                    placeholder="Enter Email or Phone Number"
+                    keyboardType="default"
                     autoCapitalize="none"
-                    value={email}
-                    onChangeText={setEmail}
+                    value={identifier}
+                    onChangeText={setIdentifier}
                     autoCorrect={false}
                     compact
                   />

@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "./store";
 
 // Define allowed roles
-export type UserRole = "USER";
+export type UserRole = "USER" | "MERCHANT";
 
 type AuthState = {
   role: UserRole | null;
