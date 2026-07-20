@@ -19,8 +19,9 @@ import OtpCodeInput from "../../components/ui/auth/OtpCodeInput";
 import { COLORS } from "../../constants/colors";
 import { APP_ROUTES } from "../../constants/routes";
 import {
-  useRegisterOtpVerificationMutation,
   useResendOtpMutation,
+  useUserRegisterEmailVerificationMutation,
+  useUserRegisterPhoneVerificationMutation,
 } from "../../redux/api/userApi";
 
 const REGISTER_EMAIL_STORAGE_KEY = "register_email";
@@ -55,8 +56,10 @@ export default function VerifyOtpScreen() {
   const [phone, setPhone] = useState("");
   const [otpMethod, setOtpMethod] = useState<"email" | "phone">("email");
   const [isVerified, setIsVerified] = useState(false);
-  const [registerOtpVerification, { isLoading }] =
-    useRegisterOtpVerificationMutation();
+  const [verifyEmailOtp, { isLoading: isVerifyingEmail }] =
+    useUserRegisterEmailVerificationMutation();
+  const [verifyPhoneOtp, { isLoading: isVerifyingPhone }] =
+    useUserRegisterPhoneVerificationMutation();
   const [resendOtp, { isLoading: isResending }] = useResendOtpMutation();
   const [resendTarget, setResendTarget] = useState<"email" | "sms">("email");
   const [cooldown, setCooldown] = useState(COOLDOWN_SECONDS);
@@ -133,8 +136,14 @@ export default function VerifyOtpScreen() {
   const handleVerifyOtp = async () => {
     const normalizedOtp = otpValue.trim();
 
-    if (!email) {
+    if (otpMethod === "email" && !email) {
       toast.warning("Registration email missing. Please register again.");
+      router.replace(APP_ROUTES.register);
+      return;
+    }
+
+    if (otpMethod === "phone" && !phone) {
+      toast.warning("Registration phone missing. Please register again.");
       router.replace(APP_ROUTES.register);
       return;
     }
@@ -145,14 +154,14 @@ export default function VerifyOtpScreen() {
     }
 
     try {
-      const response = (await registerOtpVerification({
-        otp: normalizedOtp,
-        email,
-      }).unwrap()) as VerifyResponse;
+      const response =
+        otpMethod === "email"
+          ? await verifyEmailOtp({ otp: normalizedOtp, email }).unwrap()
+          : await verifyPhoneOtp({ otp: normalizedOtp, phone }).unwrap();
 
       toast.success(
-        response?.data?.message ||
-          response?.message ||
+        (response as any)?.data?.message ||
+          (response as any)?.message ||
           "OTP verified successfully",
       );
       setIsVerified(true);
@@ -343,7 +352,7 @@ export default function VerifyOtpScreen() {
               title={
                 isVerified
                   ? "Go to Agreement"
-                  : isLoading
+                  : isVerifyingEmail || isVerifyingPhone
                     ? "Verifying..."
                     : "Verify OTP"
               }
@@ -352,7 +361,7 @@ export default function VerifyOtpScreen() {
                   ? () => router.replace(APP_ROUTES.aggrement)
                   : handleVerifyOtp
               }
-              disabled={isLoading}
+              disabled={isVerifyingEmail || isVerifyingPhone}
             />
           </View>
         </ScrollView>

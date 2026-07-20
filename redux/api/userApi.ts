@@ -171,6 +171,17 @@ const authApi = baseApi.injectEndpoints({
       },
       invalidatesTags: ["Auth"],
     }),
+
+    userRegisterPhoneVerification: build.mutation({
+      query: (data) => {
+        return {
+          url: `/auth/verify-phone`,
+          method: "POST",
+          body: data,
+        };
+      },
+      invalidatesTags: ["Auth"],
+    }),
     userResetPassword: build.mutation({
       query: ({ newPassword, resetToken }: ResetPasswordRequest) => {
         const authorizationToken = resetToken.startsWith("Bearer ")
@@ -264,6 +275,7 @@ export const {
   useUserResetPasswordMutation,
   useCreateUserRegisterMutation,
   useUserRegisterEmailVerificationMutation,
+  useUserRegisterPhoneVerificationMutation,
   useGetMeUserQuery,
   useUpdateMeUserMutation,
   useUpdateUserStatusMutation,

@@ -23,7 +23,8 @@ import {
   useUserForgotPasswordMutation,
 } from "../../redux/api/userApi";
 
-const FORGOT_EMAIL_STORAGE_KEY = "forgot_password_email";
+const FORGOT_IDENTIFIER_STORAGE_KEY = "forgot_password_identifier";
+const FORGOT_METHOD_STORAGE_KEY = "forgot_password_method";
 const RESET_PASSWORD_TOKEN_KEY = "reset_password_token";
 
 export default function ForgotOtpScreen() {
@@ -31,7 +32,8 @@ export default function ForgotOtpScreen() {
   const headerHeight = useHeaderHeight();
 
   const [otpValue, setOtpValue] = useState("");
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
+  const [method, setMethod] = useState<"email" | "phone">("email");
 
   const [forgotOtpSend, { isLoading: isVerifying }] =
     useForgotOtpSendMutation();
@@ -49,12 +51,16 @@ export default function ForgotOtpScreen() {
     );
   };
 
-  const getEmailFromLocalStorage = async () => {
+  const getIdentifierFromLocalStorage = async () => {
     if (Platform.OS === "web" && typeof window !== "undefined") {
-      return window.localStorage.getItem(FORGOT_EMAIL_STORAGE_KEY) || "";
+      const id = window.localStorage.getItem(FORGOT_IDENTIFIER_STORAGE_KEY) || "";
+      const m = (window.localStorage.getItem(FORGOT_METHOD_STORAGE_KEY) as "email" | "phone") || "email";
+      return { identifier: id, method: m };
     }
 
-    return (await AsyncStorage.getItem(FORGOT_EMAIL_STORAGE_KEY)) || "";
+    const id = (await AsyncStorage.getItem(FORGOT_IDENTIFIER_STORAGE_KEY)) || "";
+    const m = ((await AsyncStorage.getItem(FORGOT_METHOD_STORAGE_KEY)) as "email" | "phone") || "email";
+    return { identifier: id, method: m };
   };
 
   const saveResetTokenSecurely = async (token: string) => {
@@ -69,28 +75,33 @@ export default function ForgotOtpScreen() {
   };
 
   useEffect(() => {
-    const loadEmail = async () => {
-      const savedEmail = (await getEmailFromLocalStorage())
-        .trim()
-        .toLowerCase();
+    const loadData = async () => {
+      const { identifier: savedId, method: savedMethod } = await getIdentifierFromLocalStorage();
 
-      if (!savedEmail) {
-        toast.warning("Please enter email first");
+      if (!savedId) {
+        toast.warning("Please enter your email or phone first");
         router.replace(APP_ROUTES.forgotPassword);
         return;
       }
 
-      setEmail(savedEmail);
+      setIdentifier(savedId);
+      setMethod(savedMethod);
     };
 
-    loadEmail();
+    loadData();
   }, [router]);
+
+  const buildPayload = () => {
+    return method === "email"
+      ? { email: identifier }
+      : { phone: identifier };
+  };
 
   const handleApplyCode = async () => {
     const normalizedOtp = otpValue.trim();
 
-    if (!email) {
-      toast.warning("Email not found. Please try again.");
+    if (!identifier) {
+      toast.warning("Identifier not found. Please try again.");
       router.replace(APP_ROUTES.forgotPassword);
       return;
     }
@@ -102,7 +113,7 @@ export default function ForgotOtpScreen() {
 
     try {
       const response = await forgotOtpSend({
-        email,
+        ...buildPayload(),
         otp: normalizedOtp,
       }).unwrap();
 
@@ -123,15 +134,15 @@ export default function ForgotOtpScreen() {
     }
   };
 
-  const handleSendEmailAgain = async () => {
-    if (!email) {
-      toast.warning("Email not found. Please try again.");
+  const handleSendAgain = async () => {
+    if (!identifier) {
+      toast.warning("Identifier not found. Please try again.");
       router.replace(APP_ROUTES.forgotPassword);
       return;
     }
 
     try {
-      const response = await userForgotPassword({ email }).unwrap();
+      const response = await userForgotPassword(buildPayload()).unwrap();
 
       setOtpValue("");
       toast.success(response?.message || "OTP sent again successfully");
@@ -155,7 +166,7 @@ export default function ForgotOtpScreen() {
             <View style={styles.content}>
               <AuthTitleBlock
                 title="Apply Reset Code"
-                subtitle="Please check your email. Give correct reset 4 digit code here."
+                subtitle="Please check your email or phone. Give correct reset 4 digit code here."
                 titleSize={31}
                 subtitleSize={11}
                 subtitleMaxWidth={240}
@@ -177,9 +188,9 @@ export default function ForgotOtpScreen() {
               />
 
               <AuthButton
-                title={isResending ? "Sending..." : "Send Email Again"}
+                title={isResending ? "Sending..." : "Send Again"}
                 variant="secondary"
-                onPress={handleSendEmailAgain}
+                onPress={handleSendAgain}
                 disabled={isVerifying || isResending}
               />
             </View>

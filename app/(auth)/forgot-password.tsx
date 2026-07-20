@@ -20,7 +20,8 @@ import { COLORS } from "../../constants/colors";
 import { APP_ROUTES } from "../../constants/routes";
 import { useUserForgotPasswordMutation } from "../../redux/api/userApi";
 
-const FORGOT_EMAIL_STORAGE_KEY = "forgot_password_email";
+const FORGOT_IDENTIFIER_STORAGE_KEY = "forgot_password_identifier";
+const FORGOT_METHOD_STORAGE_KEY = "forgot_password_method";
 
 type ForgotPasswordErrorShape = {
   data?: {
@@ -31,8 +32,12 @@ type ForgotPasswordErrorShape = {
 
 export default function ForgotPasswordScreen() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [userForgotPassword, { isLoading }] = useUserForgotPasswordMutation();
+
+  const detectInputType = (value: string): "email" | "phone" => {
+    return value.includes("@") ? "email" : "phone";
+  };
 
   const getErrorMessage = (error: unknown) => {
     const parsedError = error as ForgotPasswordErrorShape;
@@ -43,33 +48,38 @@ export default function ForgotPasswordScreen() {
     );
   };
 
-  const saveEmailToLocalStorage = async (value: string) => {
+  const saveIdentifierToLocalStorage = async (value: string, method: string) => {
     if (Platform.OS === "web" && typeof window !== "undefined") {
-      window.localStorage.setItem(FORGOT_EMAIL_STORAGE_KEY, value);
+      window.localStorage.setItem(FORGOT_IDENTIFIER_STORAGE_KEY, value);
+      window.localStorage.setItem(FORGOT_METHOD_STORAGE_KEY, method);
       return;
     }
-    await AsyncStorage.setItem(FORGOT_EMAIL_STORAGE_KEY, value);
-  };
-
-  const handleEmailChange = (value: string) => {
-    setEmail(value);
-    saveEmailToLocalStorage(value).catch(() => {});
+    await AsyncStorage.setItem(FORGOT_IDENTIFIER_STORAGE_KEY, value);
+    await AsyncStorage.setItem(FORGOT_METHOD_STORAGE_KEY, method);
   };
 
   const handleSendOtp = async () => {
-    const normalizedEmail = email.trim().toLowerCase();
+    const trimmedIdentifier = identifier.trim();
 
-    if (!normalizedEmail) {
-      toast.warning("Email is required");
+    if (!trimmedIdentifier) {
+      toast.warning("Email or phone is required");
       return;
     }
 
-    try {
-      const response = await userForgotPassword({
-        email: normalizedEmail,
-      }).unwrap();
+    const inputType = detectInputType(trimmedIdentifier);
 
-      await saveEmailToLocalStorage(normalizedEmail);
+    try {
+      const payload =
+        inputType === "email"
+          ? { email: trimmedIdentifier.toLowerCase() }
+          : { phone: trimmedIdentifier };
+
+      const response = await userForgotPassword(payload).unwrap();
+
+      await saveIdentifierToLocalStorage(
+        inputType === "email" ? trimmedIdentifier.toLowerCase() : trimmedIdentifier,
+        inputType,
+      );
       toast.success(response?.message || "OTP sent successfully");
       router.push(APP_ROUTES.forgotOtp);
     } catch (error) {
@@ -83,7 +93,6 @@ export default function ForgotPasswordScreen() {
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}>
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          {/* ScrollView replaces the main View wrapper */}
           <ScrollView
             contentContainerStyle={styles.scrollContainer}
             bounces={false}
@@ -92,25 +101,24 @@ export default function ForgotPasswordScreen() {
             <View style={styles.content}>
               <AuthTitleBlock
                 title="Forget Password"
-                subtitle="Enter your email here. Give valid email to reset your password"
+                subtitle="Enter your email or phone number to reset your password"
                 titleSize={31}
                 subtitleSize={16}
                 subtitleMaxWidth={260}
               />
 
               <AuthLabeledInput
-                label="Email"
-                placeholder="Enter Email Here"
-                keyboardType="email-address"
+                label="Email or Phone"
+                placeholder="Enter Email or Phone Number"
+                keyboardType="default"
                 autoCapitalize="none"
-                value={email}
-                onChangeText={handleEmailChange}
+                value={identifier}
+                onChangeText={setIdentifier}
                 autoCorrect={false}
                 compact
               />
             </View>
 
-            {/* This remains at the bottom due to justifyContent: 'space-between' */}
             <Pressable
               className="btn-primary"
               onPress={handleSendOtp}
