@@ -5,6 +5,7 @@ type LoginRequest = {
   email?: string;
   phone?: string;
   password: string;
+  expoPushToken?: string;
 };
 
 type RegisterRequest = {

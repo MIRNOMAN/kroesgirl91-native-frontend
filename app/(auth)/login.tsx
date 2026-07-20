@@ -18,6 +18,7 @@ import AuthTitleBlock from "../../components/ui/auth/AuthTitleBlock";
 import { COLORS } from "../../constants/colors";
 import { APP_ROUTES } from "../../constants/routes";
 import { useAuth } from "../../hooks/useAuth";
+import { useExpoPushToken } from "../../hooks/useExpoPushToken";
 import {
   useCreateUserLoginMutation,
   type LoginResponse,
@@ -33,6 +34,7 @@ type LoginErrorShape = {
 export default function LoginScreen() {
   const router = useRouter();
   const { signIn } = useAuth();
+  const expoPushToken = useExpoPushToken();
 
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
@@ -67,8 +69,8 @@ export default function LoginScreen() {
     try {
       const payload =
         inputType === "email"
-          ? { email: trimmedIdentifier.toLowerCase(), password: trimmedPassword }
-          : { phone: trimmedIdentifier, password: trimmedPassword };
+          ? { email: trimmedIdentifier.toLowerCase(), password: trimmedPassword, ...(expoPushToken && { expoPushToken }) }
+          : { phone: trimmedIdentifier, password: trimmedPassword, ...(expoPushToken && { expoPushToken }) };
 
       const response = (await createUserLogin(payload).unwrap()) as LoginResponse;
 
