@@ -28,6 +28,8 @@ export default function ProfileScreen() {
   const { signOut } = useAuth();
   const { data, isLoading } = useGetMeUserQuery();
 
+  console.log({ data });
+
   const handleLogout = () => {
     signOut();
     router.replace(APP_ROUTES.login);
@@ -45,14 +47,12 @@ export default function ProfileScreen() {
     <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-      >
+        behavior={Platform.OS === "ios" ? "padding" : undefined}>
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
           <ScrollView
             style={styles.container}
             contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={false}
-          >
+            showsVerticalScrollIndicator={false}>
             {/* Header */}
             <Text style={styles.headerTitle}>Profile</Text>
 
