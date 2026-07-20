@@ -89,9 +89,18 @@ export type GetMeUserResponse = {
     email?: string;
     phone?: string;
     address?: string;
+    latitude?: number;
+    longitude?: number;
     profileImage?: string | null;
     isAccountVerified?: boolean;
-    role?: "USER";
+    role?: "USER" | "MERCHANT";
+    businessName?: string;
+    businessAddressLine1?: string;
+    businessLatitude1?: number;
+    businessLongitude1?: number;
+    businessAddressLine2?: string;
+    businessLatitude2?: number;
+    businessLongitude2?: number;
   };
 };
 

@@ -77,6 +77,71 @@ interface PriceEstimateResponse {
   };
 }
 
+type BulkFareEstimatePickup = {
+  latitude: number;
+  longitude: number;
+};
+
+type BulkFareEstimateDelivery = {
+  latitude: number;
+  longitude: number;
+};
+
+type BulkFareEstimateRequest = {
+  pickup: BulkFareEstimatePickup;
+  deliveries: BulkFareEstimateDelivery[];
+};
+
+type BulkFareEstimateResponse = {
+  success?: boolean;
+  statusCode?: number;
+  message?: string;
+  data?: {
+    total_distance_km?: string;
+    total_price?: number;
+    deliveries?: {
+      distance_km?: string;
+      price?: number;
+    }[];
+  };
+};
+
+type BulkOrderPickup = {
+  address: string;
+  latitude: number;
+  longitude: number;
+  time: string;
+  phone: string;
+  name: string;
+};
+
+type BulkOrderDelivery = {
+  address: string;
+  latitude: number;
+  longitude: number;
+  phone: string;
+  name: string;
+  order_id: string;
+};
+
+type BulkOrderRequest = {
+  paymentMethod: "COD" | "BANK";
+  isAgreedToTerms: boolean;
+  delivery_time: string;
+  pickup: BulkOrderPickup;
+  deliveries: BulkOrderDelivery[];
+};
+
+type BulkOrderResponse = {
+  success?: boolean;
+  statusCode?: number;
+  message?: string;
+  data?: {
+    order_id?: string;
+    message?: string;
+  };
+};
+
 const createDeliveryApi = baseApi.injectEndpoints({
   overrideExisting: true,
   endpoints: (build) => ({
@@ -166,7 +231,30 @@ const createDeliveryApi = baseApi.injectEndpoints({
     >({
       query: (id) => ({
         url: `/orders/cancel/${id}`,
-        method: "POST", // change to DELETE if your backend uses DELETE
+        method: "POST",
+      }),
+      invalidatesTags: ["Deliveries"],
+    }),
+
+    getBulkFareEstimate: build.mutation<
+      BulkFareEstimateResponse,
+      BulkFareEstimateRequest
+    >({
+      query: (data) => ({
+        url: `/orders/bulk-order/fare-estimate`,
+        method: "POST",
+        body: data,
+      }),
+    }),
+
+    createBulkOrder: build.mutation<
+      BulkOrderResponse,
+      BulkOrderRequest
+    >({
+      query: (data) => ({
+        url: `/orders/bulk-order`,
+        method: "POST",
+        body: data,
       }),
       invalidatesTags: ["Deliveries"],
     }),
@@ -181,4 +269,6 @@ export const {
   useGetEstimatedPriceMutation,
   useGetRouteCoordinatesMutation,
   useCancelOrderMutation,
+  useGetBulkFareEstimateMutation,
+  useCreateBulkOrderMutation,
 } = createDeliveryApi;
