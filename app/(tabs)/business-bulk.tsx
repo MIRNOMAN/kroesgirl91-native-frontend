@@ -369,19 +369,19 @@ export default function BusinessBulkScreen() {
           </View>
 
           {/* Fare Estimate */}
-          {fareEstimate && (
+          {fareEstimate?.summary && (
             <View style={styles.fareCard}>
               <Text style={styles.fareTitle}>Fare Estimate</Text>
-              {fareEstimate.total_distance_km && (
-                <Text style={styles.fareText}>Total Distance: {fareEstimate.total_distance_km} km</Text>
-              )}
-              {fareEstimate.total_price !== undefined && (
-                <Text style={styles.farePrice}>Total Price: SRD {fareEstimate.total_price}</Text>
-              )}
-              {fareEstimate.deliveries?.map((d: any, i: number) => (
-                <Text key={i} style={styles.fareDetail}>
-                  Delivery {i + 1}: {d.distance_km} km - SRD {d.price}
-                </Text>
+              <Text style={styles.farePrice}>Total: SRD {fareEstimate.summary.totalFare.toFixed(2)}</Text>
+              <Text style={styles.fareText}>
+                {fareEstimate.summary.totalOrders} deliveries — {fareEstimate.summary.totalDistanceKm} km
+              </Text>
+              {fareEstimate.legs?.map((leg: any) => (
+                <View key={leg.index} style={styles.fareLeg}>
+                  <Text style={styles.fareLegTitle}>Delivery {leg.index + 1}</Text>
+                  <Text style={styles.fareDetail}>{leg.distance_km} km — SRD {leg.totalPrice.toFixed(2)}</Text>
+                  <Text style={styles.fareSubDetail}>Pickup: SRD {leg.pickupPrice.toFixed(2)} · Delivery: SRD {leg.deliveryPrice.toFixed(2)}</Text>
+                </View>
               ))}
             </View>
           )}
@@ -651,6 +651,22 @@ const styles = StyleSheet.create({
   fareDetail: {
     fontSize: 12,
     color: "#666",
+  },
+  fareLeg: {
+    marginTop: 8,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: "#06B6D430",
+    gap: 2,
+  },
+  fareLegTitle: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: COLORS.textPrimary,
+  },
+  fareSubDetail: {
+    fontSize: 11,
+    color: "#888",
   },
   paymentOptions: {
     flexDirection: "row",

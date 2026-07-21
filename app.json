@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Swift Drop",
-    "slug": "swift-drop",
+    "slug": "swiftdrop",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -23,7 +23,7 @@
         "NSLocationWhenInUseUsageDescription": "This app needs access to your location to show you on the map.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "This app needs access to your location to monitor deliveries in the background."
       },
-      "bundleIdentifier": "com.swiftdrop.app"
+      "bundleIdentifier": "com.swiftdrop.rob"
     },
     "android": {
       "config": {
@@ -45,7 +45,7 @@
       ],
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.swiftdrop.app"
+      "package": "com.swiftdrop.rob"
     },
     "web": {
       "output": "static",
@@ -84,7 +84,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "70b2058a-57ed-472f-9373-deef7800c66a"
+        "projectId": "2a563daa-f570-4270-bcb1-d6188eebed8b"
       }
     }
   }

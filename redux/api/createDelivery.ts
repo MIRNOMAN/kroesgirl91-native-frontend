@@ -97,11 +97,17 @@ type BulkFareEstimateResponse = {
   statusCode?: number;
   message?: string;
   data?: {
-    total_distance_km?: string;
-    total_price?: number;
-    deliveries?: {
-      distance_km?: string;
-      price?: number;
+    summary?: {
+      totalOrders: number;
+      totalFare: number;
+      totalDistanceKm: number;
+    };
+    legs?: {
+      index: number;
+      distance_km: string;
+      deliveryPrice: number;
+      pickupPrice: number;
+      totalPrice: number;
     }[];
   };
 };
