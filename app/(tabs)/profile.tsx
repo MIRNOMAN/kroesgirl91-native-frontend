@@ -36,6 +36,7 @@ export default function ProfileScreen() {
   };
 
   const profile = data?.data;
+  const isMerchant = profile?.role === "MERCHANT";
   const userData = {
     name: profile?.fullName || "User",
     email: profile?.email || "Not provided",
@@ -76,6 +77,18 @@ export default function ProfileScreen() {
                 // avatar={userData.avatar}
                 onEditPress={() => router.push(APP_ROUTES.editProfile)}
               />
+            )}
+
+            {/* Business Details - Merchant Only */}
+            {isMerchant && (
+              <ProfileMenuSection title="Business">
+                <ProfileMenuItem
+                  icon="briefcase"
+                  title="Business Details"
+                  onPress={() => router.push(APP_ROUTES.businessDetails)}
+                  showBorder={false}
+                />
+              </ProfileMenuSection>
             )}
 
             {/* Support & Help Section */}

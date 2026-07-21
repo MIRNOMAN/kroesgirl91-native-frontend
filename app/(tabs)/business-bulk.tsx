@@ -1,11 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
-import DateTimePicker from "@react-native-community/datetimepicker";
+import ModalDatePicker from "react-native-modal-datetime-picker";
 import { useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  Modal,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -294,34 +292,16 @@ export default function BusinessBulkScreen() {
             </Pressable>
           </View>
 
-          <Modal
-            visible={showPickupTimePicker}
-            transparent
-            animationType="slide">
-            <View style={styles.modalOverlay}>
-              <View style={styles.modalContent}>
-                <View style={styles.modalHeader}>
-                  <Pressable onPress={() => setShowPickupTimePicker(false)}>
-                    <Text style={styles.modalCancel}>Cancel</Text>
-                  </Pressable>
-                  <Text style={styles.modalTitle}>Select Pickup Time</Text>
-                  <Pressable onPress={() => setShowPickupTimePicker(false)}>
-                    <Text style={styles.modalDone}>Done</Text>
-                  </Pressable>
-                </View>
-                <DateTimePicker
-                  value={pickupTime}
-                  mode="datetime"
-                  display="spinner"
-                  onChange={(_, date) => {
-                    if (date) setPickupTime(date);
-                  }}
-                  minimumDate={getMinPickupTime()}
-                  style={styles.picker}
-                />
-              </View>
-            </View>
-          </Modal>
+          <ModalDatePicker
+            isVisible={showPickupTimePicker}
+            mode="datetime"
+            onConfirm={(date) => {
+              setPickupTime(date);
+              setShowPickupTimePicker(false);
+            }}
+            onCancel={() => setShowPickupTimePicker(false)}
+            minimumDate={getMinPickupTime()}
+          />
 
           {/* Deliveries */}
           <View style={styles.section}>
@@ -419,34 +399,16 @@ export default function BusinessBulkScreen() {
             </Pressable>
           </View>
 
-          <Modal
-            visible={showTimePicker}
-            transparent
-            animationType="slide">
-            <View style={styles.modalOverlay}>
-              <View style={styles.modalContent}>
-                <View style={styles.modalHeader}>
-                  <Pressable onPress={() => setShowTimePicker(false)}>
-                    <Text style={styles.modalCancel}>Cancel</Text>
-                  </Pressable>
-                  <Text style={styles.modalTitle}>Select Delivery Time</Text>
-                  <Pressable onPress={() => setShowTimePicker(false)}>
-                    <Text style={styles.modalDone}>Done</Text>
-                  </Pressable>
-                </View>
-                <DateTimePicker
-                  value={deliveryTime}
-                  mode="datetime"
-                  display="spinner"
-                  onChange={(_, date) => {
-                    if (date) setDeliveryTime(date);
-                  }}
-                  minimumDate={getMinDeliveryTime()}
-                  style={styles.picker}
-                />
-              </View>
-            </View>
-          </Modal>
+          <ModalDatePicker
+            isVisible={showTimePicker}
+            mode="datetime"
+            onConfirm={(date) => {
+              setDeliveryTime(date);
+              setShowTimePicker(false);
+            }}
+            onCancel={() => setShowTimePicker(false)}
+            minimumDate={getMinDeliveryTime()}
+          />
 
           {/* Payment Method */}
           <View style={styles.section}>
@@ -762,42 +724,5 @@ const styles = StyleSheet.create({
   },
   disabledButton: {
     opacity: 0.6,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.4)",
-    justifyContent: "flex-end",
-  },
-  modalContent: {
-    backgroundColor: "#FFFFFF",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    paddingBottom: 30,
-  },
-  modalHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#E8E8E8",
-  },
-  modalTitle: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: COLORS.textPrimary,
-  },
-  modalCancel: {
-    fontSize: 15,
-    color: "#999",
-  },
-  modalDone: {
-    fontSize: 15,
-    fontWeight: "700",
-    color: "#003C52",
-  },
-  picker: {
-    height: 200,
   },
 });

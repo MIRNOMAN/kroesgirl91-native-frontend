@@ -17,6 +17,7 @@ export const APP_ROUTES = {
   shipment: "/shipment" as Href,
   profile: "/profile" as Href,
   editProfile: "/(profile)/edit-profile" as Href,
+  businessDetails: "/(profile)/business-details" as Href,
   changePassword: "/(profile)/change-password" as Href,
   termsConditions: "/(profile)/terms-conditions" as Href,
   privacyPolicy: "/(profile)/privacy-policy" as Href,
