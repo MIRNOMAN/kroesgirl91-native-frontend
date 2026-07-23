@@ -23,7 +23,7 @@
         "NSLocationWhenInUseUsageDescription": "This app needs access to your location to show you on the map.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "This app needs access to your location to monitor deliveries in the background."
       },
-      "bundleIdentifier": "com.swiftdrop.rob"
+      "bundleIdentifier": "swiftdrop.rob.app"
     },
     "android": {
       "config": {
@@ -45,7 +45,7 @@
       ],
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.swiftdrop.rob"
+      "package": "swiftdrop.rob.app"
     },
     "web": {
       "output": "static",
